@@ -17,6 +17,7 @@
   "license": "ISC",
   "devDependencies": {
     "@commitlint/cli": "^18.2.0",
-    "@commitlint/config-conventional": "^18.1.0"
+    "@commitlint/config-conventional": "^18.1.0",
+    "husky": "^8.0.3"
   }
 }
