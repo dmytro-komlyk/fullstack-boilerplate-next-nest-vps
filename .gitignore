@@ -1,4 +1,6 @@
+# compiled output
+dist
 node_modules
 
-# Server
-dist
+# local env files
+.env
