@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "pnpm run --parallel dev",
+    "build:server": "pnpm --filter server build",
+    "build:client": "pnpm --filter client build",
+    "start:server": "pnpm --filter server start:prod",
+    "start:client": "pnpm --filter client start",
+    "lint": "pnpm --parallel lint"
   },
   "keywords": [],
   "author": "",
