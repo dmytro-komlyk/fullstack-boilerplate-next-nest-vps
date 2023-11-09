@@ -20,7 +20,7 @@ export class TrpcRouter {
 
   async applyMiddleware(app: INestApplication) {
     app.use(
-      process.env.API,
+      process.env.TRPC,
       trpcExpress.createExpressMiddleware({ router: this.appRouter }),
     );
   }
