@@ -4,20 +4,28 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "db:generate": "pnpm --filter server db:generate",
+    "db:push": "pnpm --filter server db:push",
     "dev": "pnpm run --parallel dev",
+    "build": "pnpm run --parallel build",
+    "start": "pnpm run --parallel start",
     "build:server": "pnpm --filter server build",
     "build:client": "pnpm --filter client build",
+    "build:admin": "pnpm --filter admin build",
     "start:server": "pnpm --filter server start:prod",
     "start:client": "pnpm --filter client start",
+    "start:admin": "pnpm --filter admin start",
     "lint": "pnpm --parallel lint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "preinstall": "npx only-allow pnpm"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@commitlint/cli": "^18.2.0",
-    "@commitlint/config-conventional": "^18.1.0",
+    "@commitlint/cli": "^18.4.2",
+    "@commitlint/config-conventional": "^18.4.2",
     "husky": "^8.0.3"
-  }
+  },
+  "packageManager": "pnpm@8.9.0"
 }

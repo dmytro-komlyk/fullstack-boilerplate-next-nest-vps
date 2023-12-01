@@ -1,11 +1,14 @@
 import { cookies } from "next/headers";
 import Image from "next/image";
+import Link from "next/link";
 import SignInButton from "./components/SignInButton";
 import ThemeToggle from "./components/ThemeToggle";
-import { trpc } from "./trpc";
+import { trpc } from "./utils/trpc";
+
+export const runtime = "edge";
 
 export default async function Home() {
-  const response = await trpc.by.query({});
+  const data = await trpc.by.query({});
   const cookieStore = cookies();
   const theme = cookieStore.get("theme");
 
@@ -120,8 +123,13 @@ export default async function Home() {
           </p>
         </a>
       </div>
-
-      <div className="text-slate-700 dark:text-slate-200">{response}</div>
+      <Link
+        href="/test"
+        className="flex w-full flex-col justify-between rounded-2xl pb-[23px] pl-[31px] pr-[21px] pt-[33px]  transition-colors delay-75 duration-300 ease-in-out hover:bg-dark-blue md:h-full xl:h-[261px]"
+      >
+        Test
+      </Link>
+      <div className="text-slate-700 dark:text-slate-200">{data}</div>
     </main>
   );
 }
