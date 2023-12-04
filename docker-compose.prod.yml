@@ -1,0 +1,83 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    hostname: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=admin123
+    volumes:
+      - ./apps/database/data:/data/db
+    ports:
+      - 27017:27017
+    networks:
+      - backend
+
+  server:
+    build:
+      context: .
+      dockerfile: ./apps/server/Dockerfile
+    container_name: server
+    restart: unless-stopped
+    env_file: ./apps/server/.env.example
+    environment:
+      - DATABASE_USERNAME=admin
+      - DATABASE_PASSWORD=password
+      - DATABASE_HOST=mongo
+      - DATABASE_PORT=27017
+      - DATABASE_NAME=test
+      - JWT_SECRET_KEY=D8SMS/R3OqLFBUMnFm5I1pxTEhWfosowjF4Z26SQ0tr5vU34uQDZRyx5GIOyxAB6TCBidbLm0RDnllNlMgEohQ==
+      - JWT_REFRESH_TOKEN_KEY=hvXN5u0oHuqYJ6OSndgBbu4ASPqtb6R/nWR7UOhZQhO+uh+jz2MabQOLtt3CGjgnEquyQQpHnusKmbeYp+6Xjg==
+    # volumes:
+    #   - ../apps/server/public/:/app/server/public
+    ports:
+      - 3000:3000
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      - mongo
+    links:
+      - mongo
+
+  admin:
+    build:
+      context: .
+      dockerfile: ./apps/admin/Dockerfile
+    container_name: admin
+    restart: unless-stopped
+    env_file: ./apps/admin/.env.example
+    stdin_open: true
+    tty: true
+    environment:
+      - NEXTAUTH_SECRET=2ZUGynUwR1bBn/+X/kIYhWrP1nXdlRMTEcQadR5j0+Y=
+      - GOOGLE_CLIENT_ID=516694123272-8rfprab6259kl5dv2hlost04nnikbb59.apps.googleusercontent.com
+      - GOOGLE_CLIENT_SECRET=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
+    ports:
+      - "3002:3002"
+    networks:
+      - frontend
+
+  client:
+    build:
+      context: .
+      dockerfile: ./apps/client/Dockerfile
+    container_name: client
+    restart: unless-stopped
+    env_file: ./client/.env.example
+    # environment:
+    ports:
+      - "3001:3001"
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes:
+  database:
+    driver: local
