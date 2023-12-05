@@ -6,18 +6,6 @@ const nextConfig = {
     config.experiments = { ...config.experiments, topLevelAwait: true };
     return config;
   },
-  // webpack: (config) => {
-  //   config.resolve.alias.https = "https-browserify";
-  //   config.resolve.alias.http = "http-browserify";
-
-  //   config.resolve.fallback = {
-  //     querystring: "querystring-es3",
-  //     crypto: false,
-  //     stream: false,
-  //   };
-
-  //   return config;
-  // },
   env: {
     NEXT_PUBLIC_BASE_URL: `${process.env.NEXT_PUBLIC_BASE_URL}`,
     NEXT_PUBLIC_SERVER: `${process.env.NEXT_PUBLIC_SERVER}`,
