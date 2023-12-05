@@ -8,7 +8,7 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { FaUserAlt } from "react-icons/fa";
 import { HiMail } from "react-icons/hi";
 import * as Yup from "yup";
-import { Api, Backend_URL } from "../lib/constants";
+import { Api, Backend_URL } from "../(lib)/constants";
 
 const RegisterForm = () => {
   const router = useRouter();

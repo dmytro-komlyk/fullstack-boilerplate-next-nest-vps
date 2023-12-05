@@ -1,4 +1,4 @@
-import { handlers } from "@admin/app/utils/authOptions";
+import { handlers } from "@admin/app/(utils)/authOptions";
 import type { NextRequest } from "next/server";
 
 const { GET: AuthGET, POST } = handlers;

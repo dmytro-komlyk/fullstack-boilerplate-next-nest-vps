@@ -10,7 +10,6 @@ export function Providers({
 }: React.PropsWithChildren<{ session: Session | null }>) {
   return (
     <NextUIProvider>
-      {/* {children} */}
       <SessionProvider session={session}>{children}</SessionProvider>
     </NextUIProvider>
   );

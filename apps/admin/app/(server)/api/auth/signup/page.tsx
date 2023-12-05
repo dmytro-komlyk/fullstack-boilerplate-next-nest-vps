@@ -1,17 +1,17 @@
-import LoginForm from "@admin/app/components/LoginForm";
+import RegisterForm from "@admin/app/(components)/RegisterForm";
 import Link from "next/link";
 
-export default async function SignIn() {
+export default async function SignUp() {
   return (
     <div className="flex-col py-4">
-      <LoginForm />
+      <RegisterForm />
       <div className="flex justify-center gap-2 text-slate-600">
-        Don`t have an account?
+        Already have an account?
         <Link
-          href={"/api/auth/signup"}
+          href={"/api/auth/signin"}
           className="text-green-600 hover:text-blue-600"
         >
-          Sign Up
+          Sign In
         </Link>
       </div>
     </div>

@@ -1,8 +1,6 @@
-import { trpc } from "@admin/app/utils/trpc";
+import { trpc } from "@admin/app/(utils)/trpc";
 
-export const runtime = "edge";
-
-export default async function Test() {
+export default async function Dashboard() {
   const response = await trpc.by.query({});
   return (
     <main>

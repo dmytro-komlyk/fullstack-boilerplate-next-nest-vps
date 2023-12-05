@@ -1,5 +1,5 @@
 import Image from "next/image";
-import BackHomeButton from "../../components/BackHomeButton";
+import BackHomeButton from "../../../(components)/BackHomeButton";
 
 export default function AuthLayout({
   children, // will be a page or nested layout

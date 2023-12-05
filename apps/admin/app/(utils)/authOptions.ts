@@ -3,7 +3,7 @@ import {
   Backend_URL,
   Google_Auth_ID,
   Google_Auth_SECRET,
-} from "@admin/app/lib/constants";
+} from "@admin/app/(lib)/constants";
 import NextAuth, { AuthOptions, Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";

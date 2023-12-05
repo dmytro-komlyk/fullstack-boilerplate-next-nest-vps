@@ -1,7 +1,7 @@
 import type { AppRouter } from "@server/trpc/trpc.router";
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
 import { tap } from "@trpc/server/observable";
-import { Backend_URL, Trpc } from "../lib/constants";
+import { Backend_URL, Trpc } from "../(lib)/constants";
 
 const url = Backend_URL + Trpc;
 
