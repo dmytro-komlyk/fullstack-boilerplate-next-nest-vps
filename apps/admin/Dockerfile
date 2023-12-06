@@ -42,7 +42,7 @@ WORKDIR /app/${PACKAGE_NAME}
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder --chown=nextjs:nodejs /app/${PACKAGE_NAME}/.next/standalone/apps/admin ./
+COPY --from=builder --chown=nextjs:nodejs /app/${PACKAGE_NAME}/.next/standalone/${SERVICE_PATH} ./
 COPY --from=builder --chown=nextjs:nodejs /app/${PACKAGE_NAME}/.next/static ./.next/static
 
 USER nextjs
