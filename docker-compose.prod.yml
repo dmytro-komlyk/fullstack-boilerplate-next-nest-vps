@@ -5,8 +5,8 @@ services:
     container_name: mongo
     hostname: mongo
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=admin123
+      - MONGO_INITDB_ROOT_USERNAME=
+      - MONGO_INITDB_ROOT_PASSWORD=
     volumes:
       - ./apps/database/data:/data/db
     ports:
@@ -22,13 +22,11 @@ services:
     restart: unless-stopped
     env_file: ./apps/server/.env.example
     environment:
-      - DATABASE_USERNAME=admin
-      - DATABASE_PASSWORD=password
-      - DATABASE_HOST=mongo
-      - DATABASE_PORT=27017
-      - DATABASE_NAME=test
-      - JWT_SECRET_KEY=D8SMS/R3OqLFBUMnFm5I1pxTEhWfosowjF4Z26SQ0tr5vU34uQDZRyx5GIOyxAB6TCBidbLm0RDnllNlMgEohQ==
-      - JWT_REFRESH_TOKEN_KEY=hvXN5u0oHuqYJ6OSndgBbu4ASPqtb6R/nWR7UOhZQhO+uh+jz2MabQOLtt3CGjgnEquyQQpHnusKmbeYp+6Xjg==
+      - DATABASE_USERNAME=
+      - DATABASE_PASSWORD=
+      - DATABASE_NAME=
+      - JWT_SECRET_KEY=
+      - JWT_REFRESH_TOKEN_KEY=
     # volumes:
     #   - ../apps/server/public/:/app/server/public
     ports:
@@ -51,9 +49,9 @@ services:
     stdin_open: true
     tty: true
     environment:
-      - NEXTAUTH_SECRET=2ZUGynUwR1bBn/+X/kIYhWrP1nXdlRMTEcQadR5j0+Y=
-      - GOOGLE_CLIENT_ID=516694123272-8rfprab6259kl5dv2hlost04nnikbb59.apps.googleusercontent.com
-      - GOOGLE_CLIENT_SECRET=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
+      - NEXTAUTH_SECRET=
+      - GOOGLE_CLIENT_ID=
+      - GOOGLE_CLIENT_SECRET=
     ports:
       - "3002:3002"
     networks:
@@ -65,7 +63,7 @@ services:
       dockerfile: ./apps/client/Dockerfile
     container_name: client
     restart: unless-stopped
-    env_file: ./client/.env.example
+    env_file: ./apps/client/.env.example
     # environment:
     ports:
       - "3001:3001"
