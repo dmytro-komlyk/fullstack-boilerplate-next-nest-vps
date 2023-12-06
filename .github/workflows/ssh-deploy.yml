@@ -1,0 +1,51 @@
+name: CI/CD Deploy Pipeline # The name of the workflow
+
+on:
+  pull_request:
+    types:
+      - closed
+  workflow_dispatch:
+
+env:
+  BRANCH: development
+  PROJECT_SSH_FOLDER: boilerplate
+  REGISTRY: ghcr.io
+  PROD_NAME: prod-nextjs-nestjs-boilerplate
+  LABEL_SERVER: backend
+  LABEL_CLIENT: frontend-client
+  LABEL_ADMIN: frontend-admin
+
+jobs:
+  deploy:
+    name: "Publish Application"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Run deploy on SSH"
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == ${{ env.BRANCH_NAME }}
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            cd ${{ env.PROJECT_SSH_FOLDER_NAME }}
+            echo ${{ secrets.REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+            if [[ "${{ contains(github.event.pull_request.labels.*.name, env.LABEL_SERVER) }}" == "true" ]]; then
+                docker rm $(docker stop $(docker ps -a -q --filter ancestor=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-server:latest ))
+                docker rmi ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-server:latest
+            fi
+
+            if [[ "${{ contains(github.event.pull_request.labels.*.name, env.LABEL_CLIENT) }}" == "true" ]]; then
+                docker rm $(docker stop $(docker ps -a -q --filter ancestor=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-client:latest ))
+                docker rmi ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-client:latest
+            fi
+
+            if [[ "${{ contains(github.event.pull_request.labels.*.name, env.LABEL_ADMIN) }}" == "true" ]]; then
+                docker rm $(docker stop $(docker ps -a -q --filter ancestor=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-admin:latest ))
+                docker rmi ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-admin:latest
+            fi
+
+            docker compose -f docker-compose.prod-ci.yml -p ${{ env.PROD_NAME }} pull
+            docker compose -f docker-compose.prod-ci.yml -p ${{ env.PROD_NAME }} up -d
