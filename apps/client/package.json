@@ -12,8 +12,11 @@
     "@nextui-org/react": "^2.1.13",
     "@nextui-org/system": "^2.0.10",
     "@nextui-org/theme": "^2.1.9",
+    "clsx": "^2.0.0",
     "framer-motion": "^10.16.4",
+    "i18next": "^23.7.7",
     "next": "14.0.1",
+    "next-intl": "^3.2.5",
     "react": "^18",
     "react-dom": "^18"
   },
