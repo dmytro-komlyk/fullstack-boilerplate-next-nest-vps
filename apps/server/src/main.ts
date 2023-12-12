@@ -5,7 +5,7 @@ import { TrpcRouter } from './trpc/trpc.router';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix(process.env.API || '/api');
+  // app.setGlobalPrefix(process.env.API || '/api');
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
@@ -18,6 +18,6 @@ async function bootstrap() {
   const trpc = app.get(TrpcRouter);
   trpc.applyMiddleware(app);
 
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(process.env.APP_PORT || 3000);
 }
 bootstrap();

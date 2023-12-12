@@ -16,6 +16,11 @@ model User {
   email         String?   @unique
   password      String?
 }
+
+model Text {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  text          String
+}
 // model Account {
 //   id                 String  @id @default(auto()) @map("_id") @db.ObjectId
 //   user_id            String  @db.ObjectId
