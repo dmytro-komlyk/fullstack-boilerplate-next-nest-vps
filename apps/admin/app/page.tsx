@@ -1,11 +1,17 @@
 import { cookies } from "next/headers";
+
 import Image from "next/image";
+import EditTextForm from "./(components)/EditForm";
 import SignInButton from "./(components)/SignInButton";
 import ThemeToggle from "./(components)/ThemeToggle";
-import { trpc } from "./(utils)/trpc";
+import { serverClient } from "./(utils)/trpc/serverClient";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const data = await trpc.by.query({});
+  const exampleTrpcData = await serverClient.getExampleTrpc({
+    id: "65731bc5fce8c87e24fd4361",
+  });
   const cookieStore = cookies();
   const theme = cookieStore.get("theme");
 
@@ -120,7 +126,9 @@ export default async function Home() {
           </p>
         </a>
       </div>
-      <div className="text-slate-700 dark:text-slate-200">{data}</div>
+      <div className="text-slate-700 dark:text-slate-200">
+        <EditTextForm initialText={exampleTrpcData} />
+      </div>
     </main>
   );
 }
