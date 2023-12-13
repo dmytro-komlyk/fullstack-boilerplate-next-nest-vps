@@ -5,12 +5,19 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import LocaleSwitcher from "../(components)/LocaleSwitcher";
 import ThemeToggle from "../(components)/ThemeToggle";
+import TrpcExample from "../(components)/TrpcExample";
+import { serverClient } from "../(utils)/trpc/serverClient";
 
 type Props = {
   params: { locale: string };
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function Home({ params: { locale } }: Props) {
+  const exampleTrpcData = await serverClient.getExampleTrpc({
+    id: "65731bc5fce8c87e24fd4361",
+  });
   const cookieStore = cookies();
   const theme = cookieStore.get("theme");
   const t = await getTranslations("IndexPage");
@@ -141,6 +148,10 @@ export default async function Home({ params: { locale } }: Props) {
             Instantly deploy your Next.js site to a shareable URL with Vercel.
           </p>
         </a>
+      </div>
+
+      <div className="text-slate-700 dark:text-slate-200">
+        <TrpcExample initialText={exampleTrpcData} />
       </div>
     </main>
   );
