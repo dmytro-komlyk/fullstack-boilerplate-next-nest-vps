@@ -63,7 +63,7 @@ export class TrpcRouter {
     {
       title: 'tRPC OpenAPI',
       version: '1.0.0',
-      baseUrl: process.env.BASE_URL as string,
+      baseUrl: process.env.APP_BASE_URL as string,
     },
   );
 
