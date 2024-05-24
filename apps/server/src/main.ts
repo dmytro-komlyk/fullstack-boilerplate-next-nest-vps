@@ -1,7 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { TrpcRouter } from './trpc/trpc.router';
+import { AppModule } from './domain/app.module';
+import { TrpcRouter } from './domain/trpc/trpc.router';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

@@ -17,7 +17,7 @@ model User {
   password      String?
 }
 
-model Text {
+model Example {
   id            String  @id @default(auto()) @map("_id") @db.ObjectId
   text          String
 }

@@ -8,13 +8,14 @@
   "scripts": {
     "db:generate": "pnpx prisma generate",
     "db:push": "pnpx prisma db push",
+    "db:seed": "pnpx prisma db seed",
     "studio": "pnpx prisma studio",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "dev": "cross-env nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -42,6 +43,9 @@
     "swagger-ui-express": "^5.0.0",
     "trpc-openapi": "^1.2.0",
     "zod": "^3.22.4"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

@@ -9,9 +9,7 @@ import { serverClient } from "./(utils)/trpc/serverClient";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const exampleTrpcData = await serverClient.getExampleTrpc({
-    id: "65731bc5fce8c87e24fd4361",
-  });
+  const exampleTrpcData = await serverClient.example.getAll();
   const cookieStore = cookies();
   const theme = cookieStore.get("theme");
 
@@ -127,7 +125,7 @@ export default async function Home() {
         </a>
       </div>
       <div className="text-slate-700 dark:text-slate-200">
-        <EditTextForm initialText={exampleTrpcData} />
+        <EditTextForm initialText={exampleTrpcData[0]} />
       </div>
     </main>
   );

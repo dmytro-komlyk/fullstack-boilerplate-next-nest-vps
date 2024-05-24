@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p $(grep PORT .env | cut -d '=' -f2)",
+    "dev": "next dev -p $(grep APP_PORT .env | cut -d '=' -f2)",
     "build": "next build",
-    "start": "next start -p $(grep PORT .env | cut -d '=' -f2)",
+    "start": "next start -p $(grep APP_PORT .env | cut -d '=' -f2)",
     "start:standalone": "node .next/standalone/apps/admin/server.js",
     "lint": "next lint"
   },

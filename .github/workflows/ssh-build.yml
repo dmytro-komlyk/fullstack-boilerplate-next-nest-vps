@@ -9,6 +9,9 @@ on:
 env:
   REGISTRY: ghcr.io
   PROD_NAME: prod-nextjs-nestjs-boilerplate
+  APP_DOMAIN: ${{ vars.APP_DOMAIN }}
+  ADMIN_DOMAIN: ${{ vars.ADMIN_DOMAIN }}
+  SERVER_DOMAIN: ${{ vars.SERVER_DOMAIN }}
 
 jobs:
   build:
@@ -29,7 +32,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.REGISTRY_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Build Server"
         if: contains(github.event.pull_request.labels.*.name, 'backend')
@@ -37,11 +40,13 @@ jobs:
         with:
           target: production
           file: ./apps/server/Dockerfile
-          secrets: |
-
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-server:latest
+          build-args: |
+            BUILD_MODE=prod
+            SERVER_DOMAIN=${{ env.SERVER_DOMAIN }}
+            ADMIN_DOMAIN=${{ env.ADMIN_DOMAIN }}
 
       - name: "Build Client"
         if: contains(github.event.pull_request.labels.*.name, 'frontend-client')
@@ -52,6 +57,10 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-client:latest
+          build-args: |
+            BUILD_MODE=prod
+            SERVER_DOMAIN=${{ env.SERVER_DOMAIN }}
+            APP_DOMAIN=${{ env.APP_DOMAIN }}
 
       - name: "Build Admin"
         if: contains(github.event.pull_request.labels.*.name, 'frontend-admin')
@@ -62,3 +71,7 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-admin:latest
+          build-args: |
+            BUILD_MODE=prod
+            SERVER_DOMAIN=${{ env.SERVER_DOMAIN }}
+            ADMIN_DOMAIN=${{ env.ADMIN_DOMAIN }}

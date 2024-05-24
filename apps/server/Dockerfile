@@ -30,23 +30,38 @@ COPY ${SERVICE_PATH}/.env.example ./${SERVICE_PATH}/.env
 ENV NODE_ENV production
 
 RUN pnpm db:generate
-# RUN pnpm db:push
 RUN pnpm build:server
 RUN pnpm deploy --filter=server --prod /app/server
 
 FROM base as runner
-COPY --chown=node:node --from=builder /app/server /app/server
-WORKDIR /app/server
+COPY --chown=node:node --from=builder /app/${PACKAGE_NAME} /app/${SERVICE_PATH}
 
-RUN pnpm db:generate
-# # Don't run production as root
+WORKDIR /app
+COPY tsconfig.json ./tsconfig.json
 
+WORKDIR /app/${SERVICE_PATH}
 USER node
+COPY ${SERVICE_PATH}/.env.example /app/${SERVICE_PATH}/.env
+COPY ${SERVICE_PATH}/entrypoint.sh /app/${SERVICE_PATH}/entrypoint.sh
+
+# RUN chmod +x /app/${SERVICE_PATH}/entrypoint.sh
 
 ENV NODE_ENV=production
 ENV PORT 3000
 ENV HOSTNAME 0.0.0.0
-
 EXPOSE 3000
+ENTRYPOINT [`/app/${SERVICE_PATH}/entrypoint.sh`]
+# CMD [ "pnpm", "start:prod" ]
 
-CMD ["pnpm", "start:prod"]
+FROM base as prisma-runner
+COPY --chown=node:node --from=runner /app/${SERVICE_PATH} /app/apps/prisma
+WORKDIR /app/apps/prisma
+
+USER node
+
+ENV PORT 5555
+ENV HOSTNAME 0.0.0.0
+
+EXPOSE 5555
+
+CMD ["pnpm", "studio"]

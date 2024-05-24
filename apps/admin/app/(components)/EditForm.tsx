@@ -11,16 +11,13 @@ import { serverClient } from "../(utils)/trpc/serverClient";
 const EditTextForm = ({
   initialText,
 }: {
-  initialText: Awaited<ReturnType<(typeof serverClient)["getExampleTrpc"]>>;
+  initialText: Awaited<ReturnType<(typeof serverClient)["example"]["getById"]>>;
 }) => {
-  const getExampleTrpc = trpc.getExampleTrpc.useQuery(
-    { id: "65731bc5fce8c87e24fd4361" },
-    {
-      initialData: initialText,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-    }
-  );
+  const getExampleTrpc = trpc.example.getById.useQuery(initialText.id, {
+    initialData: initialText,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
 
   const [isEdit, setEdit] = useState(false);
   const onEditText = () => setEdit(true);
@@ -30,7 +27,7 @@ const EditTextForm = ({
     cancelEditText();
   };
 
-  const editBy = trpc.editExampleTrpc.useMutation({
+  const editBy = trpc.example.update.useMutation({
     onSettled: () => {
       getExampleTrpc.refetch();
     },
@@ -46,7 +43,7 @@ const EditTextForm = ({
       })}
       onSubmit={async (values, { setSubmitting }) => {
         setSubmitting(true);
-        editBy.mutate({ id: "65731bc5fce8c87e24fd4361", ...values });
+        editBy.mutate(values);
         handleCancelEdit();
         setSubmitting(false);
       }}
