@@ -1,13 +1,8 @@
-"use client";
+'use client';
 
-import { trpc } from "../(utils)/trpc/client";
-import { serverClient } from "../(utils)/trpc/serverClient";
+import { trpc } from '../(utils)/trpc/client';
 
-const TrpcExample = ({
-  initialText,
-}: {
-  initialText: Awaited<ReturnType<(typeof serverClient)["example"]["getById"]>>;
-}) => {
+const TrpcExample = ({ initialText }: { initialText: any }) => {
   const getExampleTrpc = trpc.example.getById.useQuery(initialText.id, {
     initialData: initialText,
     refetchOnMount: false,

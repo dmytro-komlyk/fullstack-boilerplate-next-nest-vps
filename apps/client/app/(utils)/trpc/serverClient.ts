@@ -1,14 +1,9 @@
-import { appRouter } from "@server/domain/trpc/trpc.router";
-import { httpBatchLink } from "@trpc/client";
+import {
+  appRouter,
+  createCallerFactory,
+} from '@server/domain/trpc/trpc.router';
 
-import { Backend_URL, Trpc } from "../../(lib)/constants";
-
-const url = Backend_URL + Trpc;
-
-export const serverClient = appRouter.createCaller({
-  links: [
-    httpBatchLink({
-      url,
-    }),
-  ],
+const createCaller = createCallerFactory(appRouter);
+export const serverClient = createCaller({
+  user: null,
 });

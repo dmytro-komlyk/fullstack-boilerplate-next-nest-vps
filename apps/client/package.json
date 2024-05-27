@@ -2,10 +2,12 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+  "description": "Client based on Next.js, tRPC, etc",
   "scripts": {
-    "dev": "next dev -p $(grep APP_PORT .env | cut -d '=' -f2)",
+    "dev": "cross-env next dev -p $(grep APP_PORT .env.local | cut -d '=' -f2)",
     "build": "next build",
-    "start": "next start -p $(grep APP_PORT .env | cut -d '=' -f2)",
+    "start": "next start -p $(grep APP_PORT .env.local | cut -d '=' -f2)",
+    "start:prod": "node server.js",
     "lint": "eslint .",
     "lint:fix": "pnpm lint --fix"
   },
