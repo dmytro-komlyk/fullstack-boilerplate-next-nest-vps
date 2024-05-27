@@ -24,10 +24,10 @@ jobs:
         if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == ${{ env.BRANCH_NAME }}
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ vars.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          port: ${{ vars.SERVER_PORT }}
+          host: ${{ vars.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ vars.SSH_PORT }}
           script: |
             cd ${{ env.PROJECT_SSH_FOLDER_NAME }}
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
