@@ -22,10 +22,6 @@ RUN turbo prune --scope=${APP_NAME} --docker
 # Build the project
 FROM base AS builder
 ARG APP_NAME=client
-ARG BUILD_MODE=local
-ARG APP_DOMAIN
-ARG SERVER_DOMAIN
-
 
 WORKDIR /app
 
@@ -38,6 +34,10 @@ COPY --from=pruner /app/tsconfig.json ./tsconfig.json
 
 # First install the dependencies (as they change less often)
 RUN pnpm install
+
+ARG BUILD_MODE=local
+ARG APP_DOMAIN
+ARG SERVER_DOMAIN
 
 ENV APP_DOMAIN=$APP_DOMAIN
 ENV SERVER_DOMAIN=$SERVER_DOMAIN
