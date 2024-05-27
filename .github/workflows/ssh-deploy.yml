@@ -7,20 +7,20 @@ on:
   workflow_dispatch:
 
 env:
-  BRANCH: development
-  PROJECT_SSH_FOLDER: boilerplate
+  BRANCH: ${{ vars.BRANCH_DEPLOYMENT }}
+  PROJECT_SSH_FOLDER: ${{ vars.SSH_FOLDER }}
   REGISTRY: ghcr.io
-  PROD_NAME: prod-nextjs-nestjs-boilerplate
+  PROD_NAME: ${{ vars.PROD_NAME }}
   LABEL_SERVER: backend
   LABEL_CLIENT: frontend-client
   LABEL_ADMIN: frontend-admin
 
 jobs:
   deploy:
-    name: "Publish Application"
+    name: 'Publish Application'
     runs-on: ubuntu-latest
     steps:
-      - name: "Run deploy on SSH"
+      - name: 'Run deploy on SSH'
         if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == ${{ env.BRANCH_NAME }}
         uses: appleboy/ssh-action@v1.0.0
         with:
