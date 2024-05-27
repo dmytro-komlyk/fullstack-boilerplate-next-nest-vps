@@ -17,14 +17,12 @@ export class ExampleRouter {
     getAll: this.trpc.procedure.query(async () => {
       return await this.exampleService.findAll();
     }),
-    getById: this.trpc.procedure
-      .input(z.string())
-      .query(async ({ input }: any) => {
-        return await this.exampleService.findById(input);
-      }),
+    getById: this.trpc.procedure.input(z.string()).query(async ({ input }) => {
+      return await this.exampleService.findById(input);
+    }),
     update: this.trpc.procedure
       .input(updateExampleSchema)
-      .mutation(async ({ input }: any) => {
+      .mutation(async ({ input }) => {
         return await this.exampleService.update(input);
       }),
   });

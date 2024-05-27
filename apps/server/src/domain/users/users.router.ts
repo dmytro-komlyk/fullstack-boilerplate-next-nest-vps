@@ -23,7 +23,7 @@ export class UserRouter {
       })
       .input(z.object({ id: z.string() }))
       .output(outputUserSchema)
-      .query(async ({ input }: any) => {
+      .query(async ({ input }) => {
         return await this.usersService.findById(input.id);
       }),
     getByEmailUser: this.trpc.protectedProcedure

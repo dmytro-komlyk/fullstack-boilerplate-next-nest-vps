@@ -15,10 +15,6 @@ export class ExampleService {
   }
 
   public async findById(id: string): Promise<Example> {
-    // if () {
-    //   throw new NotFoundException(`Incorrect ID - ${id}`);
-    // }
-
     const example = await this.prisma.example.findUnique({
       where: { id },
     });
