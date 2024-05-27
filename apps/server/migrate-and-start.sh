@@ -4,7 +4,7 @@
 pnpx prisma generate
 
 # Run database migrations
-pnpx prisma db seed
+pnpx prisma db push
 
 # Run the main container command
-exec "$@"
+node dist/main.js

@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '@server/domain/prisma/prisma.service';
-import { UserService } from '@server/domain/user/user.service';
-import { AuthController } from './auth.controller';
+import { PrismaModule } from '../prisma/prisma.module';
+import { TrpcService } from '../trpc/trpc.service';
+import { UserService } from '../users/users.service';
+import { AuthRouter } from './auth.router';
 import { AuthService } from './auth.service';
 
 @Module({
-  controllers: [AuthController],
-  providers: [AuthService, UserService, PrismaService, JwtService],
+  imports: [PrismaModule],
+  providers: [AuthService, AuthRouter, UserService, TrpcService],
+  exports: [AuthService],
 })
 export class AuthModule {}
