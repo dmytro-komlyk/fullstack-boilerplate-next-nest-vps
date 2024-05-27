@@ -1,0 +1,128 @@
+version: '3.8'
+services:
+  mongo:
+    build:
+      target: mongo
+      dockerfile: ./database/Dockerfile
+      args:
+        MONGO_VERSION: 6
+    container_name: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME= #USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD= #PASSWORD
+      - MONGO_INITDB_DATABASE= #DATABASE
+      - MONGO_REPLICA_HOST=mongo
+      - MONGO_REPLICA_PORT=27017
+      - MONGO_COMMAND=mongosh
+      - INIT_REPL_CMD=3
+    volumes:
+      - ./database/data:/data/db
+      - ./database/conf/mongod.conf.orig:/etc/mongod.conf
+    ports:
+      - 27017:27017
+    networks:
+      - backend
+    restart: always
+    healthcheck:
+      # Use "mongo" instead of "mongosh" before v5.0
+      test:
+        [
+          'CMD',
+          'mongosh',
+          'admin',
+          '--port',
+          '27017',
+          '--eval',
+          "db.adminCommand('ping').ok",
+        ]
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+
+  mongo-seed:
+    build:
+      context: .
+      target: mongo-seed
+      dockerfile: ./database/Dockerfile
+      args:
+        MONGO_VERSION: 6
+    container_name: mongo-seed
+    networks:
+      - backend
+    depends_on:
+      - mongo
+
+  nginx:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 81:81
+      - 443:443
+    volumes:
+      - ./nginx/data:/data
+      - ./nginx/letsencrypt:/etc/letsencrypt
+    networks:
+      - backend
+
+  server:
+    image: ghcr.io/dmytro-komlyk/nextjs-nestjs-boilerplate-server:latest
+    container_name: server
+    restart: unless-stopped
+    env_file: ./server/.env.docker.prod
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./server/public/:/app/server/public
+      - shared-prisma:/app/apps/server/prisma
+    ports:
+      - 3000:3000
+    networks:
+      - backend
+    depends_on:
+      - mongo
+    links:
+      - mongo
+
+  admin:
+    image: ghcr.io/dmytro-komlyk/nextjs-nestjs-boilerplate-admin:latest
+    container_name: admin
+    restart: unless-stopped
+    env_file: ./admin/.env.docker.prod
+    stdin_open: true
+    tty: true
+    environment:
+      - NODE_ENV=production
+    ports:
+      - 3002:3002
+    networks:
+      - client
+      - backend
+
+  client:
+    image: ghcr.io/dmytro-komlyk/nextjs-nestjs-boilerplate-client:latest
+    container_name: client
+    restart: unless-stopped
+    env_file: ./client/.env.docker.prod
+    stdin_open: true
+    tty: true
+    environment:
+      - NODE_ENV=production
+    ports:
+      - 3001:3001
+    networks:
+      - client
+      - backend
+
+networks:
+  client:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes:
+  database:
+    driver: local
+  shared-prisma:

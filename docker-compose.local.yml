@@ -1,0 +1,166 @@
+version: '3.8'
+services:
+  mongo:
+    build:
+      target: mongo
+      dockerfile: ./apps/database/Dockerfile
+      args:
+        MONGO_VERSION: 6
+    container_name: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME= #USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD= #PASSWORD
+      - MONGO_INITDB_DATABASE= #DATABASE
+      - MONGO_REPLICA_HOST=mongo
+      - MONGO_REPLICA_PORT=27018
+      - MONGO_COMMAND=mongosh
+      - INIT_REPL_CMD=3
+    volumes:
+      - ./apps/database/data:/data/db
+      - ./apps/database/conf/mongod.conf.orig:/etc/mongod.conf
+    ports:
+      - 27018:27018
+    networks:
+      - backend
+    restart: always
+    healthcheck:
+      # Use "mongo" instead of "mongosh" before v5.0
+      test:
+        [
+          'CMD',
+          'mongosh',
+          'admin',
+          '--port',
+          '27018',
+          '--eval',
+          "db.adminCommand('ping').ok",
+        ]
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+
+  mongo-seed:
+    build:
+      context: .
+      target: mongo-seed
+      dockerfile: ./apps/database/Dockerfile
+      args:
+        MONGO_VERSION: 6
+        SERVICE_PATH: apps/database
+    container_name: mongo-seed
+    networks:
+      - backend
+    depends_on:
+      - mongo
+
+  server:
+    build:
+      context: .
+      target: runner
+      dockerfile: ./apps/server/Dockerfile
+      args:
+        BUILD_MODE: local
+    container_name: server
+    restart: unless-stopped
+    env_file: ./apps/server/.env.docker.local
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./apps/server/public:/app/apps/server/public
+      - /app/node_modules
+      - /app/apps/server/node_modules
+      - shared-prisma:/app/apps/server/prisma
+    ports:
+      - 3000:3000
+    networks:
+      - backend
+    depends_on:
+      - mongo
+    links:
+      - mongo
+
+  prisma-studio:
+    build:
+      context: .
+      target: prisma-runner
+      dockerfile: ./apps/server/Dockerfile
+    container_name: prisma-studio
+    restart: unless-stopped
+    env_file: ./apps/server/.env.docker.local
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - /app/node_modules
+      - /app/apps/server/node_modules
+      - shared-prisma:/app/apps/server/prisma
+    ports:
+      - 5555:5555
+    networks:
+      - backend
+    depends_on:
+      - mongo
+    links:
+      - mongo
+
+  admin:
+    build:
+      context: .
+      target: runner
+      dockerfile: ./apps/admin/Dockerfile
+      args:
+        DATABASE_URL: #Add URL
+        BUILD_MODE: local
+    container_name: admin
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    env_file: ./apps/admin/.env.docker.local
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./apps/admin/public:/app/apps/admin/public
+      - /app/node_modules
+      - /app/apps/admin/node_modules
+    ports:
+      - 3002:3002
+    networks:
+      - client
+      - backend
+
+  client:
+    build:
+      context: .
+      target: runner
+      dockerfile: ./apps/client/Dockerfile
+      args:
+        DATABASE_URL: #Add URL
+        BUILD_MODE: local
+    container_name: client
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    env_file: ./apps/client/.env.docker.local
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./apps/client/public:/app/apps/client/public
+      - /app/node_modules
+      - /app/apps/client/node_modules
+    ports:
+      - 3001:3001
+    networks:
+      - client
+      - backend
+
+networks:
+  client:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes:
+  database:
+    driver: local
+  shared-prisma:
