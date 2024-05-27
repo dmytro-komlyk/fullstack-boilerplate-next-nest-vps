@@ -1,5 +1,6 @@
-import Image from "next/image";
-import BackHomeButton from "../../../(components)/BackHomeButton";
+import Image from 'next/image';
+
+import BackHomeButton from '../../(components)/BackHomeButton';
 
 export default function AuthLayout({
   children, // will be a page or nested layout
@@ -7,8 +8,8 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="h-screen w-screen bg-slate-200 dark:bg-slate-700 py-10 text-sm font-medium">
-      <div className="container flex gap-14 flex-col my-0 mx-auto items-center">
+    <main className="h-screen w-screen bg-slate-200 py-10 text-sm font-medium dark:bg-slate-700">
+      <div className="container mx-auto my-0 flex flex-col items-center gap-14">
         <div className="w-full">
           <BackHomeButton />
         </div>
@@ -25,7 +26,7 @@ export default function AuthLayout({
             NextAuth.js
           </h1>
         </div>
-        <div className="w-full max-w-sm rounded-lg bg-slate-700/30 dark:bg-slate-200 shadow">
+        <div className="w-full max-w-sm rounded-lg bg-slate-700/30 shadow dark:bg-slate-200">
           {children}
         </div>
       </div>

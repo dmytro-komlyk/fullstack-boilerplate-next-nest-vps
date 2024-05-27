@@ -1,3 +1,4 @@
 node_modules
 .next
-Dockerfile
+.env.local
+.env.docker.local

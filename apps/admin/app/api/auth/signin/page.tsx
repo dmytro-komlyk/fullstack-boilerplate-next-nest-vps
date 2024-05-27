@@ -1,5 +1,5 @@
-import LoginForm from "@admin/app/(components)/LoginForm";
-import Link from "next/link";
+import LoginForm from '@admin/app/(components)/LoginForm';
+import Link from 'next/link';
 
 export default async function SignIn() {
   return (
@@ -8,7 +8,7 @@ export default async function SignIn() {
       <div className="flex justify-center gap-2 text-slate-600">
         Don`t have an account?
         <Link
-          href={"/api/auth/signup"}
+          href="/api/auth/signup"
           className="text-green-600 hover:text-blue-600"
         >
           Sign Up

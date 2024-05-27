@@ -11,7 +11,8 @@ const nextConfig = {
     NEXT_PUBLIC_SERVER: `${process.env.NEXT_PUBLIC_SERVER}`,
     NEXT_PUBLIC_TRPC_SERVER_URL: `${process.env.NEXT_PUBLIC_TRPC_SERVER_URL}`,
   },
-  output: "standalone",
+  reactStrictMode: true,
+  output: 'standalone',
   experimental: {
     appDir: true,
     serverActions: true,

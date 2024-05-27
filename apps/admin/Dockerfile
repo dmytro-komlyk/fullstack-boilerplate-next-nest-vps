@@ -1,59 +1,89 @@
-ARG NODE_VERSION=20
+ARG NODE_VERSION=18
 
-FROM node:${NODE_VERSION}-alpine as base
+FROM --platform=linux/amd64 node:${NODE_VERSION}-alpine3.17 AS alpine
+RUN apk update
+RUN apk add --no-cache libc6-compat
 
-ARG PACKAGE_NAME=admin
-# ARG PNPM_VERSION=8.9.0
-ARG SERVICE_PATH=apps/admin
-
+FROM alpine as base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
+RUN pnpm install turbo --global
+RUN pnpm config set store-dir ~/.pnpm-store
 
-# RUN --mount=type=cache,id=pnpm-store,target=/root/.pnpm-store \
-#     npm i --global --no-update-notifier --no-fund pnpm@${PNPM_VERSION}
+# Prune project
+FROM base AS pruner
+ARG APP_NAME=admin
 
-FROM base AS dependencies
 WORKDIR /app
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
-COPY ${SERVICE_PATH}/package.json ./${SERVICE_PATH}/package.json
-COPY apps/server/package.json ./apps/server/package.json
-# --mount=type=cache,id=pnpm-store,target=/root/.pnpm-store \
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --filter ${PACKAGE_NAME}
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --filter server
+COPY . .
+RUN turbo prune --scope=${APP_NAME} --docker
+
+# Build the project
 FROM base AS builder
-COPY . /app
-WORKDIR /app
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/${SERVICE_PATH}/node_modules ./${SERVICE_PATH}/node_modules
-COPY --from=dependencies /app/apps/server/node_modules ./apps/server/node_modules
-COPY ${SERVICE_PATH}/.env.example ./${SERVICE_PATH}/.env
+ARG APP_NAME=admin
+ARG BUILD_MODE=local
+ARG APP_DOMAIN
 
+WORKDIR /app
+
+# Copy lockfile and package.json's of isolated subworkspace
+COPY .gitignore .gitignore
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=pruner /app/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/tsconfig.json ./tsconfig.json
+
+# First install the dependencies (as they change less often)
+RUN pnpm install
+
+ENV APP_DOMAIN=$APP_DOMAIN
 ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN pnpm build:${PACKAGE_NAME}
-RUN pnpm deploy --filter=${PACKAGE_NAME} --prod /app/${PACKAGE_NAME}
+COPY apps/${APP_NAME}/.env.docker.${BUILD_MODE}.example ./apps/${APP_NAME}/.env.local
+# Copy source code of isolated subworkspace
+COPY --from=pruner /app/out/full/ .
 
-FROM base as runner
-COPY --from=builder /app/${PACKAGE_NAME} /app/${PACKAGE_NAME}
-WORKDIR /app/${PACKAGE_NAME}
+RUN pnpm db:generate
+RUN turbo build --filter=${APP_NAME}
 
-# # Don't run production as root
+#
+COPY apps/${APP_NAME}/start.sh ./apps/${APP_NAME}/start.sh
+RUN chmod +x /app/apps/${APP_NAME}/start.sh
+
+# Final image
+FROM alpine AS runner
+ARG APP_NAME=admin
+
+WORKDIR /app
+# Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+USER nextjs
 
-COPY --from=builder --chown=nextjs:nodejs /app/${PACKAGE_NAME}/.next/standalone/${SERVICE_PATH} ./
-COPY --from=builder --chown=nextjs:nodejs /app/${PACKAGE_NAME}/.next/static ./.next/static
+COPY --from=builder /app/apps/${APP_NAME}/next.config.js ./apps/${APP_NAME}/next.config.js
+COPY --from=builder /app/apps/${APP_NAME}/package.json ./apps/${APP_NAME}/package.json
+ 
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/static ./apps/${APP_NAME}/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/public ./apps/${APP_NAME}/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/start.sh ./apps/${APP_NAME}/start.sh
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.env.local ./apps/${APP_NAME}/.env.local
+
+WORKDIR /app/apps/${APP_NAME}
+
+ARG DATABASE_URL
+
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV DATABASE_URL=${DATABASE_URL}
 
 USER nextjs
 
-ARG PORT=3002
-ARG HOSTNAME=0.0.0.0
-
-ENV PORT=${PORT}
-ENV HOSTNAME=${HOSTNAME}
-ENV NODE_ENV=production
-
+ENV HOSTNAME 0.0.0.0
+ENV PORT 3002
 EXPOSE 3002
 
-CMD ["node", "server.js"]
+CMD ["./start.sh"]
