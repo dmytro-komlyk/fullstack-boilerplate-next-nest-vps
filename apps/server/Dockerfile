@@ -40,6 +40,11 @@ COPY --from=pruner /app/out/full/ .
 COPY .gitignore .gitignore
 RUN pnpm db:generate
 RUN turbo build --filter=${APP_NAME}
+
+#
+COPY apps/${APP_NAME}/migrate-and-start.sh ./apps/${APP_NAME}/migrate-and-start.sh
+RUN chmod +x /app/apps/${APP_NAME}/migrate-and-start.sh
+
 RUN --mount=type=cache,id=pnpm,target=~/.pnpm-store pnpm prune --prod --no-optional
 RUN rm -rf ./**/*/src
 
@@ -51,7 +56,6 @@ USER node
 
 WORKDIR /app
 COPY --from=builder --chown=node:node /app .
-RUN chmod +x /app/migrate-and-start.sh
 
 WORKDIR /app/apps/${APP_NAME}
 
