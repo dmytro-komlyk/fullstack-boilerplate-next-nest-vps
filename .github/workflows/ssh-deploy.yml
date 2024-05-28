@@ -29,7 +29,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ vars.SSH_PORT }}
           script: |
-            cd ${{ env.PROJECT_SSH_FOLDER_NAME }}
+            cd ${{ env.PROJECT_SSH_FOLDER }}
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
             if [[ "${{ contains(github.event.pull_request.labels.*.name, env.LABEL_SERVER) }}" == "true" ]]; then
