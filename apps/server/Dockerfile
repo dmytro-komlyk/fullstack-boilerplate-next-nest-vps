@@ -51,6 +51,8 @@ USER node
 
 WORKDIR /app
 COPY --from=builder --chown=node:node /app .
+RUN chmod +x /app/migrate-and-start.sh
+
 WORKDIR /app/apps/${APP_NAME}
 
 ARG PORT=3000
