@@ -75,7 +75,9 @@ services:
     environment:
       - NODE_ENV=production
     volumes:
-      - ./server/public/:/app/server/public
+      - ./server/public/:/app/apps/server/public
+      - /app/node_modules
+      - /app/apps/server/node_modules
       - shared-prisma:/app/apps/server/prisma
     ports:
       - 3000:3000
@@ -95,6 +97,9 @@ services:
     tty: true
     environment:
       - NODE_ENV=production
+    volumes:
+      - /app/node_modules
+      - /app/apps/admin/node_modules
     ports:
       - 3002:3002
     networks:
@@ -110,6 +115,9 @@ services:
     tty: true
     environment:
       - NODE_ENV=production
+    volumes:
+      - /app/node_modules
+      - /app/apps/client/node_modules
     ports:
       - 3001:3001
     networks:
