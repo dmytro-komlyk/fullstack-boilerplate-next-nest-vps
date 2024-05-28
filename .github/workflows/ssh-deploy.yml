@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Run deploy on SSH'
-        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == ${{ env.BRANCH_NAME }}
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == ${{ env.BRANCH }}
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ vars.SSH_HOST }}
