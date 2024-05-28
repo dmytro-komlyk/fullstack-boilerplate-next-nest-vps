@@ -10,6 +10,14 @@ const nextConfig = {
 
     return config;
   },
+  env: {
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+    NEXT_PUBLIC_SERVER_URL: process.env.NEXT_PUBLIC_SERVER_URL,
+    NEXT_PUBLIC_SERVER_API_URL: process.env.NEXT_PUBLIC_SERVER_API_URL,
+    NEXT_PUBLIC_DOCKER_SERVICE_URL: process.env.NEXT_PUBLIC_DOCKER_SERVICE_URL,
+    NEXT_PUBLIC_SERVER_TRPC_URL: process.env.NEXT_PUBLIC_SERVER_TRPC_URL,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+  },
   reactStrictMode: true,
   output: 'standalone',
 };
