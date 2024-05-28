@@ -45,7 +45,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-server:latest
           build-args: |
             BUILD_MODE=prod
-            SERVER_DOMAIN=${{ env.SERVER_DOMAIN }}
+            APP_DOMAIN=${{ env.SERVER_DOMAIN }}
             ADMIN_DOMAIN=${{ env.ADMIN_DOMAIN }}
 
       - name: 'Build Client'
@@ -59,8 +59,8 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-client:latest
           build-args: |
             BUILD_MODE=prod
-            SERVER_DOMAIN=${{ env.SERVER_DOMAIN }}
-            APP_DOMAIN=${{ env.APP_DOMAIN }}
+            NEXT_PUBLIC_SERVER_DOMAIN=${{ env.SERVER_DOMAIN }}
+            NEXT_PUBLIC_APP_DOMAIN=${{ env.APP_DOMAIN }}
 
       - name: 'Build Admin'
         if: contains(github.event.pull_request.labels.*.name, 'frontend-admin')
@@ -73,5 +73,5 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-admin:latest
           build-args: |
             BUILD_MODE=prod
-            SERVER_DOMAIN=${{ env.SERVER_DOMAIN }}
-            ADMIN_DOMAIN=${{ env.ADMIN_DOMAIN }}
+            NEXT_PUBLIC_SERVER_DOMAIN=${{ env.SERVER_DOMAIN }}
+            NEXT_PUBLIC_APP_DOMAIN=${{ env.ADMIN_DOMAIN }}

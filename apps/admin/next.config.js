@@ -10,9 +10,6 @@ const nextConfig = {
 
     return config;
   },
-  env: {
-    SERVER_DOMAIN: process.env.SERVER_DOMAIN,
-  },
   reactStrictMode: true,
   output: 'standalone',
 };
