@@ -34,7 +34,7 @@
     "react-dom": "^18",
     "react-icons": "^4.11.0",
     "react-query": "^3.39.3",
-    "server": "^1.0.0",
+    "server": "workspace:0.1.0",
     "superjson": "^2.2.1",
     "yup": "^1.3.2"
   },
