@@ -2,16 +2,20 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+  "description": "Client based on Next.js, tRPC, etc",
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS='--inspect' next dev -p $(grep PORT .env | cut -d '=' -f2)",
+    "dev": "cross-env next dev -p $(grep APP_PORT .env.local | cut -d '=' -f2)",
     "build": "next build",
-    "start": "next start -p $(grep PORT .env | cut -d '=' -f2)",
-    "lint": "next lint"
+    "start": "next start -p $(grep APP_PORT .env.local | cut -d '=' -f2)",
+    "start:prod": "node server.js",
+    "lint": "eslint .",
+    "lint:fix": "pnpm lint --fix"
   },
   "dependencies": {
     "@nextui-org/react": "^2.1.13",
     "@nextui-org/system": "^2.0.10",
     "@nextui-org/theme": "^2.1.9",
+    "@prisma/nextjs-monorepo-workaround-plugin": "^5.13.0",
     "@tanstack/react-query": "^4.36.1",
     "@trpc/client": "^10.43.6",
     "@trpc/react": "^9.27.4",
@@ -20,21 +24,30 @@
     "clsx": "^2.0.0",
     "framer-motion": "^10.16.4",
     "i18next": "^23.7.7",
-    "next": "14.0.1",
+    "next": "14.2.3",
     "next-intl": "^3.2.5",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "server": "workspace:0.1.0"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "^14.0.3",
+    "@repo/eslint-config": "workspace:*",
+    "@types/eslint": "^8.56.10",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
     "cross-env": "^7.0.3",
     "eslint": "^8",
-    "eslint-config-next": "14.0.1",
     "postcss": "^8",
+    "prettier": "^3.0.0",
     "tailwindcss": "^3.3.0",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "**/*.{js,ts,tsx}": [
+      "pnpm lint:fix"
+    ]
   }
 }

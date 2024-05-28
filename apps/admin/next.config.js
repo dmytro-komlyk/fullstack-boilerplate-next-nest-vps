@@ -1,22 +1,17 @@
 /** @type {import('next').NextConfig} */
+/* eslint @typescript-eslint/no-var-requires: "off" */
+const { PrismaPlugin } = require('@prisma/nextjs-monorepo-workaround-plugin');
+
 const nextConfig = {
-  webpack5: true,
-  webpack(config) {
-    config.resolve.fallback = { fs: false };
-    config.experiments = { ...config.experiments, topLevelAwait: true };
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.plugins = [...config.plugins, new PrismaPlugin()];
+    }
+
     return config;
   },
-  env: {
-    NEXT_PUBLIC_BASE_URL: `${process.env.NEXT_PUBLIC_BASE_URL}`,
-    NEXT_PUBLIC_SERVER: `${process.env.NEXT_PUBLIC_SERVER}`,
-    NEXT_PUBLIC_TRPC_SERVER_URL: `${process.env.NEXT_PUBLIC_TRPC_SERVER_URL}`,
-  },
-  output: "standalone",
-  experimental: {
-    appDir: true,
-    serverActions: true,
-  },
-  typescript: { ignoreBuildErrors: true },
+  reactStrictMode: true,
+  output: 'standalone',
 };
 
 module.exports = nextConfig;

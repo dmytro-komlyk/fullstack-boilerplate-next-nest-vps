@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Switch } from "@nextui-org/react";
-import { useEffect, useState } from "react";
+import { Switch } from '@nextui-org/react';
+import { useEffect, useState } from 'react';
 
-type Theme = "light" | "dark";
+type Theme = 'light' | 'dark';
 
 export const MoonIcon = (props: any) => (
   <svg
@@ -45,12 +45,12 @@ function ThemeToggle({ initialValue }: { initialValue: Theme }) {
   useEffect(() => {
     if (theme) {
       document.cookie = `theme=${theme};path=/;`;
-      document.querySelector("html")?.classList.toggle("dark");
+      document.querySelector('html')?.classList.toggle('dark');
     } else {
       setTheme(
-        window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light"
+        window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light',
       );
     }
   }, [theme]);
@@ -61,7 +61,7 @@ function ThemeToggle({ initialValue }: { initialValue: Theme }) {
       size="lg"
       color="success"
       onClick={() => {
-        setTheme(theme === "dark" ? "light" : "dark");
+        setTheme(theme === 'dark' ? 'light' : 'dark');
       }}
       startContent={<SunIcon />}
       endContent={<MoonIcon />}

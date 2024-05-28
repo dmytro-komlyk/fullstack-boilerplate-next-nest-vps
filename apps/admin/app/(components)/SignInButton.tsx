@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Button } from "@nextui-org/react";
-import { signOut, useSession } from "next-auth/react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FiLogOut } from "react-icons/fi";
+import { Button } from '@nextui-org/react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
+import { FiLogOut } from 'react-icons/fi';
 
 const SignInButton = () => {
   const router = useRouter();
@@ -12,7 +12,7 @@ const SignInButton = () => {
 
   if (session && session.user)
     return (
-      <div className="flex gap-4 ml-auto items-center">
+      <div className="ml-auto flex items-center gap-4">
         <p className="text-slate-700">{session.user.name}</p>
         <Button
           color="danger"
@@ -23,7 +23,7 @@ const SignInButton = () => {
               router.push(`${window.location.origin}`); // Redirect to the home page after signing out
             });
           }}
-          className="flex ml-auto text-red-600"
+          className="ml-auto flex text-red-600"
         >
           Sign Out
         </Button>
@@ -31,16 +31,16 @@ const SignInButton = () => {
     );
 
   return (
-    <div className="flex gap-4 ml-auto items-center">
+    <div className="ml-auto flex items-center gap-4">
       <Link
-        href={"/api/auth/signin"}
-        className="flex gap-4 ml-auto text-green-600"
+        href="/api/auth/signin"
+        className="ml-auto flex gap-4 text-green-600"
       >
         Sign In
       </Link>
       <Link
-        href={"/api/auth/signup"}
-        className="flex gap-4 ml-auto bg-green-600 text-green-200 p-2 rounded"
+        href="/api/auth/signup"
+        className="ml-auto flex gap-4 rounded bg-green-600 p-2 text-green-200"
       >
         Sign Up
       </Link>

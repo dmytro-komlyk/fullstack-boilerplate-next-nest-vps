@@ -1,26 +1,20 @@
-"use client";
+'use client';
 
-import { Button, ButtonGroup, Input } from "@nextui-org/react";
-import { Form, Formik, FormikProps } from "formik";
-import { useState } from "react";
-import { MdCancel, MdDone, MdEdit } from "react-icons/md";
-import * as Yup from "yup";
-import { trpc } from "../(utils)/trpc/client";
-import { serverClient } from "../(utils)/trpc/serverClient";
+import { Button, ButtonGroup, Input } from '@nextui-org/react';
+import type { FormikProps } from 'formik';
+import { Form, Formik } from 'formik';
+import { useState } from 'react';
+import { MdCancel, MdDone, MdEdit } from 'react-icons/md';
+import * as Yup from 'yup';
 
-const EditTextForm = ({
-  initialText,
-}: {
-  initialText: Awaited<ReturnType<(typeof serverClient)["getExampleTrpc"]>>;
-}) => {
-  const getExampleTrpc = trpc.getExampleTrpc.useQuery(
-    { id: "65731bc5fce8c87e24fd4361" },
-    {
-      initialData: initialText,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-    }
-  );
+import { trpc } from '../(utils)/trpc/client';
+
+const EditTextForm = ({ initialText }: { initialText: any }) => {
+  const getExampleTrpc = trpc.example.getById.useQuery(initialText.id, {
+    initialData: initialText,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
 
   const [isEdit, setEdit] = useState(false);
   const onEditText = () => setEdit(true);
@@ -30,7 +24,7 @@ const EditTextForm = ({
     cancelEditText();
   };
 
-  const editBy = trpc.editExampleTrpc.useMutation({
+  const editBy = trpc.example.update.useMutation({
     onSettled: () => {
       getExampleTrpc.refetch();
     },
@@ -41,12 +35,12 @@ const EditTextForm = ({
       initialValues={getExampleTrpc?.data}
       validationSchema={Yup.object({
         text: Yup.string()
-          .min(3, "Must be 3 characters or more")
-          .required("Please enter your name"),
+          .min(3, 'Must be 3 characters or more')
+          .required('Please enter your name'),
       })}
       onSubmit={async (values, { setSubmitting }) => {
         setSubmitting(true);
-        editBy.mutate({ id: "65731bc5fce8c87e24fd4361", ...values });
+        editBy.mutate(values);
         handleCancelEdit();
         setSubmitting(false);
       }}
@@ -78,7 +72,7 @@ const EditTextForm = ({
               </Button>
             </ButtonGroup>
             <Input
-              size={"sm"}
+              size="sm"
               onChange={props.handleChange}
               onBlur={props.handleBlur}
               value={props.values.text}
@@ -90,7 +84,7 @@ const EditTextForm = ({
       )}
     </Formik>
   ) : (
-    <div className="flex gap-x-3 items-center">
+    <div className="flex items-center gap-x-3">
       <Button
         size="sm"
         color="primary"

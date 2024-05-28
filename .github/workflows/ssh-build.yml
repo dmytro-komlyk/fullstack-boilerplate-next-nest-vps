@@ -3,62 +3,75 @@ name: CI/CD Build Pipeline # The name of the workflow
 on:
   pull_request:
     branches:
-      - "*"
+      - '*'
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  PROD_NAME: prod-nextjs-nestjs-boilerplate
+  PROD_NAME: ${{ vars.PROD_NAME }}
+  APP_DOMAIN: ${{ vars.APP_DOMAIN }}
+  ADMIN_DOMAIN: ${{ vars.ADMIN_DOMAIN }}
+  SERVER_DOMAIN: ${{ vars.SERVER_DOMAIN }}
 
 jobs:
   build:
-    name: "Build Application"
+    name: 'Build Application'
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout repository"
+      - name: 'Checkout repository'
         uses: actions/checkout@v4
 
-      - name: "Set up QEMU"
+      - name: 'Set up QEMU'
         uses: docker/setup-qemu-action@v3
 
-      - name: "Set up Docker Buildx"
+      - name: 'Set up Docker Buildx'
         uses: docker/setup-buildx-action@v3
 
-      - name: "Login to GitHub Container Registry"
+      - name: 'Login to GitHub Container Registry'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.REGISTRY_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: "Build Server"
+      - name: 'Build Server'
         if: contains(github.event.pull_request.labels.*.name, 'backend')
         uses: docker/build-push-action@v4
         with:
-          target: production
+          target: runner
           file: ./apps/server/Dockerfile
-          secrets: |
-
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-server:latest
+          build-args: |
+            BUILD_MODE=prod
+            SERVER_DOMAIN=${{ env.SERVER_DOMAIN }}
+            ADMIN_DOMAIN=${{ env.ADMIN_DOMAIN }}
 
-      - name: "Build Client"
+      - name: 'Build Client'
         if: contains(github.event.pull_request.labels.*.name, 'frontend-client')
         uses: docker/build-push-action@v4
         with:
-          target: production
+          target: runner
           file: ./apps/client/Dockerfile
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-client:latest
+          build-args: |
+            BUILD_MODE=prod
+            SERVER_DOMAIN=${{ env.SERVER_DOMAIN }}
+            APP_DOMAIN=${{ env.APP_DOMAIN }}
 
-      - name: "Build Admin"
+      - name: 'Build Admin'
         if: contains(github.event.pull_request.labels.*.name, 'frontend-admin')
         uses: docker/build-push-action@v4
         with:
-          target: production
+          target: runner
           file: ./apps/admin/Dockerfile
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-admin:latest
+          build-args: |
+            BUILD_MODE=prod
+            SERVER_DOMAIN=${{ env.SERVER_DOMAIN }}
+            ADMIN_DOMAIN=${{ env.ADMIN_DOMAIN }}
