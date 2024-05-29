@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Run deploy on SSH'
-        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == ${{ env.BRANCH_NAME }}
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == ${{ env.BRANCH }}
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ vars.SSH_HOST }}
@@ -29,7 +29,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ vars.SSH_PORT }}
           script: |
-            cd ${{ env.PROJECT_SSH_FOLDER_NAME }}
+            cd ${{ env.PROJECT_SSH_FOLDER }}
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
             if [[ "${{ contains(github.event.pull_request.labels.*.name, env.LABEL_SERVER) }}" == "true" ]]; then

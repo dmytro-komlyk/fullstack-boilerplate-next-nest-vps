@@ -6,7 +6,7 @@ services:
       dockerfile: ./database/Dockerfile
       args:
         MONGO_VERSION: 6
-    container_name: mongo
+    container_name: mongo-boilerplate
     environment:
       - MONGO_INITDB_ROOT_USERNAME= #USERNAME
       - MONGO_INITDB_ROOT_PASSWORD= #PASSWORD
@@ -38,7 +38,6 @@ services:
       interval: 5s
       timeout: 30s
       start_period: 0s
-      start_interval: 1s
       retries: 30
 
   mongo-seed:
@@ -48,7 +47,7 @@ services:
       dockerfile: ./database/Dockerfile
       args:
         MONGO_VERSION: 6
-    container_name: mongo-seed
+    container_name: mongo-seed-boilerplate
     networks:
       - backend
     depends_on:
@@ -69,13 +68,15 @@ services:
 
   server:
     image: ghcr.io/dmytro-komlyk/nextjs-nestjs-boilerplate-server:latest
-    container_name: server
+    container_name: server-boilerplate
     restart: unless-stopped
     env_file: ./server/.env.docker.prod
     environment:
       - NODE_ENV=production
     volumes:
-      - ./server/public/:/app/server/public
+      - ./server/public/:/app/apps/server/public
+      - /app/node_modules
+      - /app/apps/server/node_modules
       - shared-prisma:/app/apps/server/prisma
     ports:
       - 3000:3000
@@ -88,13 +89,16 @@ services:
 
   admin:
     image: ghcr.io/dmytro-komlyk/nextjs-nestjs-boilerplate-admin:latest
-    container_name: admin
+    container_name: admin-boilerplate
     restart: unless-stopped
     env_file: ./admin/.env.docker.prod
     stdin_open: true
     tty: true
     environment:
       - NODE_ENV=production
+    volumes:
+      - /app/node_modules
+      - /app/apps/admin/node_modules
     ports:
       - 3002:3002
     networks:
@@ -103,13 +107,16 @@ services:
 
   client:
     image: ghcr.io/dmytro-komlyk/nextjs-nestjs-boilerplate-client:latest
-    container_name: client
+    container_name: client-boilerplate
     restart: unless-stopped
     env_file: ./client/.env.docker.prod
     stdin_open: true
     tty: true
     environment:
       - NODE_ENV=production
+    volumes:
+      - /app/node_modules
+      - /app/apps/client/node_modules
     ports:
       - 3001:3001
     networks:

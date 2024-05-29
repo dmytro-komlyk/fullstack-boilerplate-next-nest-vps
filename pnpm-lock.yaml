@@ -285,6 +285,9 @@ importers:
       class-validator:
         specifier: ^0.14.0
         version: 0.14.1
+      express:
+        specifier: ^4.19.2
+        version: 4.19.2
       openapi-types:
         specifier: ^12.1.3
         version: 12.1.3
