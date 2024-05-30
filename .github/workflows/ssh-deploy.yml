@@ -29,9 +29,9 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ vars.SSH_PORT }}
           script: |
+            sudo aa-remove-unknown
             cd ${{ env.PROJECT_SSH_FOLDER }}
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-
             if [[ "${{ contains(github.event.pull_request.labels.*.name, env.LABEL_SERVER) }}" == "true" ]]; then
                 docker rm $(docker stop $(docker ps -a -q --filter ancestor=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-server:latest ))
                 docker rmi ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.PROD_NAME }}-server:latest
