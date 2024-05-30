@@ -1,4 +1,4 @@
-# Next-Nest-js-CI-on-VPS-Boilerplate
+# Fullstack-Boilerplate-Next-Nest-VPS
 
 ## Overview
 
@@ -34,9 +34,11 @@ Ensure you have the following installed:
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/dmytro-komlyk/Next-Nest-js-CI-on-VPS-Boilerplate.git
-   cd Next-Nest-js-CI-on-VPS-Boilerplate
+   git clone https://github.com/dmytro-komlyk/fullstack-boilerplate-next-nest-vps.git
+   cd fullstack-boilerplate-next-nest-vps
    ```
+  
+   or use the repository button [Use this template](https://github.com/new?template_name=fullstack-boilerplate-next-nest-vps&template_owner=dmytro-komlyk)
 
 2. **Install dependencies**
 
@@ -100,7 +102,7 @@ To run the project using Docker, use the provided docker-compose files.
 
 This project uses GitHub Actions for continuous integration and continuous deployment. The configuration files are located in the .github/workflows directory.
 
-1. 🔒 **Set up your secrets and variables in a GitHub repository**
+1. **Set up your secrets and variables in a GitHub repository**
 
    ```bash
     SSH_PASSWORD
@@ -118,7 +120,7 @@ This project uses GitHub Actions for continuous integration and continuous deplo
     SSH_PORT
    ```
 
-2. 🏷️ **Set up labels in a GitHub repository**
+2. **Set up labels in a GitHub repository**
 
     ```bash
     backend
@@ -143,27 +145,27 @@ This project uses GitHub Actions for continuous integration and continuous deplo
     .
     │
     ├── client
-    │   └── .env.docker.prod   #
+    │   └── .env.docker.prod   # Set up environment variables
     ├── admin
-    │   └── .env.docker.prod   #
+    │   └── .env.docker.prod   # Set up environment variables
     ├── server
-    │   └── .env.docker.prod   #
+    │   └── .env.docker.prod   # Set up environment variables
     ├── database
     │   ├── conf   
     │   │   └── mongod.conf.orig
     │   ├── seed   
-    │   │   └── *.json
+    │   │   └── *.json  # copy files from mongodb
     │   ├── Dockerfile 
     │   └── init-seed.sh
-    └── docker-compose.prod-ci.yml   #
+    └── docker-compose.prod-ci.yml   # Set up your values instead of text with <>
     ```
 
 3. **Run Docker containers:**
 
     ```bash
     docker login ghcr.io -u <github.repository_owner>
-    docker compose -f docker-compose.prod-ci.yml -p PROD_NAME pull
-    docker compose -f docker-compose.prod-ci.yml -p PROD_NAME up -d
+    docker compose -f docker-compose.prod-ci.yml -p <PROD_NAME> pull
+    docker compose -f docker-compose.prod-ci.yml -p <PROD_NAME> up -d
     ```
 
 ## Folder Structure
