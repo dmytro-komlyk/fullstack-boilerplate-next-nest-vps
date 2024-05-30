@@ -67,7 +67,7 @@ services:
       - backend
 
   server:
-    image: ghcr.io/dmytro-komlyk/nextjs-nestjs-boilerplate-server:latest
+    image: ghcr.io/<github.repository_owner>/<PROD_NAME>-server:latest
     container_name: server-boilerplate
     restart: unless-stopped
     env_file: ./server/.env.docker.prod
@@ -88,7 +88,7 @@ services:
       - mongo
 
   admin:
-    image: ghcr.io/dmytro-komlyk/nextjs-nestjs-boilerplate-admin:latest
+    image: ghcr.io/<github.repository_owner>/<PROD_NAME>-admin:latest
     container_name: admin-boilerplate
     restart: unless-stopped
     env_file: ./admin/.env.docker.prod
@@ -106,7 +106,7 @@ services:
       - backend
 
   client:
-    image: ghcr.io/dmytro-komlyk/nextjs-nestjs-boilerplate-client:latest
+    image: ghcr.io/<github.repository_owner>/<PROD_NAME>-client:latest
     container_name: client-boilerplate
     restart: unless-stopped
     env_file: ./client/.env.docker.prod
