@@ -1,4 +1,15 @@
+<div align="center">
+
 # Fullstack-Boilerplate-Next-Nest-VPS
+
+</div>
+
+<div align="center">
+
+[![CI/CD Build Pipeline](https://github.com/dmytro-komlyk/fullstack-boilerplate-next-nest-vps/actions/workflows/ssh-build.yml/badge.svg)](https://github.com/dmytro-komlyk/fullstack-boilerplate-next-nest-vps/actions/workflows/ssh-build.yml)
+[![CI/CD Deploy Pipeline](https://github.com/dmytro-komlyk/fullstack-boilerplate-next-nest-vps/actions/workflows/ssh-deploy.yml/badge.svg)](https://github.com/dmytro-komlyk/fullstack-boilerplate-next-nest-vps/actions/workflows/ssh-deploy.yml)
+
+</div>
 
 ## Overview
 
