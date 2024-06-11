@@ -36,6 +36,7 @@ RUN --mount=type=cache,id=pnpm,target=~/.pnpm-store pnpm install --frozen-lockfi
 
 # Copy source code of isolated subworkspace
 COPY --from=pruner /app/out/full/ .
+COPY turbo.json turbo.json
 
 COPY .gitignore .gitignore
 RUN pnpm db:generate

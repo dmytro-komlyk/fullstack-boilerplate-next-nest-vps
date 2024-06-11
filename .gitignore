@@ -8,6 +8,18 @@ node_modules
 .next
 dist
 out
+.expo
+android
+ios
+web-build
+
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
 
 # Uploads
 apps/server/public

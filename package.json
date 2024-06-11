@@ -2,16 +2,15 @@
   "name": "fullstack-boilerplate-next-nest-vps",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "workspaces": [
-    "apps/*"
-  ],
   "scripts": {
     "db:generate": "pnpm --filter server db:generate",
     "db:push": "pnpm --filter server db:push",
     "db:seed": "pnpm --filter server db:seed",
     "studio": "pnpm --filter server studio",
     "dev": "pnpm run --parallel dev",
+    "dev:metro": "pnpm --filter mobile metro",
+    "dev:ios": "pnpm --filter mobile ios",
+    "dev:android": "pnpm --filter mobile android",
     "build": "pnpm run --parallel build",
     "start": "pnpm run --parallel start",
     "build:server": "pnpm --filter server build",
