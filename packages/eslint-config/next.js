@@ -50,7 +50,6 @@ module.exports = {
       extends: [
         'plugin:tailwindcss/recommended',
         'airbnb',
-        'next/core-web-vitals',
         'plugin:prettier/recommended',
       ],
       parserOptions: {
@@ -65,6 +64,10 @@ module.exports = {
             singleQuote: true,
             endOfLine: 'auto',
           },
+        ],
+        'react/no-unstable-nested-components': [
+          'off' | 'warn' | 'error',
+          { allowAsProps: true | false },
         ],
         'react/function-component-definition': 'off', // Disable Airbnb's specific function type
         'react/destructuring-assignment': 'off', // Vscode doesn't support automatically destructuring, it's a pain to add a new variable

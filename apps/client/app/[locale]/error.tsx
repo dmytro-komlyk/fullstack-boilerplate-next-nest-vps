@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { useEffect } from "react";
+import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
 
 type Props = {
   error: Error;
@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default function Error({ error, reset }: Props) {
-  const t = useTranslations("Error");
+  const t = useTranslations('Error');
 
   useEffect(() => {
     console.error(error);
@@ -17,7 +17,7 @@ export default function Error({ error, reset }: Props) {
 
   return (
     <div>
-      {t.rich("description", {
+      {t.rich('description', {
         p: (chunks) => <p className="mt-4">{chunks}</p>,
         retry: (chunks) => (
           <button
