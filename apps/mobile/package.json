@@ -1,12 +1,15 @@
 {
   "name": "mobile",
   "version": "1.0.0",
+  "private": true,
   "main": "index.js",
+  "description": "Mobile based on Expo",
   "scripts": {
     "metro": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "lint": "eslint --ext js,ts,tsx ."
+    "lint": "eslint .",
+    "lint:fix": "pnpm lint --fix"
   },
   "dependencies": {
     "@expo/metro-runtime": "^3.2.1",
@@ -25,5 +28,9 @@
     "postcss": "^8",
     "tailwindcss": "^3.3.2"
   },
-  "private": true
+  "lint-staged": {
+    "**/*.{js,ts,tsx}": [
+      "pnpm lint:fix"
+    ]
+  }
 }
