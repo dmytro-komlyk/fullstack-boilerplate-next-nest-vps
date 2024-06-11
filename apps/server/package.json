@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "Server based on Nestjs, tRPC, Prisma, MongoDB",
   "private": true,
-  "license": "UNLICENSED",
   "scripts": {
     "db:generate": "pnpx prisma generate",
     "db:push": "pnpx prisma db push",
