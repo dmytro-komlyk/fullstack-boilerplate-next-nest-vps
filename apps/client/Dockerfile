@@ -46,6 +46,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 COPY apps/${APP_NAME}/.env.docker.${BUILD_MODE}.example ./apps/${APP_NAME}/.env.local
 # Copy source code of isolated subworkspace
 COPY --from=pruner /app/out/full/ .
+COPY turbo.json turbo.json
 
 RUN pnpm db:generate
 RUN turbo build --filter=${APP_NAME}
