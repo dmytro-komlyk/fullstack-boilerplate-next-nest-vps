@@ -14,167 +14,191 @@ import {
   NavbarBrand,
   NavbarContent,
   NavbarItem,
+  NavbarMenu,
+  NavbarMenuItem,
   NavbarMenuToggle,
-  Link as NextUILink,
   User,
 } from '@heroui/react';
 import { useSession } from '@package/next-auth';
 import { useState } from 'react';
-import { LuLogOut } from 'react-icons/lu';
+import { LuLayoutDashboard, LuLogOut, LuShoppingBasket, LuUser } from 'react-icons/lu';
 
 import { useLogout } from '@/hooks/useLogout';
-import routes from '@/routes';
 
 const Header = () => {
   const { data: session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const { handleLogout, isLoading } = useLogout();
 
-  const dropdownItems = [
-    {
-      key: 'logout',
-      label: 'Log Out',
-      Icon: LuLogOut,
-      onPress: () => handleLogout('manual'),
-    },
+  const navLinks = [
+    { label: 'Features', href: '#features' },
+    { label: 'Documentation', href: '/docs' },
+    { label: 'Pricing', href: '/pricing' },
   ];
 
   return (
     <Navbar
       isMenuOpen={isMenuOpen}
       onMenuOpenChange={setIsMenuOpen}
-      maxWidth="full"
+      maxWidth="xl"
+      isBordered
+      className="fixed top-0 bg-white/70 backdrop-blur-md dark:bg-navy-900/70"
       classNames={{
-        base: 'w-full bg-lightPrimary dark:bg-navy-900',
-        wrapper: '!container mx-auto',
+        wrapper: 'px-4 sm:px-6',
+        item: [
+          'flex',
+          'relative',
+          'h-full',
+          'items-center',
+          "data-[active=true]:after:content-['']",
+          'data-[active=true]:after:absolute',
+          'data-[active=true]:after:bottom-0',
+          'data-[active=true]:after:left-0',
+          'data-[active=true]:after:right-0',
+          'data-[active=true]:after:h-[2px]',
+          'data-[active=true]:after:rounded-[2px]',
+          'data-[active=true]:after:bg-brand-500',
+        ],
       }}
     >
+      {/* Left side: Logo & Mobile Toggle */}
       <NavbarContent>
         <NavbarMenuToggle
           aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-          className="lg:hidden"
+          className="sm:hidden"
         />
-
         <NavbarBrand>
-          <NextUILink
-            as={Link}
-            className="text-landing-dark-grey-900 text-2xl font-extrabold dark:text-white"
-            href={`${baseUrl}`}
-          >
-            {appName}
-          </NextUILink>
+          <Link href={baseUrl} className="flex items-center gap-2 group">
+            <div className="bg-brand-500 p-1.5 rounded-lg group-hover:rotate-12 transition-transform">
+              <LuShoppingBasket className="text-white size-5" />
+            </div>
+            <span className="text-2xl font-black tracking-tight text-gray-900 dark:text-white">
+              {appName}
+            </span>
+          </Link>
         </NavbarBrand>
       </NavbarContent>
 
-      {/* Desktop menu */}
-      {session ? (
-        <NavbarContent as="div" justify="end">
-          <Dropdown
-            placement="bottom-end"
-            classNames={{
-              base: 'w-64 rounded-2xl',
-              content: 'bg-white dark:bg-gray-800',
-            }}
-          >
+      {/* Center: Main Navigation (Desktop) */}
+      <NavbarContent className="hidden sm:flex gap-8" justify="center">
+        {navLinks.map((link) => (
+          <NavbarItem key={link.href}>
+            <Link
+              color="foreground"
+              href={`${baseUrl}${link.href}`}
+              className="text-sm font-semibold hover:text-brand-500 transition-colors"
+            >
+              {link.label}
+            </Link>
+          </NavbarItem>
+        ))}
+      </NavbarContent>
+
+      {/* Right side: User Profile or Auth Buttons */}
+      <NavbarContent justify="end">
+        {session ? (
+          <Dropdown placement="bottom-end" className="min-w-60">
             <DropdownTrigger>
               <Avatar
                 as="button"
-                className="cursor-pointer transition-transform bg-gray-700 text-white"
+                isBordered
+                color="primary"
+                className="cursor-pointer transition-transform hover:scale-105"
                 name={session.user.nickName || session.user.email?.[0]}
-                size="md"
+                size="sm"
                 src={session.user.avatarUrl || undefined}
-                isDisabled={isLoading}
               />
             </DropdownTrigger>
 
-            <DropdownMenu
-              aria-label="User menu"
-              variant="flat"
-              classNames={{ base: 'rounded-xl', list: 'gap-1' }}
-            >
-              <DropdownSection showDivider aria-label="Profile & Actions">
-                <DropdownItem
-                  key="profile"
-                  isReadOnly
-                  className="gap-2 opacity-100 hover:cursor-default data-[hover=true]:bg-transparent dark:data-[hover=true]:bg-transparent"
-                >
+            <DropdownMenu aria-label="User actions" variant="flat">
+              <DropdownSection showDivider>
+                <DropdownItem isReadOnly key="user-info" className="h-14 gap-2">
                   <User
-                    avatarProps={{
-                      size: 'sm',
-                      src: session.user.avatarUrl || undefined,
-                      classNames: {
-                        base: 'bg-gray-700 text-white',
-                      },
-                    }}
-                    classNames={{
-                      name: 'text-center font-medium text-gray-900 dark:text-white',
-                    }}
                     name={session.user.nickName || 'User'}
                     description={session.user.email}
+                    avatarProps={{
+                      src: session.user.avatarUrl || undefined,
+                      size: 'sm',
+                    }}
                   />
                 </DropdownItem>
               </DropdownSection>
 
-              <DropdownSection showDivider aria-label="Navigation">
-                {routes.map((route) => (
-                  <DropdownItem
-                    key={route.path}
-                    as={Link}
-                    href={`${baseUrl}${route.layout}${route.path}`}
-                    startContent={<div className="text-gray-600 dark:text-white">{route.icon}</div>}
-                    classNames={{
-                      base: 'text-gray-800 dark:text-white data-[hover=true]:bg-gray-100 dark:data-[hover=true]:bg-white/10',
-                      title: 'font-medium',
-                    }}
-                  >
-                    {route.name}
-                  </DropdownItem>
-                ))}
+              <DropdownSection showDivider>
+                <DropdownItem
+                  key="dashboard"
+                  as={Link}
+                  href={`${baseUrl}/dashboard`}
+                  startContent={<LuLayoutDashboard className="size-4" />}
+                >
+                  Dashboard
+                </DropdownItem>
+                <DropdownItem
+                  key="profile"
+                  as={Link}
+                  href={`${baseUrl}/profile`}
+                  startContent={<LuUser className="size-4" />}
+                >
+                  My Profile
+                </DropdownItem>
               </DropdownSection>
 
-              <DropdownSection aria-label="Actions">
-                {dropdownItems.map(({ key, label, Icon, onPress }) => (
-                  <DropdownItem
-                    key={key}
-                    textValue={label}
-                    className="text-danger"
-                    color="danger"
-                    classNames={{
-                      base: 'w-full data-[hover=true]:bg-red-100 dark:data-[hover=true]:bg-red-600/20',
-                      title: 'text-sm lg:text-base font-medium',
-                    }}
-                    endContent={<Icon className="size-5" />}
-                    onPress={onPress}
-                  >
-                    {label}
-                  </DropdownItem>
-                ))}
-              </DropdownSection>
+              <DropdownItem
+                key="logout"
+                color="danger"
+                className="text-danger"
+                isDisabled={isLoading}
+                startContent={
+                  isLoading ? (
+                    <div className="animate-spin size-4 border-2 border-current border-t-transparent rounded-full" />
+                  ) : (
+                    <LuLogOut className="size-4" />
+                  )
+                }
+                onPress={() => handleLogout('manual')}
+              >
+                {isLoading ? 'Logging out...' : 'Log Out'}
+              </DropdownItem>
             </DropdownMenu>
           </Dropdown>
-        </NavbarContent>
-      ) : (
-        <NavbarContent justify="end">
-          <NavbarItem className="hidden lg:flex gap-2">
+        ) : (
+          <NavbarItem className="flex gap-3">
             <Button
               as={Link}
               href={`${baseUrl}/auth/sign-in`}
               variant="light"
-              className="font-medium"
+              className="font-bold hidden md:flex"
             >
               Log In
             </Button>
             <Button
               as={Link}
               href={`${baseUrl}/auth/sign-up`}
-              className="bg-brand-500 text-white font-medium rounded-xl"
+              color="primary"
+              className="bg-brand-500 font-bold shadow-lg shadow-brand-500/20 px-6 rounded-xl text-white"
             >
               Sign Up
             </Button>
           </NavbarItem>
-        </NavbarContent>
-      )}
+        )}
+      </NavbarContent>
+
+      {/* Mobile Menu (Sidebar) */}
+      <NavbarMenu className="pt-6 bg-white/80 backdrop-blur-md">
+        {navLinks.map((item, index) => (
+          <NavbarMenuItem key={`${item.label}-${index}`}>
+            <Link
+              className="w-full text-lg font-medium py-2"
+              color="foreground"
+              href={`${baseUrl}${item.href}`}
+              size="lg"
+              onPress={() => setIsMenuOpen(false)}
+            >
+              {item.label}
+            </Link>
+          </NavbarMenuItem>
+        ))}
+      </NavbarMenu>
     </Navbar>
   );
 };

@@ -1,7 +1,10 @@
 import ForgotPassword from '@/components/auth/ForgotPassword';
 import Default from '@/components/auth/variants/DefaultAuthLayout';
+import { getTranslations } from 'next-intl/server';
 
 async function ForgotPasswordDefault() {
+  const t = await getTranslations('Auth.ForgotPassword.Public');
+
   return (
     <Default
       maincard={
@@ -9,10 +12,10 @@ async function ForgotPasswordDefault() {
           {/* Forgot password section */}
           <div className="w-full max-w-full flex-col items-center md:pl-4 lg:pl-0 xl:max-w-105">
             <h3 className="mb-2.5 text-4xl font-bold text-navy-700 dark:text-white">
-              Forgot password
+              {t('title')}
             </h3>
             <p className="mb-9 ml-1 text-base text-gray-600 dark:text-gray-400">
-              Enter your email to receive a password reset link.
+              {t('description')}
             </p>
             <ForgotPassword />
           </div>

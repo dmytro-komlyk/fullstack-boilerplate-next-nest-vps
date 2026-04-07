@@ -7,6 +7,8 @@ import NextImage from 'next/image';
 import { useState } from 'react';
 
 import { baseUrl } from '@/utils/constants';
+import { getLocalizedError } from 'i18n/error-handler';
+import { useTranslations } from 'next-intl';
 import FacebookLogo from 'public/icons/facebook-logo.svg';
 import GoogleLogo from 'public/icons/google-logo.svg';
 import { showToast } from '../Toast';
@@ -27,6 +29,8 @@ interface SignInProviderProps {
 }
 
 const SignInProvider = ({ provider }: SignInProviderProps) => {
+  const t = useTranslations('Auth.SignIn.Public');
+  const te = useTranslations('Common.Errors');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogin = async () => {
@@ -35,8 +39,8 @@ const SignInProvider = ({ provider }: SignInProviderProps) => {
       await signIn(provider, {
         callbackUrl: `${baseUrl}/?toast=welcome`,
       });
-    } catch (error: any) {
-      showToast.error(`Error initiating ${provider} login: ${error.message}`);
+    } catch {
+      showToast.error(getLocalizedError(`providerLoginError|${providers[provider].name}`, te));
     } finally {
       setIsSubmitting(false);
     }
@@ -62,7 +66,7 @@ const SignInProvider = ({ provider }: SignInProviderProps) => {
         />
       }
     >
-      Sign in with {providers[provider].name}
+      {t('providerBtn', { provider: providers[provider].name })}
     </Button>
   );
 };

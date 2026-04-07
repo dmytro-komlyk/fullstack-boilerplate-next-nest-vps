@@ -1,5 +1,6 @@
 import ResetPassword from '@/components/auth/ResetPassword';
 import Default from '@/components/auth/variants/DefaultAuthLayout';
+import { getTranslations } from 'next-intl/server';
 
 async function ResetPasswordDefault({
   searchParams,
@@ -7,6 +8,8 @@ async function ResetPasswordDefault({
   searchParams: Promise<{ token: string; email: string }>;
 }) {
   const { token, email } = await searchParams;
+  const t = await getTranslations('Auth.ResetPassword.Public');
+
   return (
     <Default
       maincard={
@@ -14,10 +17,10 @@ async function ResetPasswordDefault({
           {/* Reset password section */}
           <div className="w-full max-w-full flex-col items-center md:pl-4 lg:pl-0 xl:max-w-105">
             <h3 className="mb-2.5 text-4xl font-bold text-navy-700 dark:text-white">
-              Reset password
+              {t('title')}
             </h3>
             <p className="mb-9 ml-1 text-base text-gray-600 dark:text-gray-400">
-              Enter your new password below to regain access to your account.
+              {t('description')}
             </p>
             <ResetPassword token={token} email={email} />
           </div>
