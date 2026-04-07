@@ -17,6 +17,7 @@ import { getLocalizedError } from 'i18n/error-handler';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { showToast } from '../Toast';
@@ -26,6 +27,7 @@ interface FormValues {
 }
 
 export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verify' }) {
+  const router = useRouter();
   const t = useTranslations('Auth.TwoFactor.Form');
   const tm = useTranslations('Auth.TwoFactor.Modal');
   const ts = useTranslations('Common.Success');
@@ -115,7 +117,7 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
   };
 
   const handleDone = () => {
-    window.location.href = '/dashboard';
+    router.push('/dashboard');
   };
 
   const isLoading = verifyMutation.isPending || activateMutation.isPending;
@@ -229,9 +231,10 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
                 {tm('title')}
               </ModalHeader>
               <ModalBody>
-                <div className="rounded-xl bg-amber-50 p-4 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-500/30 mb-4">
-                  <p className="..." dangerouslySetInnerHTML={{ __html: tm('warning') }} />
-                </div>
+                <div
+                  className="rounded-xl bg-amber-50 p-4 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-500/30 mb-4"
+                  dangerouslySetInnerHTML={{ __html: tm.raw('warning') }}
+                />
 
                 <div className="grid grid-cols-2 gap-2">
                   {backupCodes.map((code) => (

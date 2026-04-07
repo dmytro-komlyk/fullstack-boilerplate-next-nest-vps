@@ -193,7 +193,7 @@ const SignUp = ({ callbackUrl }: SignUpProps) => {
               className="focus:outline-none"
               type="button"
               onClick={toggleVisibilityPasswordConfirmation}
-              aria-label={isVisiblePasswordConfirmation ? 'Hide password' : 'Show password'}
+              aria-label={isVisiblePasswordConfirmation ? t('hidePassword') : t('showPassword')}
             >
               {isVisiblePasswordConfirmation ? (
                 <IoEyeOutline size={30} className="flex pb-2 text-gray-400" />

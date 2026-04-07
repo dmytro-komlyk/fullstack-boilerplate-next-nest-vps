@@ -122,7 +122,7 @@ const SignIn = ({ callbackUrl, defaultEmail = '' }: SignInProps) => {
               className="focus:outline-none"
               type="button"
               onClick={toggleVisibilityPassword}
-              aria-label={isVisiblePassword ? 'Hide password' : 'Show password'}
+              aria-label={isVisiblePassword ? t('hidePassword') : t('showPassword')}
             >
               {isVisiblePassword ? (
                 <IoEyeOutline size={30} className="flex pb-2 text-gray-400" />

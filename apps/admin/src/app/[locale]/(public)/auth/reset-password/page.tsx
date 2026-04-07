@@ -1,13 +1,25 @@
 import ResetPassword from '@/components/auth/ResetPassword';
 import Default from '@/components/auth/variants/DefaultAuthLayout';
+import { getRemoteServerClient } from '@package/api/server';
+import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 import { LuKeyRound } from 'react-icons/lu';
 
 async function ResetPasswordDefault({
   searchParams,
 }: {
-  searchParams: Promise<{ token: string; email: string }>;
+  searchParams: Promise<{ token: string }>;
 }) {
-  const { token, email } = await searchParams;
+  const { token } = await searchParams;
+
+  if (!token) {
+    redirect('/auth/sign-in');
+  }
+
+  const serverClient = getRemoteServerClient();
+  const tokenValid = await serverClient.auth.checkToken.query({ token });
+  const t = await getTranslations('Auth.ResetPassword.Admin');
+  const requirements = t.raw('requirements') as string[];
 
   return (
     <Default
@@ -18,7 +30,7 @@ async function ResetPasswordDefault({
               <div className="flex items-center gap-2">
                 <LuKeyRound className="size-4 text-white" />
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/90">
-                  Credential Recovery Protocol
+                  {t('badge')}
                 </span>
               </div>
               <div className="flex gap-1.5">
@@ -29,24 +41,25 @@ async function ResetPasswordDefault({
 
             <div className="p-8 md:p-10">
               <h3 className="mb-2 text-3xl font-black tracking-tight text-navy-800 dark:text-white">
-                New Password
+                {t('title')}
               </h3>
-              <p className="mb-8 text-sm font-medium text-gray-500 dark:text-gray-400">
-                Authorized recovery for{' '}
-                <span className="text-navy-700 dark:text-brand-400 font-bold">{email}</span>. Ensure
-                your new credentials meet the system complexity requirements.
-              </p>
+              <p
+                className="mb-8 text-sm font-medium text-gray-500 dark:text-gray-400"
+                dangerouslySetInnerHTML={{
+                  __html: t.raw('description').replace('{email}', tokenValid.email as string),
+                }}
+              />
 
-              <ResetPassword token={token} email={email} />
+              <ResetPassword token={token} email={tokenValid.email as string} />
 
               <div className="mt-8 space-y-2 rounded-2xl border-1 border-dashed border-gray-200 p-4 dark:border-white/10">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                  Password Strength Requirements:
+                  {t('requirementsTitle')}
                 </p>
                 <ul className="list-inside list-disc text-[11px] text-gray-500 dark:text-gray-400">
-                  <li>Minimum 12 characters</li>
-                  <li>Include symbols and numbers</li>
-                  <li>Avoid repetitive patterns</li>
+                  {requirements.map((req, idx) => (
+                    <li key={idx}>{req}</li>
+                  ))}
                 </ul>
               </div>
             </div>

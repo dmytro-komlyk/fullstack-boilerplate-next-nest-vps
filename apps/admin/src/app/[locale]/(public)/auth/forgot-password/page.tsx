@@ -5,7 +5,7 @@ import ForgotPassword from '@/components/auth/ForgotPassword';
 import Default from '@/components/auth/variants/DefaultAuthLayout';
 
 async function ForgotPasswordDefault() {
-  const t = await getTranslations('Auth.ForgotPassword');
+  const t = await getTranslations('Auth.ForgotPassword.Admin');
 
   return (
     <Default

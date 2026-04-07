@@ -11,7 +11,7 @@ async function SignInPage({
   const params = await searchParams;
   const callbackUrl = params.callbackUrl || `${baseUrl}/dashboard?toast=welcome`;
   const defaultEmail = params.email || '';
-  const t = await getTranslations('Auth.SignIn');
+  const t = await getTranslations('Auth.SignIn.Admin');
 
   return (
     <Default

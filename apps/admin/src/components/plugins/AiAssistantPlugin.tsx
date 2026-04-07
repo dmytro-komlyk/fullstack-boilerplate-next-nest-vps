@@ -1,9 +1,13 @@
+'use client';
+
 import { trpc } from '@package/api/client';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useLocale } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 export const AiAssistantPlugin = () => {
+  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<any[]>([]);
@@ -14,8 +18,6 @@ export const AiAssistantPlugin = () => {
     locale: string;
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const locale = 'en'; // the plug has not been made yet
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -201,7 +203,7 @@ export const AiAssistantPlugin = () => {
                 <button
                   key={action.label}
                   onClick={() => handleQuickAction(action.query)}
-                  className="text-[10px] font-semibold whitespace-nowrap px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-95"
+                  className="text-[11px] font-semibold whitespace-nowrap px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-95"
                 >
                   {action.label}
                 </button>

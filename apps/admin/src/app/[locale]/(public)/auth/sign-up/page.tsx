@@ -7,7 +7,7 @@ import { FaUserPlus } from 'react-icons/fa6';
 async function SignUpPage({ searchParams }: { searchParams: Promise<{ callbackUrl: string }> }) {
   const params = await searchParams;
   const callbackUrl = params.callbackUrl || `${baseUrl}/auth/sign-in`;
-  const t = await getTranslations('Auth.SignUp');
+  const t = await getTranslations('Auth.SignUp.Admin');
 
   return (
     <Default
