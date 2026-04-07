@@ -13,6 +13,7 @@
     "twoFactorVerify": "Identity verified successfully."
   },
   "Errors": {
+    "providerLoginError": "Failed to authenticate via {provider}. Please try again.",
     "tokenExpired": "The token has expired. Please log in again.",
     "invalidToken": "Invalid access token.",
     "invalidOrExpiredToken": "The token is invalid or expired.",
@@ -76,5 +77,13 @@
     "stayTuned": "Stay Tuned!",
     "description": "We are currently building the notification system for your admin panel.",
     "markAsRead": "Mark all as read"
+  },
+  "SettingsWidget": {
+    "theme": {
+      "light": "Light Mode",
+      "dark": "Dark Mode"
+    },
+    "language": "Change Language",
+    "help": "Help & Support"
   }
 }

@@ -34,7 +34,10 @@ export const getMessagesForLocale = async (locale: string) => {
   }
 };
 
-export const getEmailTranslations = async (locale: string, type: 'verify' | 'resetPassword') => {
+export const getEmailTranslations = async (
+  locale: string,
+  type: 'verify' | 'resetPassword' | 'passwordChanged'
+) => {
   const messages = await getMessagesForLocale(locale);
   return messages.Email[type];
 };
