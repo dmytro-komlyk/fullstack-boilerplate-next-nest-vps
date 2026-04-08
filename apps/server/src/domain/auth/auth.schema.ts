@@ -9,20 +9,18 @@ export type UserRole = z.infer<typeof userRole>;
 export const userStatus = z.enum(['ACTIVE', 'BANNED', 'PENDING']);
 export type UserStatus = z.infer<typeof userStatus>;
 
-export const tokenType = z.enum(['access', 'refresh', 'reset']);
-export type TokenJWT = z.infer<typeof tokenType>;
-
 export const checkTokenSchema = z.object({
   token: z.string().min(1),
-  type: tokenType,
 });
 
-export const outputCheckAuthSchema = z.object({
-  email: z.string().email(),
+export const outputCheckTokenSchema = z.object({
+  success: z.boolean(),
+  email: z.email().optional(),
+  message: z.string().min(1),
 });
 
 export type CheckTokenData = z.infer<typeof checkTokenSchema>;
-export type OutputCheckAuthData = z.infer<typeof outputCheckAuthSchema>;
+export type OutputCheckTokenData = z.infer<typeof outputCheckTokenSchema>;
 
 export const signInSchema = z.object({
   email: z.string().email('invalidEmail'),

@@ -9,6 +9,7 @@ import { sendEmail } from '../../utils/nodemailer/sendEmail';
 import { Domain } from '../trpc/trpc.context';
 import {
   ActiveTwoFatorData,
+  CheckTokenData,
   ForgotPasswordFormData,
   ForgotPasswordOutputData,
   InputBackendTokens,
@@ -17,6 +18,7 @@ import {
   OutputActiveTwoFatorData,
   OutputAuthData,
   OutputAuthProviderData,
+  OutputCheckTokenData,
   OutputInviteData,
   OutputSetupTwoFatorData,
   OutputSignOutData,
@@ -32,7 +34,7 @@ import {
   UserRole,
   VerifyEmailOutputData,
 } from './auth.schema';
-import { generateBackendTokens, verifyToken } from './jwt.service';
+import { generateBackendTokens, verifyToken as verifyJWTToken } from './jwt.service';
 import {
   generateBackupCodes,
   generateTwoFactorSecret,
@@ -116,9 +118,9 @@ export async function signIn({
       },
     });
 
-    const t = await getEmailTranslations(domain.locale, 'resetPassword');
+    const t = await getEmailTranslations(domain.locale, 'verify');
 
-    const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${encodeURIComponent(data.email)}`;
+    const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}`;
 
     await sendEmail({
       email: data.email,
@@ -304,7 +306,7 @@ export async function verify2FALogin({
   data: { mfaToken: string; code: string };
   domain: Domain;
 }): Promise<OutputAuthData> {
-  const payload = await verifyToken({ type: '2fa', token: data.mfaToken });
+  const payload = await verifyJWTToken({ type: '2fa', token: data.mfaToken });
 
   if (!payload.sub) {
     throw new TRPCError({
@@ -485,6 +487,34 @@ export async function verifyEmail(input: { token: string; email: string }) {
   };
 }
 
+export async function verifyToken(input: CheckTokenData): Promise<OutputCheckTokenData> {
+  const tokenRecord = await prisma.verificationToken.findFirst({
+    where: { token: input.token },
+    include: { user: true },
+  });
+
+  if (!tokenRecord || !tokenRecord.user) {
+    return {
+      success: false,
+      message: 'invalidResetLink',
+    };
+  }
+
+  if (tokenRecord.expiresAt < new Date()) {
+    return {
+      success: false,
+      email: tokenRecord.user.email as string,
+      message: 'invalidResetLink',
+    };
+  }
+
+  return {
+    success: true,
+    email: tokenRecord.user.email as string,
+    message: 'validToken',
+  };
+}
+
 export async function resendVerification({
   data,
   domain,
@@ -554,9 +584,9 @@ export async function resendVerification({
     },
   });
 
-  const t = await getEmailTranslations(domain.locale, 'resetPassword');
+  const t = await getEmailTranslations(domain.locale, 'verify');
 
-  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${encodeURIComponent(data.email)}`;
+  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}`;
 
   await sendEmail({
     email: data.email,
@@ -754,9 +784,9 @@ export async function signUp({
         userId: existingUser.id,
       },
     });
-    const t = await getEmailTranslations(domain.locale, 'resetPassword');
+    const t = await getEmailTranslations(domain.locale, 'verify');
 
-    const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${encodeURIComponent(data.email)}`;
+    const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}`;
 
     await sendEmail({
       email: data.email,
@@ -803,9 +833,9 @@ export async function signUp({
     },
   });
 
-  const t = await getEmailTranslations(domain.locale, 'resetPassword');
+  const t = await getEmailTranslations(domain.locale, 'verify');
 
-  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${encodeURIComponent(data.email)}`;
+  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}`;
 
   await sendEmail({
     email: data.email,
@@ -963,7 +993,7 @@ export async function receivePasswordResetLink({
 
   const t = await getEmailTranslations(domain.locale, 'resetPassword');
 
-  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/reset-password?token=${token}&email=${encodeURIComponent(data.email)}`;
+  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/reset-password?token=${token}`;
 
   await sendEmail({
     email: data.email,
@@ -1039,7 +1069,13 @@ export async function resetPassword({
     },
   });
 
-  const t = await getEmailTranslations(domain.locale, 'resetPassword');
+  const emailTranslations = await getEmailTranslations(domain.locale, 'passwordChanged');
+  const appName = process.env.APP_NAME as string;
+
+  const t = {
+    ...emailTranslations,
+    description: emailTranslations.description.replace('{{appName}}', appName),
+  };
 
   const loginLink = `${domain.origin}/auth/sign-in`;
 
@@ -1048,7 +1084,7 @@ export async function resetPassword({
     payload: {
       link: loginLink,
       name: user.nickName || user.firstName,
-      appName: process.env.APP_NAME as string,
+      appName,
       t,
       lang: domain.locale,
     },
@@ -1108,7 +1144,13 @@ export async function changeForcedPassword({
     },
   });
 
-  const t = await getEmailTranslations(domain.locale, 'resetPassword');
+  const emailTranslations = await getEmailTranslations(domain.locale, 'passwordChanged');
+  const appName = process.env.APP_NAME as string;
+
+  const t = {
+    ...emailTranslations,
+    description: emailTranslations.description.replace('{{appName}}', appName),
+  };
 
   const loginLink = `${domain.origin}/auth/sign-in`;
 
@@ -1117,7 +1159,7 @@ export async function changeForcedPassword({
     payload: {
       link: loginLink,
       name: user.nickName || user.firstName || 'Admin',
-      appName: process.env.APP_NAME as string,
+      appName,
       t,
       lang: domain.locale,
     },
@@ -1184,9 +1226,9 @@ export async function createInvite({
     },
   });
 
-  const t = await getEmailTranslations(domain.locale, 'resetPassword');
+  const t = await getEmailTranslations(domain.locale, 'verify'); // invite email can use same translations as verify email for now, can be changed later if needed
 
-  const link = `${process.env.APP_ADMIN_URL}/auth/sign-up?token=${token}&email=${encodeURIComponent(invite.email)}`;
+  const link = `${process.env.APP_ADMIN_URL}/auth/sign-up?token=${token}`;
 
   const subject = t.subject.includes('{{appName}}')
     ? t.subject.replace('{{appName}}', process.env.APP_NAME)

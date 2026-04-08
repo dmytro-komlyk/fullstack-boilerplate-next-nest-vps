@@ -1,5 +1,3 @@
-import { JwtPayload } from 'jsonwebtoken';
-
 import { procedure, protectedProcedure, router } from '../trpc/trpc.server';
 import {
   activeTwoFatorSchema,
@@ -19,7 +17,8 @@ import {
   outputAuthSchema,
   OutputChangeForcedPasswordData,
   outputChangeForcedPasswordSchema,
-  outputCheckAuthSchema,
+  OutputCheckTokenData,
+  outputCheckTokenSchema,
   outputInviteSchema,
   OutputSetupTwoFatorData,
   outputSetupTwoFatorSchema,
@@ -56,8 +55,8 @@ import {
   updateAccessBackendToken,
   verify2FALogin,
   verifyEmail,
+  verifyToken,
 } from './auth.service';
-import { verifyToken } from './jwt.service';
 import { verifyFacebookMobileToken, verifyGoogleMobileToken } from './oauth.service';
 
 export const authRouter = router({
@@ -161,7 +160,7 @@ export const authRouter = router({
     .meta({
       openapi: {
         enabled: true,
-        method: 'POST',
+        method: 'GET',
         path: '/auth.checkToken',
         summary: 'Checking the auth token',
         tags: ['auth'],
@@ -169,14 +168,13 @@ export const authRouter = router({
       },
     })
     .input(checkTokenSchema)
-    .output(outputCheckAuthSchema)
-    .mutation(async ({ input, ctx }) => {
-      const token: JwtPayload = await verifyToken({
+    .output(outputCheckTokenSchema)
+    .query(async ({ input, ctx }) => {
+      const response: OutputCheckTokenData = await verifyToken({
         token: input.token,
-        type: input.type,
       });
       ctx.logger.log({ input, path: 'auth.checkToken' }, 'Check token successfully');
-      return { email: token.email };
+      return response;
     }),
   refresh: protectedProcedure
     .meta({
