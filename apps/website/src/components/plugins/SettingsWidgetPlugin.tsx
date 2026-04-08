@@ -3,8 +3,8 @@
 import { Button, Listbox, ListboxItem, Tooltip } from '@heroui/react';
 import { useThemeCookieStore } from '@package/store/ui';
 import { motion } from 'framer-motion';
-import { useLocale } from 'next-intl';
-import { usePathname, useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { IoHelpBuoyOutline } from 'react-icons/io5';
 import { RiMoonFill, RiSunFill } from 'react-icons/ri';
@@ -19,13 +19,17 @@ export default function SettingsWidgetPlugin() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { theme, setTheme } = useThemeCookieStore();
   const [mounted, setMounted] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const t = useTranslations('Common.SettingsWidget');
 
   const handleLocaleChange = (key: string) => {
     const newPath = pathname.replace(`/${locale}`, `/${key}`);
-    router.push(newPath);
+    const currentParams = searchParams.toString();
+    const finalPath = currentParams ? `${newPath}?${currentParams}` : newPath;
+    router.push(finalPath);
   };
 
   const handleThemeToggle = () => {
@@ -49,7 +53,7 @@ export default function SettingsWidgetPlugin() {
     >
       <div className="shadow-shadow-500 flex flex-col gap-2 rounded-l-2xl border border-navy-700/10 bg-white/80 p-3 shadow-3xl backdrop-blur-2xl dark:border-white/10 dark:bg-navy-900/90 dark:shadow-none">
         <Tooltip
-          content="Change Language"
+          content={t('language')}
           placement="left"
           offset={20}
           className="dark:bg-gray-800"
@@ -101,7 +105,7 @@ export default function SettingsWidgetPlugin() {
         <div className="h-px w-full bg-gray-200 dark:bg-white/10" />
 
         <Tooltip
-          content={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          content={theme === 'dark' ? t('theme.light') : t('theme.dark')}
           placement="left"
           offset={15}
           className="dark:bg-gray-800"
@@ -110,7 +114,7 @@ export default function SettingsWidgetPlugin() {
             isIconOnly
             variant="light"
             className="h-10 w-10 rounded-xl"
-            onClick={handleThemeToggle}
+            onPress={handleThemeToggle}
           >
             {theme === 'dark' ? (
               <RiSunFill className="h-5 w-5 text-white" />
@@ -122,7 +126,7 @@ export default function SettingsWidgetPlugin() {
 
         <div className="h-px w-full bg-gray-200 dark:bg-white/10" />
 
-        <Tooltip content="Support" placement="left" offset={15} className="dark:bg-gray-800">
+        <Tooltip content={t('help')} placement="left" offset={15} className="dark:bg-gray-800">
           <Button
             isIconOnly
             variant="light"

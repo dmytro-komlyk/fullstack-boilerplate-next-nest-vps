@@ -135,7 +135,7 @@ export default function Home() {
                 <motion.div
                   key={idx}
                   whileHover={{ y: -5 }}
-                  className={`p-8 rounded-[2rem] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-brand-500/50 transition-all ${idx === 3 || idx === 4 ? 'lg:col-span-1' : ''}`}
+                  className={`p-8 rounded-4xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-brand-500/50 transition-all ${idx === 3 || idx === 4 ? 'lg:col-span-1' : ''}`}
                 >
                   <div className={`${item.color} p-4 rounded-2xl w-fit mb-6`}>{item.icon}</div>
                   <h3 className="text-xl font-bold mb-3 dark:text-white">{item.title}</h3>

@@ -2,7 +2,7 @@
 
 import { trpc } from '@package/api/client';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { LuMessageSquare, LuSend, LuSparkles, LuX } from 'react-icons/lu';
 import ReactMarkdown from 'react-markdown';
@@ -19,6 +19,9 @@ export const AiAssistantPlugin = () => {
     locale: string;
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const t = useTranslations('AI.Public');
+  const QUICK_ACTIONS = t.raw('quickActions') as { label: string; query: string }[];
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -80,13 +83,6 @@ export const AiAssistantPlugin = () => {
     setIsStreaming(true);
   };
 
-  const PUBLIC_QUICK_ACTIONS = [
-    { label: '🚀 Стек технологий', query: 'Какой технологический стек используется в Omni-Stack?' },
-    { label: '🛠 Возможности', query: 'Расскажи о главных фишках этого проекта' },
-    { label: '📱 Mobile', query: 'Есть ли поддержка мобильного приложения?' },
-    { label: '🛡 Безопасность', query: 'Как реализована авторизация и защита?' },
-  ];
-
   return (
     <div className="fixed bottom-6 right-6 z-9999 flex flex-col items-end gap-4">
       <AnimatePresence>
@@ -103,8 +99,8 @@ export const AiAssistantPlugin = () => {
                   <LuSparkles className="size-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm">Omni Guide</h3>
-                  <p className="text-[10px] text-blue-100 opacity-90">AI Assistant • Online</p>
+                  <h3 className="font-bold text-sm">{t('header.title')}</h3>
+                  <p className="text-[10px] text-blue-100 opacity-90">{t('header.status')}</p>
                 </div>
               </div>
               <button
@@ -122,10 +118,7 @@ export const AiAssistantPlugin = () => {
             >
               {messages.length === 0 && (
                 <div className="text-center mt-10">
-                  <p className="text-gray-500 dark:text-gray-400 text-sm px-6">
-                    Привет! Я помогу тебе разобраться в возможностях Omni-tRPC-Stack. Что тебя
-                    интересует?
-                  </p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm px-6">{t('welcome')}</p>
                 </div>
               )}
               {messages.map((m, i) => (
@@ -148,7 +141,7 @@ export const AiAssistantPlugin = () => {
 
             {/* Quick Actions */}
             <div className="px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar">
-              {PUBLIC_QUICK_ACTIONS.map((action) => (
+              {QUICK_ACTIONS.map((action) => (
                 <button
                   key={action.label}
                   onClick={() => handleQuickAction(action.query)}
@@ -166,7 +159,7 @@ export const AiAssistantPlugin = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                  placeholder="Задать вопрос..."
+                  placeholder={t('inputPlaceholder')}
                   className="w-full text-sm border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3 pr-12 focus:ring-2 focus:ring-brand-500/20 bg-transparent outline-none transition-all dark:text-white"
                 />
                 <button
