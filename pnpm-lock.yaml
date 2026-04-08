@@ -678,6 +678,9 @@ importers:
       react-js-cron:
         specifier: ^5.2.0
         version: 5.2.0(antd@6.3.1(date-fns@4.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react-markdown:
+        specifier: ^10.1.0
+        version: 10.1.0(@types/react@19.2.7)(react@19.2.4)
       react-perfect-scrollbar:
         specifier: ^1.5.8
         version: 1.5.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
