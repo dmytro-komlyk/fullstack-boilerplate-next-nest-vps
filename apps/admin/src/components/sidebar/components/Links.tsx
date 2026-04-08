@@ -7,6 +7,7 @@ import React, { useCallback } from 'react';
 import DashIcon from '@/components/icons/DashIcon';
 import NavLink from '@/components/link/NavLink';
 import type { RoutesType } from '@/types/navigation';
+import { useTranslations } from 'next-intl';
 
 const hiddenLinks: string[] = ['settings'];
 
@@ -15,6 +16,7 @@ export const SidebarLinks = (props: {
   onClick: () => void;
 }): React.ReactNode => {
   const pathname = usePathname();
+  const t = useTranslations('Common.Sidebar');
 
   const activeRoute = useCallback(
     (routeName: string) => {
@@ -27,6 +29,8 @@ export const SidebarLinks = (props: {
     return routes.map((route) => {
       if (hiddenLinks.includes(route.path)) return;
       if (route.layout === '/' || route.layout === '/auth') {
+        const translatedName = t.has(route.path) ? t(route.path) : route.name;
+
         return (
           <React.Fragment key={route.path}>
             {route.path === 'settings' && (
@@ -51,7 +55,7 @@ export const SidebarLinks = (props: {
                         : 'font-medium text-gray-600'
                     }`}
                   >
-                    {route.name}
+                    {translatedName}
                   </p>
                 </li>
                 {activeRoute(route.path) ? (

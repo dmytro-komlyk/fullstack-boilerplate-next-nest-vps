@@ -31,7 +31,7 @@ declare module 'next-auth' {
       forcePasswordChange?: boolean;
       isTwoFactorEnabled?: boolean;
     } & DefaultSession['user'];
-    error?: 'RefreshAccessTokenError' | 'RefreshTokenExpired';
+    error?: 'RefreshAccessTokenError' | 'RefreshTokenExpired' | 'MfaTokenExpired';
   }
 }
 
@@ -50,6 +50,11 @@ declare module 'next-auth/jwt' {
     clientId?: string | undefined;
     forcePasswordChange?: boolean;
     isTwoFactorEnabled?: boolean;
-    error?: 'RefreshAccessTokenError' | 'RefreshTokenExpired' | null | undefined;
+    error?:
+      | 'RefreshAccessTokenError'
+      | 'RefreshTokenExpired'
+      | 'MfaTokenExpired'
+      | null
+      | undefined;
   }
 }

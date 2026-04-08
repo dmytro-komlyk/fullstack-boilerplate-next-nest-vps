@@ -1,0 +1,43 @@
+{
+  "verify": {
+    "subject": "Verify your email",
+    "title": "Confirm your email address",
+    "greeting": "Hi",
+    "description": "You’re almost ready to start using",
+    "button": "Verify email",
+    "trouble": "If the button doesn’t work, copy and paste this link into your browser:",
+    "ignore": "If you didn’t create an account, you can safely ignore this email.",
+    "support": "Need help? Contact us at"
+  },
+  "resetPassword": {
+    "subject": "Reset your password",
+    "title": "Password Reset Request",
+    "greeting": "Hi",
+    "description": "We received a request to reset the password for your account",
+    "button": "Reset Password",
+    "expiry": "This link will expire in 1 hour. If the button doesn't work, copy and paste this URL into your browser:",
+    "ignore": "If you didn't request a password reset, please ignore this email. Your password will stay the same."
+  },
+  "invite": {
+    "subject": "You're invited to join {{appName}} team",
+    "title": "Join the Team",
+    "greeting": "Hello,",
+    "description": "You have been invited to join the administration panel",
+    "asRole": "as",
+    "action": "To accept this invitation and set up your account, please click the button below.",
+    "button": "Accept Invitation",
+    "expiry": "* This invitation link is unique to you and will expire in 7 days.",
+    "trouble": "If the button doesn’t work, copy and paste this link into your browser:",
+    "ignore": "If you weren't expecting this invitation, you can ignore this email."
+  },
+  "passwordChanged": {
+    "subject": "Password Changed Successfully",
+    "title": "Password Updated",
+    "greeting": "Hi",
+    "description": "The password for your <strong>{{appName}}</strong> account has been successfully changed. You can now log in using your new password.",
+    "button": "Log In Now",
+    "securityTitle": "Didn't make this change?",
+    "securityWarning": "If you did not change your password, your account may have been compromised. Please contact our support team immediately or reset your password again using your registered email address.",
+    "footer": "This is an automated notification, please do not reply to this email."
+  }
+}

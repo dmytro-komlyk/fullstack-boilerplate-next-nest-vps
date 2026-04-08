@@ -1,4 +1,5 @@
 import { prisma } from '@package/prisma';
+import { TRPCError } from '@trpc/server';
 import { addDays, addHours, addMinutes } from 'date-fns';
 import jwt from 'jsonwebtoken';
 
@@ -24,13 +25,23 @@ export const verifyToken = async ({
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
       console.error('Token expired at:', error.expiredAt);
-      throw new Error('Token has expired');
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'tokenExpired',
+        cause: error.expiredAt,
+      });
     } else if (error instanceof jwt.JsonWebTokenError) {
       console.error('JWT error:', error.message);
-      throw new Error('Invalid token');
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'invalidToken',
+      });
     }
     console.error('Unexpected error:', error);
-    throw new Error('Invalid or expired token');
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'invalidOrExpiredToken',
+    });
   }
 };
 

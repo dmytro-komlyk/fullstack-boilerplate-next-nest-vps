@@ -12,6 +12,7 @@ export type Domain = {
   origin: string | null;
   userAgent: string | null;
   clientId: string | null;
+  locale: string;
 };
 
 // ---- Context SSR / Next.js ----
@@ -65,6 +66,7 @@ export async function createContext({
   const userAgent = (headers['user-agent'] as string) || null;
   const ip = (headers['x-forwarded-for'] as string) || req?.ip || 'unknown';
   const clientId = (headers['x-client-id'] as string) || null;
+  const locale = (headers['x-locale'] as string) || 'uk';
 
   // if (!clientId && userAgent) {
   //   clientId = crypto.createHash('md5').update(`${userAgent}-${ip}`).digest('hex');
@@ -178,6 +180,7 @@ export async function createContext({
       origin: origin,
       userAgent: userAgent,
       clientId: clientId,
+      locale: locale,
     },
   };
 }

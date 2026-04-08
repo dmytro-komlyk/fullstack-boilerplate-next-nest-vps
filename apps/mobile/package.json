@@ -20,6 +20,7 @@
     "@expo/vector-icons": "^15.0.3",
     "@hookform/resolvers": "^5.2.2",
     "@package/api": "workspace:^",
+    "@package/i18n": "workspace:*",
     "@package/store": "workspace:^",
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",

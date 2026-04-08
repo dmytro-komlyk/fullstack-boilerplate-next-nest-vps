@@ -33,8 +33,6 @@ export async function createSubscriptionStream({
     let hasActualText = false;
 
     for await (const chunk of result.fullStream) {
-      // console.log('CHUNK:', chunk.type);
-
       if (chunk.type === 'text-delta') {
         const token = (chunk as any).textDelta || (chunk as any).text || '';
         if (token.trim().length > 0) {

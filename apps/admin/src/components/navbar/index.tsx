@@ -11,7 +11,7 @@ import {
 import { useThemeCookieStore, useUIStore } from '@package/store/ui';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FiAlignJustify } from 'react-icons/fi';
 import { LuLogOut } from 'react-icons/lu';
@@ -29,12 +29,23 @@ import { getActiveRoute } from '@/utils/navigation';
 
 import { useLogout } from '@/hooks/useLogout';
 import avatar from '@/public/img/avatar.png';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface INavbarProps {
   routes: IRoute[];
 }
 
+const languages = [
+  { key: 'en', label: 'English', flag: '🇺🇸' },
+  { key: 'uk', label: 'Українська', flag: '🇺🇦' },
+];
+
 const Navbar = ({ routes }: INavbarProps) => {
+  const locale = useLocale();
+  const t = useTranslations('Common.Navbar');
+  const tSidebar = useTranslations('Common.Sidebar');
+  const tBreadcrumbs = useTranslations('Common.Breadcrumbs');
+  const router = useRouter();
   const pathname = usePathname();
   const activeRoute = getActiveRoute(routes, pathname);
   const { data: session } = useSession();
@@ -42,6 +53,7 @@ const Navbar = ({ routes }: INavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { isSideBarOpen, setSideBarOpen } = useUIStore();
   const { theme, setTheme } = useThemeCookieStore();
+  const [isLangOpen, setIsLangOpen] = useState(false);
 
   const handleThemeToggle = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -56,7 +68,14 @@ const Navbar = ({ routes }: INavbarProps) => {
     setIsOpen(isOpen);
   };
 
+  const handleLocaleChange = (key: string) => {
+    const newPath = pathname.replace(`/${locale}`, `/${key}`);
+    router.push(newPath);
+  };
+
   const tabs = subRoutes[activeRoute.path.toLowerCase()] || [];
+
+  console.log(activeRoute.name);
 
   return (
     <nav className="sticky top-4 z-40 flex flex-row flex-wrap items-center justify-between rounded-xl bg-white/10 p-2 backdrop-blur-xl dark:bg-[#0b14374d]">
@@ -74,7 +93,7 @@ const Navbar = ({ routes }: INavbarProps) => {
         ) : (
           <p className="shrink px-2 pt-3 text-xl text-gray-800 capitalize dark:text-white">
             <NavLink href="#" className="font-bold capitalize">
-              {activeRoute.name}
+              {tBreadcrumbs(activeRoute.name.toString().toLocaleLowerCase())}
             </NavLink>
           </p>
         )}
@@ -86,7 +105,43 @@ const Navbar = ({ routes }: INavbarProps) => {
         >
           <FiAlignJustify className="size-5" />
         </span>
+        {/* Notification */}
         <NotificationDropdown />
+        {/* Language */}
+        <Dropdown
+          isOpen={isLangOpen}
+          onOpenChange={setIsLangOpen}
+          placement="bottom-end"
+          button={
+            <button className="flex cursor-pointer items-center text-sm font-bold uppercase text-gray-600 dark:text-white outline-none">
+              {locale}
+            </button>
+          }
+          classNames="py-2 px-1 w-48 shadow-shadow-500 rounded-2xl bg-white dark:bg-gray-800 dark:text-white"
+        >
+          <Listbox
+            aria-label="Select Language"
+            disallowEmptySelection
+            selectedKeys={[locale]}
+            selectionMode="single"
+            variant="flat"
+          >
+            {languages.map((lang) => (
+              <ListboxItem
+                key={lang.key}
+                onPress={() => {
+                  handleLocaleChange(lang.key);
+                  setIsLangOpen(false);
+                }}
+                startContent={<span>{lang.flag}</span>}
+                className="rounded-xl transition-colors data-[hover=true]:bg-gray-100 dark:data-[hover=true]:bg-white/10"
+              >
+                <span className="text-sm font-medium">{lang.label}</span>
+              </ListboxItem>
+            ))}
+          </Listbox>
+        </Dropdown>
+        {/* Theme */}
         <button
           type="button"
           onClick={handleThemeToggle}
@@ -112,35 +167,39 @@ const Navbar = ({ routes }: INavbarProps) => {
               alt="User avatar"
             />
           }
-          classNames="py-2 top-10 -left-[210px] w-max"
+          classNames="pt-4 top-10 -left-[210px] w-max shadow-shadow-500 flex w-64 flex-col rounded-2xl bg-white shadow-xl dark:bg-gray-800 dark:text-white dark:shadow-none"
         >
-          <div className="shadow-shadow-500 flex w-64 flex-col rounded-2xl bg-white p-2 shadow-xl dark:bg-gray-800 dark:text-white dark:shadow-none">
-            {/* Header */}
-            <div className="mb-4 flex justify-start px-2">
-              <User
-                avatarProps={{
-                  size: 'sm',
-                  src: session?.user.avatarUrl || undefined,
-                  classNames: {
-                    base: 'bg-gray-700 text-white',
-                  },
-                }}
-                classNames={{
-                  name: 'text-text-center font-semibold text-gray-900 dark:text-white',
-                }}
-                name={`${session?.user?.nickName}`}
-                description={session?.user?.email}
-              />
-            </div>
+          {/* Header */}
+          <div className="mb-4 flex justify-start px-2">
+            <User
+              avatarProps={{
+                size: 'sm',
+                src: session?.user.avatarUrl || undefined,
+                classNames: {
+                  base: 'bg-gray-700 text-white',
+                },
+              }}
+              classNames={{
+                name: 'text-text-center font-semibold text-gray-900 dark:text-white',
+              }}
+              name={`${session?.user?.nickName}`}
+              description={session?.user?.email}
+            />
+          </div>
 
-            {/* Divider */}
-            <div className="mb-2 h-px w-full bg-gray-200 dark:bg-white/20" />
+          {/* Divider */}
+          <div className="mb-2 h-px w-full bg-gray-200 dark:bg-white/20" />
 
-            {/* Menu items */}
-            <div className="flex w-full flex-col gap-1">
-              <Listbox aria-label="Listbox menu with sections" variant="flat">
-                <ListboxSection showDivider={routes.length > 0}>
-                  {routes.map((route) => (
+          {/* Menu items */}
+          <div className="flex w-full flex-col gap-1">
+            <Listbox aria-label="Listbox menu with sections" variant="flat">
+              <ListboxSection showDivider={routes.length > 0}>
+                {routes.map((route) => {
+                  const translatedName = tSidebar.has(route.path.toLowerCase())
+                    ? tSidebar(route.path.toLowerCase())
+                    : route.name;
+
+                  return (
                     <ListboxItem
                       key={route.path}
                       as={Link}
@@ -151,28 +210,28 @@ const Navbar = ({ routes }: INavbarProps) => {
                       className="h-10 rounded-xl transition-colors data-[hover=true]:bg-gray-100 dark:data-[hover=true]:bg-white/10"
                     >
                       <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {route.name}
+                        {translatedName}
                       </span>
                     </ListboxItem>
-                  ))}
-                </ListboxSection>
+                  );
+                })}
+              </ListboxSection>
 
-                <ListboxSection>
-                  <ListboxItem
-                    key="logout"
-                    color="danger"
-                    onPress={onSignOutClick}
-                    endContent={<LuLogOut className="size-5 text-red-500 hover:text-red-600" />}
-                    classNames={{
-                      title: 'text-sm font-medium text-red-500 hover:text-red-600 lg:text-base',
-                    }}
-                    isDisabled={isLoading}
-                  >
-                    Log Out
-                  </ListboxItem>
-                </ListboxSection>
-              </Listbox>
-            </div>
+              <ListboxSection>
+                <ListboxItem
+                  key="logout"
+                  color="danger"
+                  onPress={onSignOutClick}
+                  endContent={<LuLogOut className="size-5 text-red-500 hover:text-red-600" />}
+                  classNames={{
+                    title: 'text-sm font-medium text-red-500 hover:text-red-600 lg:text-base',
+                  }}
+                  isDisabled={isLoading}
+                >
+                  {t('logout')}
+                </ListboxItem>
+              </ListboxSection>
+            </Listbox>
           </div>
         </Dropdown>
       </div>

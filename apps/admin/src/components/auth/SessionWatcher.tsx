@@ -11,7 +11,9 @@ const SessionWatcher = () => {
 
   useEffect(() => {
     const isSessionExpired =
-      session?.error === 'RefreshTokenExpired' || session?.error === 'RefreshAccessTokenError';
+      session?.error === 'RefreshTokenExpired' ||
+      session?.error === 'RefreshAccessTokenError' ||
+      session?.error === 'MfaTokenExpired';
 
     if (isSessionExpired && !hasLoggedOut.current) {
       hasLoggedOut.current = true;

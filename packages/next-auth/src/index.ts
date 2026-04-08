@@ -276,6 +276,12 @@ export const authOptions: AuthConfig = {
       }
 
       if (token.requires2FA) {
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (token.iat && currentTime > (token.iat as number) + 600) {
+          token.error = 'MfaTokenExpired';
+          return token;
+        }
+
         return token;
       }
 

@@ -5,6 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createWSClient, httpBatchLink, loggerLink, splitLink, wsLink } from '@trpc/client';
 import { useSession } from 'next-auth/react';
+import React from 'react';
 
 import { useState } from 'react';
 import { trpc } from './client';
@@ -43,6 +44,7 @@ export function TrpcProvider({ children }: { children: React.ReactNode }) {
               return {
                 ...(session?.user ? { 'x-session-token': session?.user?.sessionToken } : {}),
                 'x-client-id': clientId,
+                'x-locale': window.location.pathname.split('/')[1] || 'uk',
               };
             },
             async fetch(url, options) {

@@ -4,10 +4,16 @@ import { showToast } from '@/components/Toast';
 import { Button, Input } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthSchema, trpc } from '@package/api';
+import { getLocalizedError } from 'i18n/error-handler';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 
 const ChangePasswordForm = ({ onSuccess }: { onSuccess: () => void }) => {
+  const t = useTranslations('Auth.ChangeForcedPassword.Form');
+  const ts = useTranslations('Common.Success');
+  const te = useTranslations('Common.Errors');
+
   const { update, data: session } = useSession();
   const {
     register,
@@ -33,11 +39,11 @@ const ChangePasswordForm = ({ onSuccess }: { onSuccess: () => void }) => {
             forcePasswordChange: false,
           },
         });
-        showToast.success(response.message);
+        showToast.success(ts(response.message));
         onSuccess();
       }
     } catch (error: any) {
-      showToast.error(`${error.message}`);
+      showToast.error(getLocalizedError(error.message, te));
     }
   };
 
@@ -46,17 +52,17 @@ const ChangePasswordForm = ({ onSuccess }: { onSuccess: () => void }) => {
       <Input
         {...register('password')}
         type="password"
-        label="New Admin Password"
+        label={t('passwordLabel')}
         variant="bordered"
-        errorMessage={errors.password?.message as string}
+        errorMessage={getLocalizedError(errors.password?.message as string, te)}
         isInvalid={!!errors.password}
       />
       <Input
         {...register('passwordConfirmation')}
         type="password"
-        label="Confirm Password"
+        label={t('confirmPasswordLabel')}
         variant="bordered"
-        errorMessage={errors.passwordConfirmation?.message as string}
+        errorMessage={getLocalizedError(errors.passwordConfirmation?.message as string, te)}
         isInvalid={!!errors.passwordConfirmation}
       />
       <Button
@@ -66,7 +72,7 @@ const ChangePasswordForm = ({ onSuccess }: { onSuccess: () => void }) => {
         isDisabled={changeForcedPassword.isPending || !isValid}
         className="bg-navy-700 dark:bg-brand-600 font-bold h-12 rounded-xl"
       >
-        Initialize Security
+        {t('submitButton')}
       </Button>
     </form>
   );

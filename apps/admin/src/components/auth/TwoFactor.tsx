@@ -13,8 +13,11 @@ import {
   useDisclosure,
 } from '@heroui/react';
 import { trpc } from '@package/api/client';
+import { getLocalizedError } from 'i18n/error-handler';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { showToast } from '../Toast';
@@ -24,6 +27,11 @@ interface FormValues {
 }
 
 export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verify' }) {
+  const router = useRouter();
+  const t = useTranslations('Auth.TwoFactor.Form');
+  const tm = useTranslations('Auth.TwoFactor.Modal');
+  const ts = useTranslations('Common.Success');
+  const te = useTranslations('Common.Errors');
   const [isActivated, setIsActivated] = useState(false);
   const [isBackupMode, setIsBackupMode] = useState(false);
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
@@ -81,7 +89,7 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
         });
 
         if (data.status === 'SUCCESS') {
-          showToast.success('Identity verified');
+          showToast.success(ts('twoFactorVerify'));
           await update({
             user: {
               ...session?.user,
@@ -94,13 +102,22 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
         }
       }
     } catch (error: any) {
-      const message = error?.shape?.message || error?.message || 'Verification failed';
-      showToast.error(message);
+      console.log(error.message);
+
+      if (error.message === 'tokenExpired' || error.message === 'invalidToken') {
+        showToast.error(te('sessionExpired'));
+        setTimeout(() => {
+          window.location.href = '/auth/sign-in?toast=session_expired';
+        }, 1500);
+        return;
+      }
+
+      showToast.error(getLocalizedError(error.message, te));
     }
   };
 
   const handleDone = () => {
-    window.location.href = '/dashboard';
+    router.push('/dashboard');
   };
 
   const isLoading = verifyMutation.isPending || activateMutation.isPending;
@@ -126,7 +143,7 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
               </div>
               <div className="text-center">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                  Manual Key
+                  {t('manualKey')}
                 </p>
                 <code className="text-sm font-mono font-bold text-navy-700 dark:text-brand-400">
                   {setupData?.secret}
@@ -141,10 +158,10 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
         <div className="flex flex-col gap-2 text-center">
           <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
             {isBackupMode
-              ? 'Enter one of your 8-character backup codes'
+              ? t('labelBackup')
               : mode === 'setup'
-                ? 'Scan QR and enter code'
-                : 'Verification Code'}
+                ? t('labelSetup')
+                : t('labelVerify')}
           </label>
         </div>
         <Controller
@@ -165,8 +182,11 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
             />
           )}
           rules={{
-            required: 'OTP is required',
-            minLength: { value: 6, message: 'Enter 6 digits' },
+            required: t('otpRequired'),
+            minLength: {
+              value: isBackupMode ? 8 : 6,
+              message: t('otpMinLength', { count: isBackupMode ? 8 : 6 }),
+            },
           }}
         />
         <div className="flex flex-col gap-3">
@@ -178,10 +198,10 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
             className="bg-navy-700 dark:bg-brand-600 font-bold h-14 rounded-xl text-lg shadow-lg shadow-brand-500/20"
           >
             {isBackupMode
-              ? 'Verify Backup Code'
+              ? t('btnVerifyBackup')
               : mode === 'setup'
-                ? 'Activate Protection'
-                : 'Authorize Access'}
+                ? t('btnActivate')
+                : t('btnAuthorize')}
           </Button>
           {mode === 'verify' && (
             <Button
@@ -190,7 +210,7 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
               className="text-gray-500 hover:text-navy-700 dark:hover:text-white"
               onPress={toggleMode}
             >
-              {isBackupMode ? 'Back to standard 2FA' : 'Lost access to device? Use backup code'}
+              {isBackupMode ? t('backToStandard') : t('lostAccess')}
             </Button>
           )}
         </div>
@@ -208,15 +228,13 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
           {() => (
             <>
               <ModalHeader className="flex flex-col gap-1 text-xl font-bold text-navy-700 dark:text-white">
-                🛡️ Save Backup Codes
+                {tm('title')}
               </ModalHeader>
               <ModalBody>
-                <div className="rounded-xl bg-amber-50 p-4 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-500/30 mb-4">
-                  <p className="text-sm text-amber-700 dark:text-amber-300">
-                    If you lose your phone, these codes are the <b>only way</b> to access your
-                    account. Store them in a password manager.
-                  </p>
-                </div>
+                <div
+                  className="rounded-xl bg-amber-50 p-4 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-500/30 mb-4"
+                  dangerouslySetInnerHTML={{ __html: tm.raw('warning') }}
+                />
 
                 <div className="grid grid-cols-2 gap-2">
                   {backupCodes.map((code) => (
@@ -237,10 +255,10 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
                   className="w-full bg-navy-700 dark:bg-brand-600 font-bold h-12"
                   onClick={handleDone}
                 >
-                  I have saved the codes
+                  {tm('btnDone')}
                 </Button>
                 <p className="text-[10px] text-center text-gray-400 uppercase tracking-widest">
-                  Once you click, you won't see them again
+                  {tm('footerNote')}
                 </p>
               </ModalFooter>
             </>

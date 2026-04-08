@@ -22,6 +22,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@internationalized/date": "^3.6.0",
     "@package/api": "workspace:^",
+    "@package/i18n": "workspace:*",
     "@package/next-auth": "workspace:^",
     "@package/store": "workspace:^",
     "@package/ui": "workspace:^",
@@ -33,6 +34,7 @@
     "jsonwebtoken": "^9.0.2",
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.25",
+    "next-intl": "^4.8.3",
     "next-themes": "^0.4.4",
     "next-transpile-modules": "^10.0.1",
     "prop-types": "^15.8.1",
@@ -46,6 +48,7 @@
     "react-js-cron": "^5.2.0",
     "react-markdown": "^10.1.0",
     "react-perfect-scrollbar": "^1.5.8",
+    "remark-gfm": "^4.0.1",
     "uuid": "^13.0.0",
     "web-vitals": "^5.1.0"
   },

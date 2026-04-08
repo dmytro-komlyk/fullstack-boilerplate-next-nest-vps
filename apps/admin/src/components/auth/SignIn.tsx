@@ -1,15 +1,18 @@
 'use client';
 
-import { Button, Input } from '@heroui/react';
+import { Button, Input, Link as NextUILink } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthSchema } from '@package/api';
 import { signIn } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { IoEyeOffOutline, IoEyeOutline } from 'react-icons/io5';
 
 import LoadingSpinner from '@/components/loading/LoadingSpinner';
 import { showToast } from '@/components/Toast';
+import { getLocalizedError } from 'i18n/error-handler';
 
 interface SignInProps {
   callbackUrl: string;
@@ -17,6 +20,8 @@ interface SignInProps {
 }
 
 const SignIn = ({ callbackUrl, defaultEmail = '' }: SignInProps) => {
+  const t = useTranslations('Auth.SignIn.Form');
+  const te = useTranslations('Common.Errors');
   const [isSubmittingCredentials, setIsSubmittingCredentials] = useState(false);
   const [isVisiblePassword, setIsVisiblePassword] = useState<boolean>(false);
 
@@ -24,8 +29,8 @@ const SignIn = ({ callbackUrl, defaultEmail = '' }: SignInProps) => {
     register,
     handleSubmit,
     formState: { errors, isValid, touchedFields },
-  } = useForm<AuthSchema.SignInData>({
-    resolver: zodResolver(AuthSchema.signInSchema),
+  } = useForm<AuthSchema.SignInFormData>({
+    resolver: zodResolver(AuthSchema.signInFormSchema),
     defaultValues: {
       email: defaultEmail,
       password: '',
@@ -36,7 +41,7 @@ const SignIn = ({ callbackUrl, defaultEmail = '' }: SignInProps) => {
 
   const toggleVisibilityPassword = () => setIsVisiblePassword(!isVisiblePassword);
 
-  const onSubmit = async (data: AuthSchema.SignInData) => {
+  const onSubmit = async (data: AuthSchema.SignInFormData) => {
     setIsSubmittingCredentials(true);
 
     try {
@@ -47,13 +52,13 @@ const SignIn = ({ callbackUrl, defaultEmail = '' }: SignInProps) => {
       });
 
       if (result?.error) {
-        showToast.error(result?.code as string);
+        showToast.error(getLocalizedError(result.code, te));
         return;
       }
       const targetUrl = callbackUrl;
       window.location.href = targetUrl;
     } catch (error: any) {
-      showToast.error(`${error.message}`);
+      showToast.error(getLocalizedError(error.message, te));
     } finally {
       setIsSubmittingCredentials(false);
     }
@@ -66,12 +71,16 @@ const SignIn = ({ callbackUrl, defaultEmail = '' }: SignInProps) => {
         <Input
           {...register('email')}
           variant="bordered"
-          label="Email*"
-          placeholder="mail@simple.com"
+          label={t('emailLabel')}
+          placeholder={t('emailPlaceholder')}
           id="email"
           type="email"
           isInvalid={(!!errors.email && touchedFields.email) ?? false}
-          errorMessage={errors.email && touchedFields.email ? errors.email.message : null}
+          errorMessage={
+            errors.email && touchedFields.email
+              ? getLocalizedError(errors.email?.message, te)
+              : null
+          }
           classNames={{
             base: 'h-[90px] pb-2',
             inputWrapper: [
@@ -88,12 +97,16 @@ const SignIn = ({ callbackUrl, defaultEmail = '' }: SignInProps) => {
         <Input
           {...register('password')}
           variant="bordered"
-          label="Password*"
-          placeholder="Min. 6 characters"
+          label={t('passwordLabel')}
+          placeholder={t('passwordPlaceholder')}
           id="password"
           type={isVisiblePassword ? 'text' : 'password'}
           isInvalid={(!!errors.password && touchedFields.password) ?? false}
-          errorMessage={errors.password && touchedFields.password ? errors.password.message : null}
+          errorMessage={
+            errors.password && touchedFields.password
+              ? getLocalizedError(errors.password?.message, te)
+              : null
+          }
           classNames={{
             base: 'h-[90px]',
             inputWrapper: [
@@ -109,7 +122,7 @@ const SignIn = ({ callbackUrl, defaultEmail = '' }: SignInProps) => {
               className="focus:outline-none"
               type="button"
               onClick={toggleVisibilityPassword}
-              aria-label={isVisiblePassword ? 'Hide password' : 'Show password'}
+              aria-label={isVisiblePassword ? t('hidePassword') : t('showPassword')}
             >
               {isVisiblePassword ? (
                 <IoEyeOutline size={30} className="flex pb-2 text-gray-400" />
@@ -122,12 +135,13 @@ const SignIn = ({ callbackUrl, defaultEmail = '' }: SignInProps) => {
 
         {/* Forgot Password */}
         <div className="flex items-center justify-end pb-4">
-          <a
-            className="text-brand-500 hover:text-brand-600 text-sm font-medium dark:text-white"
+          <NextUILink
+            as={Link}
             href="/auth/forgot-password"
+            className="text-brand-500 hover:text-brand-600 text-sm font-medium dark:text-white"
           >
-            Forgot Password?
-          </a>
+            {t('forgotPassword')}
+          </NextUILink>
         </div>
         <Button
           type="submit"
@@ -136,7 +150,7 @@ const SignIn = ({ callbackUrl, defaultEmail = '' }: SignInProps) => {
           spinner={<LoadingSpinner />}
           className="bg-brand-500 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:hover:bg-brand-300 dark:active:bg-brand-200 w-full rounded-xl py-3 text-base font-medium text-white transition duration-200 dark:text-white"
         >
-          Sign In
+          {t('submitButton')}
         </Button>
       </form>
     </div>

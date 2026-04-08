@@ -3,6 +3,8 @@
 import { Button, Input } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthSchema, trpc } from '@package/api';
+import { getLocalizedError } from 'i18n/error-handler';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -17,6 +19,9 @@ interface VerifyEmailProps {
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
 const VerifyEmail = ({ token, email }: VerifyEmailProps) => {
+  const t = useTranslations('Auth.VerifyEmail.Form');
+  const ts = useTranslations('Common.Success');
+  const te = useTranslations('Common.Errors');
   const router = useRouter();
   const isMounted = useRef(false);
   const [status, setStatus] = useState<Status>(token ? 'loading' : 'idle');
@@ -37,12 +42,12 @@ const VerifyEmail = ({ token, email }: VerifyEmailProps) => {
   const verifyEmail = trpc.auth.verifyEmail.useMutation({
     onSuccess: () => {
       setStatus('success');
-      showToast.success('Email verified successfully!');
+      showToast.success(ts('emailVerified'));
       setTimeout(() => router.push('/auth/sign-in'), 2000);
     },
     onError: (error) => {
       setStatus('error');
-      showToast.error(error.message || 'Verification failed');
+      showToast.error(getLocalizedError(error.message, te));
     },
   });
   const resendVerification = trpc.auth.resendVerification.useMutation({});
@@ -58,9 +63,9 @@ const VerifyEmail = ({ token, email }: VerifyEmailProps) => {
     setStatus('idle');
     try {
       const response = await resendVerification.mutateAsync({ email: data.email });
-      showToast.success(response.message);
+      showToast.success(ts(response.message));
     } catch (error: any) {
-      showToast.error(`${error.message}`);
+      showToast.error(getLocalizedError(error.message, te));
     }
   };
 
@@ -81,14 +86,18 @@ const VerifyEmail = ({ token, email }: VerifyEmailProps) => {
         <Input
           {...register('email')}
           variant="bordered"
-          label="Email*"
-          placeholder="mail@simple.com"
+          label={t('emailLabel')}
+          placeholder={t('emailPlaceholder')}
           id="email"
           type="email"
           isReadOnly={true}
           isDisabled={resendVerification.isPending}
           isInvalid={(!!errors.email && touchedFields.email) ?? false}
-          errorMessage={errors.email && touchedFields.email ? errors.email?.message : null}
+          errorMessage={
+            errors.email && touchedFields.email
+              ? getLocalizedError(errors.email?.message, te)
+              : null
+          }
           endContent={renderEndContent()}
           classNames={{
             base: 'h-[90px]',
@@ -112,7 +121,7 @@ const VerifyEmail = ({ token, email }: VerifyEmailProps) => {
           isDisabled={status === 'success' || !isValid || resendVerification.isPending}
           className="bg-brand-500 text-white font-medium"
         >
-          Resend Link
+          {t('submitButton')}
         </Button>
       </form>
     </div>

@@ -47,7 +47,6 @@ const NotificationDropdown = () => {
           </button>
         </Badge>
       }
-      animation="origin-[65%_0%] md:origin-top-right transition-all duration-300 ease-in-out"
       classNames="py-2 top-4 -left-[230px] md:-left-[440px] w-max"
     >
       <div className="flex w-87.5 flex-col gap-4 rounded-[20px] bg-white p-6 shadow-xl sm:w-115 dark:bg-navy-800 dark:text-white">

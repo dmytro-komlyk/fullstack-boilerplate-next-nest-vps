@@ -3,6 +3,15 @@ import handlebars from 'handlebars';
 import nodemailer from 'nodemailer';
 import path from 'path';
 
+interface EmailPayload {
+  link: string;
+  name?: string | null;
+  appName: string;
+  lang: string;
+  t: Record<string, any>;
+  [key: string]: any;
+}
+
 export const sendEmail = async ({
   email,
   payload,
@@ -10,7 +19,7 @@ export const sendEmail = async ({
   subject,
 }: {
   email: string;
-  payload: object;
+  payload: EmailPayload;
   template: string;
   subject: string;
 }): Promise<void> => {

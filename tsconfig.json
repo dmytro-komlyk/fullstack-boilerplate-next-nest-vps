@@ -26,6 +26,8 @@
       "admin/*": ["apps/admin/src/*"],
       "mobile/*": ["apps/mobile/src/*"],
       "server/*": ["apps/server/src/*"],
+      "@package/i18n": ["packages/i18n/src/index.ts"],
+      "@package/i18n/*": ["packages/i18n/src/*"],
       "@package/ai": ["packages/ai/src/index.ts"],
       "@package/ai/*": ["packages/ai/src/*"],
       "@package/api": ["packages/api/src/index.ts"],

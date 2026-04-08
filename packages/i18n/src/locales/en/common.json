@@ -1,0 +1,89 @@
+{
+  "Success": {
+    "inviteSent": "Invitation sent successfully.",
+    "emailVerified": "Email verified successfully!",
+    "emailAlreadyVerified": "Email already verified.",
+    "verificationEmailSent": "Verification link has been resent to your email.",
+    "recoveryEmailSent": "If an account exists for that email, a reset link has been sent. Please check your inbox and spam folder.",
+    "registrationUser": "Registration successful. Please check your email for verification.",
+    "securityProtocolInitialized": "Security protocol initialized. Your permanent password is now active.",
+    "passwordUpdated": "Your password has been successfully updated. You can now log in with your new credentials.",
+    "welcomeBack": "Welcome back to {appName}!",
+    "logoutSuccess": "You have successfully logged out.",
+    "twoFactorVerify": "Identity verified successfully."
+  },
+  "Errors": {
+    "providerLoginError": "Failed to authenticate via {provider}. Please try again.",
+    "tokenExpired": "The token has expired. Please log in again.",
+    "invalidToken": "Invalid access token.",
+    "invalidOrExpiredToken": "The token is invalid or expired.",
+    "tokenRequired": "Security token is required",
+    "invalidEmail": "Invalid email",
+    "passwordTooShort": "Minimum character count is {count}",
+    "nicknameTooShort": "Nickname too short (min {count} chars)",
+    "required": "This field is required",
+    "passwordsDontMatch": "Passwords don't match",
+    "emailTooLong": "Email must not exceed {count} characters",
+    "enterName": "Please enter your name",
+    "enterPassword": "Enter your password",
+    "confirmPassword": "Confirm your password",
+    "invalidFormat": "Incorrect format",
+    "invalidCredentials": "Invalid email or password",
+    "accountBanned": "Your account has been blocked. Please contact support.",
+    "accessDenied": "Access denied.",
+    "adminOnly": "Access denied. This area is for administrative personnel only.",
+    "mustLoginAsAdmin": "Admins must log in through the administrative console.",
+    "socialAccountFound": "It looks like you previously signed up with {providers}. Please use that method to log in.",
+    "emailNotVerified": "Email is not verified. Please check your email.",
+    "accountSuspended": "Too many failed attempts. Account suspended for {minutes} minutes.",
+    "accountRemaining": "Your account has been temporarily suspended due to too many failed login attempts. Please try again in {minutes} minutes.",
+    "incorrectPasswordAttempts": "Incorrect email or password. Remaining attempts: {count}",
+    "twoFactorAlreadyEnabled": "2FA is already enabled",
+    "twoFactorVerifyToken": "User ID is missing in token",
+    "twoFactorInvalidToken": "Invalid token type",
+    "twoFactorNotConfigured": "2FA not configured",
+    "twoFactorInvalidCode": "Invalid 2FA code",
+    "twoFactorSecretNotFound": "2FA secret not found. Please restart the setup process.",
+    "twoFactorInvalidVerificationCode": "Invalid verification code. Please try again.",
+    "userNotFound": "User not found",
+    "userAlreadyExists": "User with this email already exists.",
+    "userSessionNotFound": "User session not found.",
+    "invalidVerificationToken": "Invalid or expired verification token",
+    "tooManyRequests": "Please wait {seconds} seconds before sending a new request.",
+    "invalidResetLink": "Invalid or expired password reset link.",
+    "requireInvitation": "Registration on this domain requires an invitation.",
+    "invalidInvitation": "Invalid, expired, or already used invitation.",
+    "sessionExpired": "Your session has expired. Please sign in again."
+  },
+  "Navbar": {
+    "logout": "Log Out"
+  },
+  "Breadcrumbs": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "onboarding": "Onboarding",
+    "settings": "Settings"
+  },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "profile": "Profile",
+    "users": "Users"
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "comingSoon": "Coming Soon",
+    "stayTuned": "Stay Tuned!",
+    "description": "We are currently building the notification system for your admin panel.",
+    "markAsRead": "Mark all as read"
+  },
+  "SettingsWidget": {
+    "theme": {
+      "light": "Light Mode",
+      "dark": "Dark Mode"
+    },
+    "language": "Change Language",
+    "help": "Help & Support"
+  }
+}
