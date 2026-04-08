@@ -48,11 +48,11 @@ async function VerifyEmailDefault({
 
               <VerifyEmail token={token} email={email} />
 
-              <div className="mt-8 flex items-center justify-center gap-3 rounded-2xl bg-emerald-50 py-3 dark:bg-emerald-500/10 border-1 border-emerald-100 dark:border-emerald-500/20">
+              <div className="mt-8 flex items-center justify-center gap-3 rounded-2xl bg-green-50 py-3 dark:bg-green-500/10 border-1 border-green-100 dark:border-green-500/20">
                 <div
-                  className={`size-2 rounded-full ${token ? 'bg-emerald-500 animate-ping' : 'bg-amber-400'}`}
+                  className={`size-2 rounded-full ${token ? 'bg-green-500 animate-ping' : 'bg-amber-400'}`}
                 />
-                <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                <span className="text-[11px] font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">
                   {token ? 'System Check: Active' : 'Waiting for User Action'}
                 </span>
               </div>
