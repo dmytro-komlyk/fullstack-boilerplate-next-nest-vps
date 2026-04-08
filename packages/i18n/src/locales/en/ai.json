@@ -1,0 +1,28 @@
+{
+  "Public": {
+    "header": { "title": "Omni Guide", "status": "AI Assistant • Online" },
+    "welcome": "Hi! I'd like to help you explore the capabilities of Omni-tRPC-Stack. What are you interested in?",
+    "inputPlaceholder": "Ask a question...",
+    "quickActions": [
+      {
+        "label": "🚀 Tech Stack",
+        "query": "What is the tech stack used in Omni-Stack?"
+      },
+      { "label": "🛠 Features", "query": "Tell me about the main features of this project" },
+      { "label": "📱 Mobile", "query": "Is there mobile app support?" },
+      { "label": "🛡 Security", "query": "How is authentication and protection implemented?" }
+    ]
+  },
+  "Admin": {
+    "header": { "title": "Admin Copilot", "status": "Online | Connected to DB" },
+    "welcome": "How can I help you with admin tasks today?",
+    "inputPlaceholder": "Query system stats or users...",
+    "quickActions": [
+      { "label": "📈 Stats", "query": "Show growth stats and total users" },
+      { "label": "👥 Admins", "query": "List all administrators" },
+      { "label": "🆕 Recent", "query": "Who are the last 5 registered users?" },
+      { "label": "📊 Roles", "query": "Show user distribution by roles" },
+      { "label": "📊 Export CSV", "query": "Export all users as a CSV report" }
+    ]
+  }
+}

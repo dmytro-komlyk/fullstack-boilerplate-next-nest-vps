@@ -1,3 +1,4 @@
+import aiEn from './locales/en/ai.json';
 import authEn from './locales/en/auth.json';
 import commonEn from './locales/en/common.json';
 import emailEn from './locales/en/email.json';
@@ -23,6 +24,7 @@ export const getMessagesForLocale = async (locale: string) => {
       Auth: (await import(`./locales/${locale}/auth.json`)).default,
       Common: (await import(`./locales/${locale}/common.json`)).default,
       Email: (await import(`./locales/${locale}/email.json`)).default,
+      AI: (await import(`./locales/${locale}/ai.json`)).default,
     };
   } catch (error) {
     console.error(`Failed to load messages for locale: ${locale}`, error);
@@ -30,6 +32,7 @@ export const getMessagesForLocale = async (locale: string) => {
       Auth: authEn,
       Common: commonEn,
       Email: emailEn,
+      AI: aiEn,
     };
   }
 };
