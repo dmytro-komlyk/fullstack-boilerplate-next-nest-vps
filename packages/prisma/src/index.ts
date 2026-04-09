@@ -1,12 +1,13 @@
 import { PrismaPg } from '@prisma/adapter-pg';
+import pkg from 'pg';
 import { PrismaClient } from './generated/client/client';
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL as string,
-});
+const { Pool } = pkg;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
 
 const globalForPrisma = globalThis as typeof globalThis & {
-  prisma?: PrismaClient;
+  prisma: PrismaClient | undefined;
 };
 
 export const prisma: PrismaClient =
