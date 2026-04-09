@@ -83,11 +83,12 @@ export default function SettingsWidgetPlugin() {
                 disallowEmptySelection
                 variant="flat"
                 selectionMode="single"
-                selectedKeys={[locale]}
+                selectedKeys={new Set([locale])}
               >
                 {languages.map((lang) => (
                   <ListboxItem
                     key={lang.key}
+                    textValue={lang.label}
                     startContent={<span>{lang.flag}</span>}
                     onPress={() => {
                       handleLocaleChange(lang.key);
@@ -105,6 +106,7 @@ export default function SettingsWidgetPlugin() {
         <div className="h-px w-full bg-gray-200 dark:bg-white/10" />
 
         <Tooltip
+          key={theme}
           content={theme === 'dark' ? t('theme.light') : t('theme.dark')}
           placement="left"
           offset={15}
@@ -114,12 +116,12 @@ export default function SettingsWidgetPlugin() {
             isIconOnly
             variant="light"
             className="h-10 w-10 rounded-xl"
-            onClick={handleThemeToggle}
+            onPress={handleThemeToggle}
           >
             {theme === 'dark' ? (
-              <RiSunFill className="h-5 w-5 text-white" />
+              <RiSunFill key="sun" className="h-5 w-5 text-white" />
             ) : (
-              <RiMoonFill className="h-5 w-5 text-gray-500" />
+              <RiMoonFill key="moon" className="h-5 w-5 text-gray-500" />
             )}
           </Button>
         </Tooltip>
