@@ -36,6 +36,7 @@ build
 
 # Uploads
 apps/server/public
+apps/server/static/exports
 
 # env
 .env
