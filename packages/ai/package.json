@@ -27,8 +27,9 @@
     "clean": "rimraf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "ai": "^6.0.116",
-    "ollama-ai-provider-v2": "^3.5.0"
+    "@package/prisma": "workspace:*",
+    "ai": "^6.0.159",
+    "ai-sdk-ollama": "^3.8.3"
   },
   "devDependencies": {
     "@package/eslint-config": "workspace:*",

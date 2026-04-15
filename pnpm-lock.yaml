@@ -760,12 +760,15 @@ importers:
 
   packages/ai:
     dependencies:
+      '@package/prisma':
+        specifier: workspace:*
+        version: link:../prisma
       ai:
-        specifier: ^6.0.116
-        version: 6.0.153(zod@4.3.6)
-      ollama-ai-provider-v2:
-        specifier: ^3.5.0
-        version: 3.5.0(ai@6.0.153(zod@4.3.6))(zod@4.3.6)
+        specifier: ^6.0.159
+        version: 6.0.159(zod@4.3.6)
+      ai-sdk-ollama:
+        specifier: ^3.8.3
+        version: 3.8.3(ai@6.0.159(zod@4.3.6))(zod@4.3.6)
     devDependencies:
       '@package/eslint-config':
         specifier: workspace:*
@@ -1189,6 +1192,15 @@ packages:
     resolution:
       {
         integrity: sha512-8D6C9eEvDq6IgrdlWzpbniahDkoLiieTCrpzH8p/Hw63/0iPnZJ1uZcqxHrDIVDW/+aaGhBXqmx5C7HSd2eMmQ==,
+      }
+    engines: { node: '>=18' }
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/gateway@3.0.96':
+    resolution:
+      {
+        integrity: sha512-BDiVEMUVHGpngReeigzLyJobG0TvzYbNGzdHI8JYBZHrjOX4aL6qwIls7z3p7V4TuXVWUCbG8TSWEe7ksX4Vhw==,
       }
     engines: { node: '>=18' }
     peerDependencies:
@@ -8059,10 +8071,28 @@ packages:
       }
     engines: { node: '>= 14' }
 
+  ai-sdk-ollama@3.8.3:
+    resolution:
+      {
+        integrity: sha512-KId/S++eb0CgTPFTtHzCGCrO73kXZLK+hyyZx5k8LVqU2XOEHYKVbIwDiQ+hm3okHjnsGehn4zR4QNm14SUM3Q==,
+      }
+    engines: { node: '>=22' }
+    peerDependencies:
+      ai: ^6.0.154
+
   ai@6.0.153:
     resolution:
       {
         integrity: sha512-UlgBe4k0Ja1m1Eufn6FVSsHoF0sc7qwxX35ywJPDogIvBz0pHc+NOmCqiRY904DczNYIuwpZfKBLVz8HXgu3mg==,
+      }
+    engines: { node: '>=18' }
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  ai@6.0.159:
+    resolution:
+      {
+        integrity: sha512-S18ozG7Dkm3Ud1tzOtAK5acczD4vygfml80RkpM9VWMFpvAFwAKSHaGYkATvPQHIE+VpD1tJY9zcTXLZ/zR5cw==,
       }
     engines: { node: '>=18' }
     peerDependencies:
@@ -12342,6 +12372,13 @@ packages:
         integrity: sha512-FGuPw30AdOIUTRMC2OMRtQV+jkVj2cfPqSeWXv1NEAJ1qZ5zb1X6z1mFhbfOB/iy3ssJCD+3KuZ8r8C3uVFlAg==,
       }
 
+  jsonrepair@3.13.3:
+    resolution:
+      {
+        integrity: sha512-BTznj0owIt2CBAH/LTo7+1I5pMvl1e1033LRl/HUowlZmJOIhzC0zbX5bxMngLkfT4WnzPP26QnW5wMr2g9tsQ==,
+      }
+    hasBin: true
+
   jsonwebtoken@9.0.3:
     resolution:
       {
@@ -13995,15 +14032,11 @@ packages:
         integrity: sha512-RdR9FQrFwNBNXAr4GixM8YaRZRJ5PUWbKYbE5eOsrwAjJW0q2REGcf79oYPsLyskQCZG1PLN+S/K1V00joZAoQ==,
       }
 
-  ollama-ai-provider-v2@3.5.0:
+  ollama@0.6.3:
     resolution:
       {
-        integrity: sha512-+s/aYIYa91z2Vk3AkGAz3BaPAQ0flS2eFZD3BN2mD/N6W6YQbcookyu6pc2cbc8SP5VGpNB857WJ0eHDjKXsXw==,
+        integrity: sha512-KEWEhIqE5wtfzEIZbDCLH51VFZ6Z3ZSa6sIOg/E/tBV8S51flyqBOXi+bRxlOYKDf8i327zG9eSTb8IJxvm3Zg==,
       }
-    engines: { node: '>=18' }
-    peerDependencies:
-      ai: ^5.0.0 || ^6.0.0
-      zod: ^4.0.16
 
   on-exit-leak-free@2.1.2:
     resolution:
@@ -17610,6 +17643,13 @@ snapshots:
   '@0no-co/graphql.web@1.2.0': {}
 
   '@ai-sdk/gateway@3.0.93(zod@4.3.6)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.8
+      '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
+      '@vercel/oidc': 3.1.0
+      zod: 4.3.6
+
+  '@ai-sdk/gateway@3.0.96(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
@@ -23560,9 +23600,27 @@ snapshots:
 
   agent-base@7.1.4: {}
 
+  ai-sdk-ollama@3.8.3(ai@6.0.159(zod@4.3.6))(zod@4.3.6):
+    dependencies:
+      '@ai-sdk/provider': 3.0.8
+      '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
+      ai: 6.0.159(zod@4.3.6)
+      jsonrepair: 3.13.3
+      ollama: 0.6.3
+    transitivePeerDependencies:
+      - zod
+
   ai@6.0.153(zod@4.3.6):
     dependencies:
       '@ai-sdk/gateway': 3.0.93(zod@4.3.6)
+      '@ai-sdk/provider': 3.0.8
+      '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
+      '@opentelemetry/api': 1.9.0
+      zod: 4.3.6
+
+  ai@6.0.159(zod@4.3.6):
+    dependencies:
+      '@ai-sdk/gateway': 3.0.96(zod@4.3.6)
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
       '@opentelemetry/api': 1.9.0
@@ -26608,6 +26666,8 @@ snapshots:
     optionalDependencies:
       graceful-fs: 4.2.11
 
+  jsonrepair@3.13.3: {}
+
   jsonwebtoken@9.0.3:
     dependencies:
       jws: 4.0.1
@@ -27920,12 +27980,9 @@ snapshots:
 
   ohash@2.0.11: {}
 
-  ollama-ai-provider-v2@3.5.0(ai@6.0.153(zod@4.3.6))(zod@4.3.6):
+  ollama@0.6.3:
     dependencies:
-      '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
-      ai: 6.0.153(zod@4.3.6)
-      zod: 4.3.6
+      whatwg-fetch: 3.6.20
 
   on-exit-leak-free@2.1.2: {}
 
