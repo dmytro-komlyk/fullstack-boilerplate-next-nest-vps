@@ -1,8 +1,9 @@
 import { handleAssistant } from '@package/ai';
+import { createPlan, executePlan, type PlanStep } from '@package/ai/planner';
+import { getTools } from '@package/ai/tools';
 
 export async function createSubscriptionStream({
   prompt,
-  history,
   isAdmin,
   locale,
   onToken,
@@ -16,74 +17,82 @@ export async function createSubscriptionStream({
   onComplete: () => void;
 }) {
   try {
-    const targetLanguage = locale === 'uk' ? 'Ukrainian' : 'English';
+    const lang = locale === 'uk' ? 'Ukrainian' : 'English';
+
     // onToken('⏳ Processing...\n');
 
-    const result = await handleAssistant({
-      prompt,
-      history,
-      isAdmin,
-      language: targetLanguage,
-    });
+    // 🔥 1. PLAN
+    let plan: PlanStep[] = [];
 
-    const toolResults: any[] = [];
-    let textOutput = '';
+    if (isAdmin) {
+      plan = await createPlan(prompt);
+    }
+    console.log('FINAL PLAN:', plan);
+    let toolResults: any[] = [];
 
-    for await (const part of result.fullStream) {
-      if (part.type === 'text-delta') {
-        textOutput += part.text;
-      }
-
-      if (part.type === 'tool-result') {
-        toolResults.push({
-          tool: part.toolName,
-          result: part.output,
-        });
-      }
+    if (plan.length > 0) {
+      const tools = getTools(true);
+      toolResults = await executePlan({ plan, tools });
     }
 
-    if (toolResults.length > 0) {
-      const formatted = await handleAssistant({
-        prompt: `
-        You are a response formatter.
+    console.log('TOOL RESULTS:', JSON.stringify(toolResults, null, 2));
 
-        STRICT RULES:
-        - Use ONLY provided data
-        - NO hallucination
-        - NO explanations
-        - SHORT answer
-        - Use bullet points if list
-        - Language: ${targetLanguage}
-
-        User request:
-        ${prompt}
-
-        Tool results:
-        ${JSON.stringify(toolResults)}
-                `,
-        history: [],
-        isAdmin,
-        language: targetLanguage,
-      });
-
-      for await (const t of formatted.textStream) {
-        onToken(t);
-      }
-
+    if (toolResults.length === 0) {
+      onToken(lang === 'Ukrainian' ? 'Немає даних' : 'No data found');
       onComplete();
       return;
     }
 
-    if (textOutput.trim()) {
-      onToken(textOutput);
-    } else {
-      onToken(locale === 'uk' ? 'Немає даних' : 'No data found');
+    const final = await handleAssistant({
+      prompt: `
+      You are a response formatter.
+
+      STRICT RULES:
+      - DO NOT ignore data
+      - ALWAYS produce an answer
+      - DO NOT return empty response
+      - DO NOT repeat question
+      - NO hallucination
+      - NO repetition
+
+      FORMAT RULES:
+
+      If result contains users:
+      - output bullet list:
+        • email (role)
+
+      If result contains counts:
+      - output:
+        Кількість користувачів: X
+
+      If result contains growth:
+      - output:
+        Всього користувачів: X
+        Нових користувачів (24h): Y
+
+      If multiple tools:
+      - combine results into ONE answer
+
+      Language: ${lang}
+
+      User request:
+      ${prompt}
+
+      Data:
+      ${JSON.stringify(toolResults, null, 2)}
+      `,
+      history: [],
+      isAdmin,
+      language: lang,
+    });
+
+    for await (const t of final.textStream) {
+      onToken(t);
     }
 
     onComplete();
-  } catch (err) {
-    console.error('STREAM ERROR:', err);
-    onToken(locale === 'uk' ? '❌ Помилка AI' : '❌ AI Error');
+  } catch {
+    onToken('❌ AI Error');
     onComplete();
   }
 }
