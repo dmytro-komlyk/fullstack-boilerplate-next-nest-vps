@@ -34,4 +34,12 @@ export const disconnectPrisma = async () => {
   await prisma.$disconnect();
 };
 
-export type { PrismaClient, Token, User } from './generated/client/client';
+export type {
+  Account,
+  Invite,
+  PrismaClient,
+  Session,
+  Token,
+  User,
+  VerificationToken,
+} from './generated/client/client';
