@@ -769,6 +769,9 @@ importers:
       ai-sdk-ollama:
         specifier: ^3.8.3
         version: 3.8.3(ai@6.0.159(zod@4.3.6))(zod@4.3.6)
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
     devDependencies:
       '@package/eslint-config':
         specifier: workspace:*

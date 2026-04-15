@@ -11,6 +11,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./planner": {
+      "types": "./dist/planner/index.d.ts",
+      "import": "./dist/planner/index.js",
+      "default": "./dist/planner/index.js"
+    },
+    "./tools": {
+      "types": "./dist/tools/index.d.ts",
+      "import": "./dist/tools/index.js",
+      "default": "./dist/tools/index.js"
     }
   },
   "files": [
@@ -29,7 +39,8 @@
   "dependencies": {
     "@package/prisma": "workspace:*",
     "ai": "^6.0.159",
-    "ai-sdk-ollama": "^3.8.3"
+    "ai-sdk-ollama": "^3.8.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@package/eslint-config": "workspace:*",
