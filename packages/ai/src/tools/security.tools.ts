@@ -1,4 +1,4 @@
-import { prisma, Session, User } from '@package/prisma';
+import { prisma, Session } from '@package/prisma';
 
 export const securityTools = {
   getUserSessions: async ({ email }: { email: string }) => {
@@ -12,19 +12,25 @@ export const securityTools = {
       },
     });
 
-    if (!user || user.sessions.length === 0) return 'No active sessions found for this user.';
+    if (!user) return { error: 'User not found' };
+    if (user.sessions.length === 0) return { sessions: [], message: 'No active sessions' };
 
-    return user.sessions
-      .map(
-        (s: Session) =>
-          `💻 IP: ${s.ipAddress || 'Unknown'} | Device: ${s.userAgent?.slice(0, 30)}... | Last Active: ${s.lastActiveAt.toISOString()}`
-      )
-      .join('\n');
+    const sessions = user.sessions.map((s: Session) => ({
+      ip: s.ipAddress || 'Unknown',
+      device: s.userAgent || 'Unknown',
+      lastActive: s.lastActiveAt.toISOString(),
+    }));
+
+    return {
+      email: email,
+      totalActiveSessions: sessions.length,
+      sessions: sessions,
+    };
   },
 
   unlockUser: async ({ email }: { email: string }) => {
     const user = await prisma.user.findUnique({ where: { email: email.trim() } });
-    if (!user) return 'User not found.';
+    if (!user) return { error: 'User not found' };
 
     await prisma.user.update({
       where: { email: email.trim() },
@@ -34,7 +40,11 @@ export const securityTools = {
       },
     });
 
-    return `Account for ${email} has been unlocked and attempts reset.`;
+    return {
+      success: true,
+      message: `Account for ${email} has been unlocked`,
+      resetAttempts: 0,
+    };
   },
 
   getSecurityAlerts: async () => {
@@ -43,13 +53,13 @@ export const securityTools = {
       select: { email: true, failedLoginAttempts: true, lockedUntil: true },
     });
 
-    if (suspiciousUsers.length === 0) return 'No security alerts at the moment.';
+    if (suspiciousUsers.length === 0) return { message: 'No security alerts at the moment.' };
 
-    return suspiciousUsers
-      .map(
-        (u: Pick<User, 'email' | 'failedLoginAttempts' | 'lockedUntil'>) =>
-          `🚨 ${u.email}: ${u.failedLoginAttempts} attempts. Locked until: ${u.lockedUntil || 'Not locked'}`
-      )
-      .join('\n');
+    return suspiciousUsers.map((u) => ({
+      email: u.email,
+      attempts: u.failedLoginAttempts,
+      isLocked: u.lockedUntil ? u.lockedUntil > new Date() : false,
+      lockedUntil: u.lockedUntil?.toISOString() || null,
+    }));
   },
 };

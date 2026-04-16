@@ -7,11 +7,13 @@ export async function handleAssistant({
   history,
   isAdmin,
   language,
+  disableTools,
 }: {
   prompt: string;
   history: any[];
   isAdmin: boolean;
   language: string;
+  disableTools?: boolean;
 }): Promise<StreamTextResult<any, any>> {
   if (!isAdmin) {
     return generatePublicAssistant({
@@ -25,5 +27,6 @@ export async function handleAssistant({
     prompt,
     history,
     language,
+    ...(disableTools !== undefined && { disableTools }),
   });
 }

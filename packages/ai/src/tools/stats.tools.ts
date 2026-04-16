@@ -2,13 +2,24 @@ import { prisma, User } from '@package/prisma';
 import fs from 'fs';
 import path from 'path';
 
+function saveAndGetDownloadUrl(fileName: string, content: string): string {
+  const assetsDir = process.env.APP_STATIC_ASSETS || 'static';
+  const filePath = path.join(process.cwd(), assetsDir, 'exports', fileName);
+
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, content);
+
+  const url = `${process.env.APP_BASE_URL}/${assetsDir}/exports/${fileName}`;
+  return `[📥 ${fileName}](${url})`;
+}
+
 export const statsTools = {
   getUserCounts: async () => {
     const counts = await prisma.user.groupBy({
       by: ['role'],
       _count: { _all: true },
     });
-    return JSON.stringify(counts);
+    return counts.map((c) => ({ role: c.role, count: c._count._all }));
   },
   getActiveUsers: async () => {
     const activeSince = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // last 7 days
@@ -17,7 +28,10 @@ export const statsTools = {
       where: { lastActiveAt: { gte: activeSince } },
     });
 
-    return `Active users in the last 7 days: ${activeUsers}`;
+    return {
+      activeUsersLast7Days: activeUsers,
+      since: activeSince.toISOString(),
+    };
   },
   getRegistrationsByDay: async () => {
     const registrations = await prisma.user.groupBy({
@@ -25,12 +39,10 @@ export const statsTools = {
       _count: { _all: true },
     });
 
-    return registrations
-      .map((r: { createdAt: Date; _count: { _all: number } }) => {
-        const date = r.createdAt.toISOString().split('T')[0];
-        return `${date}: ${r._count._all}`;
-      })
-      .join('\n');
+    return registrations.map((r) => ({
+      date: r.createdAt.toISOString().split('T')[0],
+      count: r._count._all,
+    }));
   },
   getTopUsers: async () => {
     const topUsers = await prisma.user.findMany({
@@ -39,12 +51,7 @@ export const statsTools = {
       select: { email: true, nickName: true, lastActiveAt: true },
     });
 
-    return topUsers
-      .map(
-        (u: Pick<User, 'email' | 'nickName' | 'lastActiveAt'>) =>
-          `${u.nickName} (${u.email}) - Last active: ${u.lastActiveAt ? u.lastActiveAt.toISOString() : 'N/A'}`
-      )
-      .join('\n');
+    return topUsers;
   },
   getGrowthRate: async () => {
     const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -54,98 +61,34 @@ export const statsTools = {
       prisma.user.count({ where: { createdAt: { gte: dayAgo } } }),
     ]);
 
-    return `Total users: ${total}
-New users (24h): ${newUsers}`;
+    return {
+      totalUsers: total,
+      newUsers24h: newUsers,
+      period: '24h',
+    };
   },
-  getRoleDistribution: async () => {
-    const roles = await prisma.user.groupBy({
-      by: ['role'],
-      _count: { _all: true },
-    });
+  exportUsers: async ({
+    type = 'ALL',
+    role,
+  }: {
+    type?: 'ALL' | 'EMPLOYEES' | 'ACTIVE' | 'BY_ROLE';
+    role?: User['role'];
+  }) => {
+    let where: any = {};
 
-    if (roles.length === 0) return 'Information not found in database';
+    if (type === 'EMPLOYEES') {
+      where.role = { in: ['ADMIN', 'MODERATOR', 'SUPER_ADMIN'] }; // Додай SUPER_ADMIN сюди
+    } else if (type === 'ACTIVE') {
+      const activeSince = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      where.lastActiveAt = { gte: activeSince };
+    } else if (type === 'BY_ROLE' && role) {
+      where.role = role;
+    } else if (type === 'ALL') {
+      where = {};
+    }
 
-    return roles
-      .map((r: { role: User['role']; _count: { _all: number } }) => `${r.role}: ${r._count._all}`)
-      .join('\n');
-  },
-  exportUsersToCSV: async () => {
     const users = await prisma.user.findMany({
-      where: {
-        role: { in: ['USER'] },
-      },
-      select: {
-        email: true,
-        nickName: true,
-        role: true,
-        status: true,
-        createdAt: true,
-      },
-    });
-
-    if (users.length === 0) return 'Information not found in database';
-
-    const header = 'NickName,Email,Role,Status,RegisteredAt\n';
-
-    const rows = users
-      .map(
-        (u: Pick<User, 'nickName' | 'email' | 'role' | 'status' | 'createdAt'>) =>
-          `${u.nickName || 'User'},${u.email},${u.role},${u.status},${u.createdAt.toISOString()}`
-      )
-      .join('\n');
-
-    const fileName = `users_export_${Date.now()}.csv`;
-    const assetsDir = process.env.APP_STATIC_ASSETS || 'static';
-    const filePath = path.join(process.cwd(), assetsDir, 'exports', fileName);
-
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, header + rows);
-
-    const url = `${process.env.APP_BASE_URL}/${assetsDir}/exports/${fileName}`;
-
-    return `[📥 ${fileName}](${url})`;
-  },
-  exportEmployeesToCSV: async () => {
-    const admins = await prisma.user.findMany({
-      where: {
-        role: { in: ['ADMIN', 'MODERATOR'] },
-      },
-      select: {
-        email: true,
-        nickName: true,
-        role: true,
-        status: true,
-        createdAt: true,
-      },
-    });
-
-    if (admins.length === 0) return 'Information not found in database';
-
-    const header = 'NickName,Email,Role,Status,RegisteredAt\n';
-
-    const rows = admins
-      .map(
-        (u: Pick<User, 'nickName' | 'email' | 'role' | 'status' | 'createdAt'>) =>
-          `${u.nickName || 'Admin'},${u.email},${u.role},${u.status},${u.createdAt.toISOString()}`
-      )
-      .join('\n');
-
-    const fileName = `admins_export_${Date.now()}.csv`;
-    const assetsDir = process.env.APP_STATIC_ASSETS || 'static';
-    const filePath = path.join(process.cwd(), assetsDir, 'exports', fileName);
-
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, header + rows);
-
-    const url = `${process.env.APP_BASE_URL}/${assetsDir}/exports/${fileName}`;
-
-    return `[📥 ${fileName}](${url})`;
-  },
-  exportActiveUsersToCSV: async () => {
-    const activeSince = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // last 7 days
-
-    const activeUsers = await prisma.user.findMany({
-      where: { lastActiveAt: { gte: activeSince } },
+      where,
       select: {
         email: true,
         nickName: true,
@@ -156,60 +99,17 @@ New users (24h): ${newUsers}`;
       },
     });
 
-    if (activeUsers.length === 0) return 'Information not found in database';
+    if (users.length === 0) return { error: 'No users found for this criteria' };
 
     const header = 'NickName,Email,Role,Status,RegisteredAt,LastActiveAt\n';
-
-    const rows = activeUsers
-      .map(
-        (u: Pick<User, 'nickName' | 'email' | 'role' | 'status' | 'createdAt' | 'lastActiveAt'>) =>
-          `${u.nickName || 'User'},${u.email},${u.role},${u.status},${u.createdAt.toISOString()},${u.lastActiveAt ? u.lastActiveAt.toISOString() : 'N/A'}`
-      )
-      .join('\n');
-
-    const fileName = `active_users_export_${Date.now()}.csv`;
-    const assetsDir = process.env.APP_STATIC_ASSETS || 'static';
-    const filePath = path.join(process.cwd(), assetsDir, 'exports', fileName);
-
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, header + rows);
-
-    const url = `${process.env.APP_BASE_URL}/${assetsDir}/exports/${fileName}`;
-
-    return `[📥 ${fileName}](${url})`;
-  },
-  exportFilteredUsersToCSV: async ({ role }: { role: User['role'] }) => {
-    const users = await prisma.user.findMany({
-      where: { role },
-      select: {
-        email: true,
-        nickName: true,
-        role: true,
-        status: true,
-        createdAt: true,
-      },
-    });
-
-    if (users.length === 0) return 'Information not found in database';
-
-    const header = 'NickName,Email,Role,Status,RegisteredAt\n';
-
     const rows = users
       .map(
-        (u: Pick<User, 'nickName' | 'email' | 'role' | 'status' | 'createdAt'>) =>
-          `${u.nickName || 'User'},${u.email},${u.role},${u.status},${u.createdAt.toISOString()}`
+        (u) =>
+          `${u.nickName || 'User'},${u.email},${u.role},${u.status},${u.createdAt.toISOString()},${u.lastActiveAt?.toISOString() || 'N/A'}`
       )
       .join('\n');
 
-    const fileName = `users_${role.toLowerCase()}_export_${Date.now()}.csv`;
-    const assetsDir = process.env.APP_STATIC_ASSETS || 'static';
-    const filePath = path.join(process.cwd(), assetsDir, 'exports', fileName);
-
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, header + rows);
-
-    const url = `${process.env.APP_BASE_URL}/${assetsDir}/exports/${fileName}`;
-
-    return `[📥 ${fileName}](${url})`;
+    const fileName = `export_${type.toLowerCase()}_${Date.now()}.csv`;
+    return saveAndGetDownloadUrl(fileName, header + rows);
   },
 };

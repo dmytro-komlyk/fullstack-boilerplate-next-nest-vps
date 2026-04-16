@@ -1,4 +1,4 @@
-import { Invite, prisma, User } from '@package/prisma';
+import { prisma, User } from '@package/prisma';
 import crypto from 'node:crypto';
 
 export const invitesTools = {
@@ -16,24 +16,28 @@ export const invitesTools = {
     });
 
     const inviteUrl = `${process.env.APP_BASE_URL}/auth/sign-up?token=${invite.token}`;
-    return `Invite created for ${invite.email}. Role: ${invite.role}. URL: ${inviteUrl}`;
+    return {
+      success: true,
+      email: invite.email,
+      role: invite.role,
+      inviteUrl,
+      expiresAt: invite.expiresAt.toISOString(),
+    };
   },
   getPendingInvites: async () => {
     const invites = await prisma.invite.findMany({
       where: { isAccepted: false, expiresAt: { gte: new Date() } },
     });
 
-    if (invites.length === 0) return 'No pending invites.';
+    if (invites.length === 0) return { message: 'No pending invites.' };
 
     const baseUrl = process.env.APP_BASE_URL;
 
-    return invites
-      .map((i: Invite) => {
-        const url = `${baseUrl}/auth/sign-up?token=${i.token}`;
-        const expiry = i.expiresAt.toLocaleString();
-
-        return `### Invite for ${i.email}\n- **Role**: ${i.role}\n- **Link**: \`${url}\` \n- **Expires**: ${expiry}`;
-      })
-      .join('\n\n---\n\n');
+    return invites.map((i) => ({
+      email: i.email,
+      role: i.role,
+      url: `${baseUrl}/auth/sign-up?token=${i.token}`,
+      expires: i.expiresAt,
+    }));
   },
 };

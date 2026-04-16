@@ -1,5 +1,18 @@
 export const systemTools = {
-  getWelcomeMessage: async () => 'Welcome! I am your virtual assistant. How can I help you?',
-  getSystemStatus: async (): Promise<string> =>
-    'All systems operational. Support response time: ~5 mins.',
+  getWelcomeMessage: async () => {
+    return {
+      message: 'Welcome! I am your virtual assistant.',
+      capabilities: ['statistics', 'user management', 'security alerts', 'exports'],
+      status: 'ready',
+    };
+  },
+
+  getSystemStatus: async () => {
+    return {
+      status: 'operational',
+      responseTime: '5 mins',
+      database: 'connected',
+      timestamp: new Date().toISOString(),
+    };
+  },
 };

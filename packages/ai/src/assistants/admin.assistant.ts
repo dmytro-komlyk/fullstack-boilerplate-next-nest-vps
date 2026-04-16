@@ -31,10 +31,12 @@ export async function generateAdminAssistant({
   prompt,
   history,
   language,
+  disableTools,
 }: {
   prompt: string;
   history: any[];
   language: string;
+  disableTools?: boolean;
 }): Promise<StreamTextResult<any, any>> {
   const ollamaProvider = createOllama({
     baseURL: OLLAMA.baseURL,
@@ -59,7 +61,7 @@ export async function generateAdminAssistant({
     Language: ${language}
         `,
     messages: [...history.slice(-10), { role: 'user', content: prompt }],
-    tools: filteredTools,
+    tools: disableTools ? undefined : filteredTools,
     maxSteps: 3,
     temperature: 0.1,
   };

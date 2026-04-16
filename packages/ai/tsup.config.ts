@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/planner/index.ts', 'src/tools/index.ts'],
+  entry: ['src/index.ts', 'src/planner/index.ts', 'src/tools/index.ts', 'src/agent/index.ts'],
   dts: false,
   clean: process.env.NODE_ENV === 'production',
   format: ['esm'],
