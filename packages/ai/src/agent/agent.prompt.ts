@@ -47,6 +47,9 @@ export function createAgentPrompt({
 
   CRITICAL RULES:
   - Respond ONLY in ${language} language.
+  - **STRICT JSON: Always wrap keys and string values in double quotes. Example: {"type": "tool"} is correct, {type: "tool"} is WRONG.**
+  - **STRICT ARGUMENTS:** Check tool definitions carefully. For example, use "userId" (string), not "user_ids" (array), unless specified.
+  - **JSON FORMAT: You can return multiple JSON objects, each on a new line, to call multiple tools at once.**
   - DO NOT call these tools again (ALREADY USED): [${usedTools.join(', ')}]
   - If a tool you need is in the ALREADY USED list, use the data from CURRENT DATA CONTEXT.
   - Use ONLY tool names from list
@@ -55,9 +58,6 @@ export function createAgentPrompt({
   - Respond ONLY in JSON
   - NO text outside JSON
   - NO "Tool:" prefix
-  - ONLY ONE JSON object per response
-  - ONLY ONE tool call per step
-  - NEVER return multiple JSON objects
   - NEVER return arrays
   - NEVER include any text like "Tool:" or "Final:" before JSON.
   - START your response with "{" and END with "}".
@@ -70,18 +70,16 @@ export function createAgentPrompt({
   - NO RE-CHECKING: If getRecentUsers returns fewer results than 'limit', it is NOT an error. It means the database is small. DO NOT call other tools like 'getPendingInvites' to find more users unless explicitly asked.
   - COMPLETION: If you have data for all parts of the user's question, you MUST return 'final' immediately.
   - URGENT: For any question about "today" or "last 24 hours", you MUST call 'getGrowthRate'. DO NOT guess based on 'getRegistrationsByDay'.
+  - MULTI-CALL: You can request multiple tools at once by providing multiple JSON objects if the user's question requires information from different sources.
+  - NO REPEATS: If a tool returns fewer items than requested (e.g., requested 10, got 1), this is the FINAL state of the database. You MUST NOT call the same tool again. Use what you have.
 
-  FORMAT (Return only the JSON):
-  {
-    "type": "tool",
-    "tool": "getUserCounts",
-    "args": {}
-  }
+  FORMAT (Return only valid JSON objects):
+  // For multiple tools:
+  {"type": "tool", "tool": "getSystemStatus", "args": {}}
+  {"type": "tool", "tool": "getUserCounts", "args": {}}
 
-  {
-    "type": "final",
-    "answer": "..."
-  }
+  // For final answer:
+  {"type": "final", "answer": "..."}
 
   CRITICAL THINKING:
   - Before choosing a tool, check if it directly answers the time-frame the user asked for (e.g., "today" vs "all time").

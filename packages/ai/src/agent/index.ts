@@ -86,76 +86,72 @@ export async function runAgent({
     }
 
     console.log('RAW LLM:', text);
-
     const jsonList = extractAllJSON(text);
 
     if (jsonList.length === 0) {
       console.log('INVALID JSON:', text);
 
-      context += `
-        ERROR:
-        - Return valid JSON
-        - No text outside JSON
-        `;
+      context += `\nERROR: No valid JSON found. Please return tool calls or final answer in JSON.`;
       continue;
     }
 
-    for (const json of jsonList) {
-      console.log('PARSED:', json);
-
-      if (json.type === 'final') {
-        console.log('FINAL ANSWER');
-        return json.answer;
-      }
-
-      if (json.type !== 'tool') continue;
-
-      if (usedTools.has(json.tool)) {
-        console.log('REDUNDANT TOOL CALL DETECTED:', json.tool);
-        context += `
-          [SYSTEM STOP]:
-          - You already called the tool '${json.tool}'. 
-          - The result you received is the ONLY data available.
-          - If you asked for more items than returned, it means NO MORE items exist in the database.
-          - STOP searching in other tools (like invites or alerts) unless the user specifically asked for them.
-          - Use the data from CURRENT DATA CONTEXT and return "type": "final" immediately.
-        `;
-        continue;
-      }
-
-      const toolFn = tools[json.tool as keyof typeof tools];
-
-      if (!toolFn || !toolFn.execute) {
-        context += `\nERROR: Tool ${json.tool} not found`;
-        continue;
-      }
-
-      try {
-        const result = await toolFn.execute(json.args ?? {}, {
-          toolCallId: '',
-          messages: [],
-        });
-
-        usedTools.add(json.tool);
-
-        console.log('TOOL RESULT:', result);
-
-        context += `
-            Tool: ${json.tool}
-            Result: ${JSON.stringify(result)}
-            `;
-      } catch (e) {
-        context += `\nERROR: Tool ${json.tool} failed`;
-      }
+    const finalResponse = jsonList.find((j) => j.type === 'final');
+    if (finalResponse) {
+      console.log('FINAL ANSWER');
+      return finalResponse.answer;
     }
 
+    const toolCalls = jsonList.filter((j) => j.type === 'tool');
+
+    if (toolCalls.length === 0) continue;
+
+    const results = await Promise.all(
+      toolCalls.map(async (json) => {
+        if (usedTools.has(json.tool)) {
+          return `[TERMINATE]: You already called '${json.tool}'. 
+          The database has NO MORE data for this tool. 
+          If you requested a large 'limit' but got few results, it means the database is EXHAUSTED. 
+          STOP calling this tool immediately. 
+          Do not try to find more items by calling other tools or guessing IDs. 
+          Provide a final answer with the data you already have.`;
+        }
+
+        const toolFn = tools[json.tool as keyof typeof tools];
+        if (!toolFn || !toolFn.execute) {
+          return `Error: Tool ${json.tool} not found.`;
+        }
+
+        try {
+          const result = await toolFn.execute(json.args ?? {}, {
+            toolCallId: '',
+            messages: [],
+          });
+          usedTools.add(json.tool);
+          return { tool: json.tool, result };
+        } catch (e) {
+          return `Error: Tool ${json.tool} failed to execute.`;
+        }
+      })
+    );
+
+    context += `\n--- STEP ${steps} DATA RECEIVED ---`;
+    results.forEach((res) => {
+      if (typeof res === 'string') {
+        context += `\n${res}`;
+      } else {
+        context += `\nSUCCESS: Tool ${res.tool} execution finished. Data: ${JSON.stringify(res.result)}`;
+      }
+    });
+
+    context += `\n[SYSTEM]: All requested tools for Step ${steps} have been executed. Compare "limit" vs "actual results". If actual results < limit, it means NO MORE DATA. Do not retry.`;
+
     context += `
-      IMPORTANT:
-      - Check if the requested quantity exists in the results above.
-      - If results are empty or fewer than requested, explain this to the user.
-      - RETURN FINAL NOW if you have gathered all information for the prompt.
-      `;
+      \nIMPORTANT:
+      - You just received data from multiple tools.
+      - If this is enough to answer the USER QUESTION, return "type": "final" now.
+      - Don't repeat successful tool calls.
+    `;
   }
 
-  return '❌ Failed to complete request';
+  return '❌ Failed to complete request (Max steps reached)';
 }
