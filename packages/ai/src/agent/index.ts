@@ -2,7 +2,7 @@ import { handleAssistant } from '../';
 import { getTools } from '../tools';
 import { createAgentPrompt } from './agent.prompt';
 
-const MAX_STEPS = 10;
+const MAX_STEPS = 6;
 
 function extractAllJSON(text: string): any[] {
   const sanitized = text
@@ -112,6 +112,14 @@ export async function runAgent({
     }
 
     const toolCalls = jsonList.filter((j) => j.type === 'tool');
+
+    const hasRepeatedCall = toolCalls.some((call) => usedTools.has(call.tool));
+
+    if (hasRepeatedCall) {
+      context += `\n[CRITICAL ERROR]: You are repeating tool calls! You already used: ${Array.from(usedTools).join(', ')}. 
+        STOP calling them. If the result was empty or small, that is the FINAL data. 
+        Generate a "final" answer NOW using available information.`;
+    }
 
     if (toolCalls.length === 0) continue;
 

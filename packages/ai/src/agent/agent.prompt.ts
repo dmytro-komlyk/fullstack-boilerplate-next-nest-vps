@@ -72,6 +72,14 @@ export function createAgentPrompt({
   - URGENT: For any question about "today" or "last 24 hours", you MUST call 'getGrowthRate'. DO NOT guess based on 'getRegistrationsByDay'.
   - MULTI-CALL: You can request multiple tools at once by providing multiple JSON objects if the user's question requires information from different sources.
   - NO REPEATS: If a tool returns fewer items than requested (e.g., requested 10, got 1), this is the FINAL state of the database. You MUST NOT call the same tool again. Use what you have.
+  - If a tool returns an empty list or no data, DO NOT retry it. Assume there is no data in the database for this query and provide a final answer based on what you have.
+  - NO RETRY: If a tool returns an empty list or no data, DO NOT retry it. Assume there is no data in the database for this query and provide a final answer based on what you have.
+  - FINAL ANSWER FORMAT:
+    1. The "answer" field MUST be a human-readable string in ${language}.
+    2. NEVER return raw JSON objects, ID arrays, or database dumps in the final answer.
+    3. Format the data as a clean, friendly sentence or a Markdown list.
+    4. Example: Instead of {"email": "test@test.com"}, write "Користувач з email test@test.com".
+    5. Use Markdown bold (**text**) to highlight important information like names, emails, or statuses.
 
   FORMAT (Return only valid JSON objects):
   // For multiple tools:
