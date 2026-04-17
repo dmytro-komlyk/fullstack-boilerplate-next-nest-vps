@@ -13,13 +13,13 @@ interface GeneralTabsProps {
 const GeneralTabs: React.FC<GeneralTabsProps> = ({ tabs, sectionKey }) => {
   const pathname = usePathname();
 
-  const activeTab: string | null =
+  const activeTab: string =
     tabs.find((tab) => {
       const href = tab.path === sectionKey ? `/${sectionKey}` : `/${sectionKey}/${tab.path}`;
       return pathname === href;
     })?.path ||
     tabs[0]?.path ||
-    null;
+    '';
 
   return (
     <Tabs
