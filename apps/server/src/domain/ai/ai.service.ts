@@ -5,6 +5,7 @@ export async function createSubscriptionStream({
   history,
   isAdmin,
   locale,
+  onStep,
   onToken,
   onComplete,
 }: {
@@ -12,6 +13,11 @@ export async function createSubscriptionStream({
   history: any[];
   isAdmin: boolean;
   locale: string;
+  onStep: (step: {
+    type: 'thinking' | 'tool_start' | 'tool_end';
+    message: string;
+    data?: any;
+  }) => void;
   onToken: (token: string) => void;
   onComplete: () => void;
 }) {
@@ -23,6 +29,7 @@ export async function createSubscriptionStream({
       history,
       isAdmin,
       language,
+      onStep,
     });
 
     onToken(result);

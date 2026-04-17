@@ -48,14 +48,19 @@ export async function runAgent({
   history,
   isAdmin,
   language,
+  onStep,
 }: {
   prompt: string;
   history: any[];
   isAdmin: boolean;
   language: string;
+  onStep?: (step: {
+    type: 'thinking' | 'tool_start' | 'tool_end';
+    message: string;
+    data?: any;
+  }) => void;
 }) {
   const tools = getTools(isAdmin);
-
   let context = '';
   let steps = 0;
   const usedTools = new Set<string>();
@@ -64,6 +69,11 @@ export async function runAgent({
     steps++;
 
     console.log('\n--- AGENT STEP:', steps, '---');
+
+    onStep?.({
+      type: 'thinking',
+      message: language === 'uk' ? `Розмірковую (крок ${steps})...` : `Thinking (step ${steps})...`,
+    });
 
     const res = await handleAssistant({
       prompt: createAgentPrompt({
@@ -105,6 +115,14 @@ export async function runAgent({
 
     if (toolCalls.length === 0) continue;
 
+    toolCalls.forEach((call) => {
+      onStep?.({
+        type: 'tool_start',
+        message: language === 'uk' ? `Викликаю: ${call.tool}` : `Calling tool: ${call.tool}`,
+        data: call.args,
+      });
+    });
+
     const results = await Promise.all(
       toolCalls.map(async (json) => {
         if (usedTools.has(json.tool)) {
@@ -127,6 +145,14 @@ export async function runAgent({
             messages: [],
           });
           usedTools.add(json.tool);
+          onStep?.({
+            type: 'tool_end',
+            message:
+              language === 'uk'
+                ? `Дані від ${json.tool} отримано`
+                : `Data from ${json.tool} received`,
+            data: result,
+          });
           return { tool: json.tool, result };
         } catch (e) {
           return `Error: Tool ${json.tool} failed to execute.`;
