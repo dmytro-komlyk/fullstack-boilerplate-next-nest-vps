@@ -207,7 +207,7 @@ export const AiAssistantPlugin = () => {
                   className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`prose prose-sm dark:prose-invert max-w-[92%] p-3.5 rounded-2xl text-[13px] shadow-xs ${
+                    className={`prose prose-sm dark:prose-invert max-w-[92%] p-3.5 rounded-2xl text-[13px] shadow-xs wrap-break-word overflow-hidden ${
                       m.role === 'user'
                         ? 'bg-indigo-600 text-white rounded-tr-none'
                         : 'bg-white dark:bg-navy-800 border border-gray-100 dark:border-white/5 text-gray-800 dark:text-gray-200 rounded-tl-none'
