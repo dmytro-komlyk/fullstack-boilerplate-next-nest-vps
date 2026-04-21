@@ -3,6 +3,16 @@ import { getTools } from '../tools';
 import { createAgentPrompt } from './agent.prompt';
 
 const MAX_STEPS = 6;
+const MAX_DATA_LENGTH = 1500;
+export const DANGEROUS_TOOLS = ['banUser', 'unbanUser', 'deleteUser', 'unlockUser'] as const;
+
+function truncateData(data: any, maxLength = MAX_DATA_LENGTH): string {
+  const str = JSON.stringify(data);
+  if (str.length > maxLength) {
+    return `${str.substring(0, maxLength)}... [DATA TRUNCATED FOR BREVITY]`;
+  }
+  return str;
+}
 
 function extractAllJSON(text: string): any[] {
   const sanitized = text
@@ -61,14 +71,30 @@ export async function runAgent({
   }) => void;
 }) {
   const tools = getTools(isAdmin);
-  let context = '';
-  let steps = 0;
   const usedTools = new Set<string>();
+
+  const agentState: Record<string, any> = {};
+  let executionLogs = '';
+  let steps = 0;
 
   while (steps < MAX_STEPS) {
     steps++;
 
     console.log('\n--- AGENT STEP:', steps, '---');
+
+    const context = `
+      ### PREVIOUS STEPS LOG:
+      ${executionLogs || 'No steps taken yet.'}
+
+      ### GATHERED DATA (CURRENT STATE):
+      ${
+        Object.keys(agentState).length > 0
+          ? Object.entries(agentState)
+              .map(([t, d]) => `[${t}]: ${truncateData(d)}`)
+              .join('\n')
+          : 'No data gathered yet.'
+      }
+          `.trim();
 
     onStep?.({
       type: 'thinking',
@@ -90,7 +116,6 @@ export async function runAgent({
     });
 
     let text = '';
-
     for await (const t of res.textStream) {
       text += t;
     }
@@ -100,39 +125,59 @@ export async function runAgent({
 
     if (jsonList.length === 0) {
       console.log('INVALID JSON:', text);
-
-      context += `\nERROR: No valid JSON found. Please return tool calls or final answer in JSON.`;
+      executionLogs += `\nStep ${steps}: Received invalid JSON.`;
       continue;
-    }
-
-    const finalResponse = jsonList.find((j) => j.type === 'final');
-    if (finalResponse) {
-      console.log('FINAL ANSWER');
-      return finalResponse.answer;
     }
 
     const toolCalls = jsonList.filter((j) => j.type === 'tool');
 
-    const hasRepeatedCall = toolCalls.some((call) => usedTools.has(call.tool));
+    const hasDangerousTool = toolCalls.some((call) => DANGEROUS_TOOLS.includes(call.tool));
 
-    if (hasRepeatedCall) {
-      context += `\n[CRITICAL ERROR]: You are repeating tool calls! You already used: ${Array.from(usedTools).join(', ')}. 
-        STOP calling them. If the result was empty or small, that is the FINAL data. 
-        Generate a "final" answer NOW using available information.`;
+    const finalResponse = jsonList.find((j) => j.type === 'final');
+    if (finalResponse && !hasDangerousTool) {
+      console.log('FINAL ANSWER');
+      return finalResponse.answer;
+    }
+
+    const hasInvalidArgs = toolCalls.some((call) =>
+      Object.values(call.args || {}).some(
+        (val) => val === 'user_not_found' || val === 'undefined' || val === 'null'
+      )
+    );
+
+    if (hasInvalidArgs) {
+      executionLogs += `\nStep ${steps}: [ERROR] You are using placeholder values like 'user_not_found'. You MUST provide a final answer stating the user does not exist.`;
+      if (steps > 2)
+        return language === 'uk'
+          ? 'Користувача не знайдено в базі даних.'
+          : 'User not found in the database.';
+    }
+
+    const repeatedTool = toolCalls.find((call) => usedTools.has(call.tool));
+    if (repeatedTool) {
+      executionLogs += `\nStep ${steps}: [CRITICAL ERROR] You attempted to call "${repeatedTool.tool}" again. 
+      This is FORBIDDEN. You already have data for this tool in "GATHERED DATA". 
+      STOP retrying and provide a final answer NOW.`;
+
+      console.log(`Loop detected for tool: ${repeatedTool.tool}`);
+      continue;
     }
 
     if (toolCalls.length === 0) continue;
 
-    toolCalls.forEach((call) => {
-      onStep?.({
-        type: 'tool_start',
-        message: language === 'uk' ? `Викликаю: ${call.tool}` : `Calling tool: ${call.tool}`,
-        data: call.args,
-      });
-    });
-
     const results = await Promise.all(
       toolCalls.map(async (json) => {
+        // If the tool is in the dangerous list, we ask for confirmation instead of executing it
+        const isDangerous = DANGEROUS_TOOLS.includes(json.tool);
+
+        if (isDangerous) {
+          return {
+            type: 'confirmation' as const,
+            tool: json.tool,
+            args: json.args,
+          };
+        }
+        //
         if (usedTools.has(json.tool)) {
           return `[TERMINATE]: You already called '${json.tool}'. 
           The database has NO MORE data for this tool. 
@@ -147,12 +192,19 @@ export async function runAgent({
           return `Error: Tool ${json.tool} not found.`;
         }
 
+        onStep?.({
+          type: 'tool_start',
+          message: language === 'uk' ? `Викликаю: ${json.tool}` : `Calling: ${json.tool}`,
+          data: json.args,
+        });
+
         try {
           const result = await toolFn.execute(json.args ?? {}, {
             toolCallId: '',
             messages: [],
           });
           usedTools.add(json.tool);
+
           onStep?.({
             type: 'tool_end',
             message:
@@ -163,28 +215,46 @@ export async function runAgent({
           });
           return { tool: json.tool, result };
         } catch (e) {
-          return `Error: Tool ${json.tool} failed to execute.`;
+          return { tool: json.tool, error: 'Execution failed' };
         }
       })
     );
 
-    context += `\n--- STEP ${steps} DATA RECEIVED ---`;
+    // If any of the results is a confirmation request, we stop the agent and return that request
     results.forEach((res) => {
-      if (typeof res === 'string') {
-        context += `\n${res}`;
+      if (typeof res === 'object' && res !== null) {
+        if ('result' in res) {
+          agentState[res.tool] = res.result;
+          executionLogs += ` | [${res.tool}]: Success (Data received)`;
+        } else if ('error' in res) {
+          executionLogs += ` | Error in ${res.tool}: ${res.error}`;
+        } else if ('type' in res && res.type === 'confirmation') {
+          executionLogs += ` | Action ${res.tool} is waiting for manual confirmation.`;
+        }
       } else {
-        context += `\nSUCCESS: Tool ${res.tool} execution finished. Data: ${JSON.stringify(res.result)}`;
+        executionLogs += ` | Info: ${res}`;
       }
     });
 
-    context += `\n[SYSTEM]: All requested tools for Step ${steps} have been executed. Compare "limit" vs "actual results". If actual results < limit, it means NO MORE DATA. Do not retry.`;
+    const confirmationRequest = results.find(
+      (res) =>
+        typeof res === 'object' && res !== null && 'type' in res && res.type === 'confirmation'
+    );
 
-    context += `
-      \nIMPORTANT:
-      - You just received data from multiple tools.
-      - If this is enough to answer the USER QUESTION, return "type": "final" now.
-      - Don't repeat successful tool calls.
-    `;
+    if (confirmationRequest) {
+      if (
+        !confirmationRequest.args.userId ||
+        confirmationRequest.args.userId === 'user_not_found'
+      ) {
+        executionLogs += `\nStep ${steps}: Error - Invalid userId in confirmation.`;
+        continue;
+      }
+      console.log('STOPPING FOR CONFIRMATION:', confirmationRequest);
+      return confirmationRequest;
+    }
+    //
+
+    executionLogs += `\nStep ${steps}: Executed [${toolCalls.map((c) => c.tool).join(', ')}]`;
   }
 
   return '❌ Failed to complete request (Max steps reached)';

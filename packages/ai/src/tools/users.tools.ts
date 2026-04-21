@@ -31,46 +31,65 @@ export const usersTools = {
   findUser: async ({ email }: { email: string }) => {
     const user = await prisma.user.findUnique({
       where: { email: email.trim() },
-      select: { email: true, role: true, nickName: true, lastActiveAt: true },
-    });
-
-    return user || { error: 'User not found' };
-  },
-  banUser: async ({ email }: { email: string }) => {
-    const user = await prisma.user.findUnique({
-      where: { email: email.trim() },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        nickName: true,
+        status: true,
+        lastActiveAt: true,
+      },
     });
 
     if (!user) {
       return { error: 'User not found' };
     }
 
+    return user;
+  },
+  banUser: async ({ userId }: { userId: string }) => {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return { error: 'User not found' };
+    }
+
+    if (user.status === 'BANNED') {
+      return { message: `User ${user.email} is already banned.` };
+    }
+
     await prisma.user.update({
-      where: { email: email.trim() },
+      where: { id: userId },
       data: { status: 'BANNED' },
     });
 
-    return { message: `User ${email} banned` };
+    return { message: `User ${user.email} banned` };
   },
-  unbanUser: async ({ email }: { email: string }) => {
+  unbanUser: async ({ userId }: { userId: string }) => {
     const user = await prisma.user.findUnique({
-      where: { email: email.trim() },
+      where: { id: userId },
     });
 
     if (!user) {
       return { error: 'User not found' };
     }
 
+    if (user.status === 'ACTIVE') {
+      return { message: `User ${user.email} is already active.` };
+    }
+
     await prisma.user.update({
-      where: { email: email.trim() },
+      where: { id: userId },
       data: { status: 'ACTIVE' },
     });
 
-    return { message: `User ${email} unbanned` };
+    return { message: `User ${user.email} unbanned` };
   },
-  deleteUser: async ({ email }: { email: string }) => {
+  deleteUser: async ({ userId }: { userId: string }) => {
     const user = await prisma.user.findUnique({
-      where: { email: email.trim() },
+      where: { id: userId },
     });
 
     if (!user) {
@@ -78,14 +97,14 @@ export const usersTools = {
     }
 
     await prisma.user.delete({
-      where: { email: email.trim() },
+      where: { id: userId },
     });
 
-    return { message: `User ${email} deleted` };
+    return { message: `User ${user.email} deleted` };
   },
-  updateUserRole: async ({ email, newRole }: { email: string; newRole: User['role'] }) => {
+  updateUserRole: async ({ userId, newRole }: { userId: string; newRole: User['role'] }) => {
     const user = await prisma.user.findUnique({
-      where: { email: email.trim() },
+      where: { id: userId },
     });
 
     if (!user) {
@@ -99,10 +118,10 @@ export const usersTools = {
     }
 
     await prisma.user.update({
-      where: { email: email.trim() },
+      where: { id: userId },
       data: { role: normalizedRole },
     });
 
-    return { message: `User ${email} role updated to ${normalizedRole}` };
+    return { message: `User ${user.email} role updated to ${normalizedRole}` };
   },
 };

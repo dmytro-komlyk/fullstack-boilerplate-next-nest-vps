@@ -97,7 +97,7 @@ export const getTools = (isAdmin: boolean) => {
       Returns IP addresses, device types, and time of last activity. 
       Use to check for suspicious logins to a user account.
       `,
-      parameters: z.object({ email: z.email() }),
+      parameters: z.object({ email: z.string().email() }),
       execute: async ({ email }: { email: string }) =>
         await securityTools.getUserSessions({ email }),
     } as any),
@@ -107,7 +107,7 @@ export const getTools = (isAdmin: boolean) => {
       Resets failed login attempts counter and removes login time limit. 
       Use ONLY at the direct request of the administrator to unlock a specific email.
       `,
-      parameters: z.object({ email: z.email() }),
+      parameters: z.object({ email: z.string().email() }),
       execute: async ({ email }: { email: string }) => await securityTools.unlockUser({ email }),
     } as any),
     getSecurityAlerts: tool({
@@ -139,7 +139,7 @@ export const getTools = (isAdmin: boolean) => {
       description:
         'Find complete information about a specific user by their email. Returns nickname, role, status and registration date.',
       parameters: z.object({
-        email: z.email(),
+        email: z.string().email(),
       }),
       execute: async ({ email }: { email: string }) => await usersTools.findUser({ email }),
     } as any),
@@ -147,39 +147,39 @@ export const getTools = (isAdmin: boolean) => {
       description:
         'BLOCK access to a user. Use only if there is a direct instruction to ban or block a specific email.',
       parameters: z.object({
-        email: z.email(),
+        userId: z.string().uuid(),
       }),
-      execute: async ({ email }: { email: string }) => await usersTools.banUser({ email }),
+      execute: async ({ userId }: { userId: string }) => await usersTools.banUser({ userId }),
     } as any),
     unbanUser: tool({
       description: 'Restore access to a blocked user. Use to unban after email verification.',
       parameters: z.object({
-        email: z.email(),
+        userId: z.string().uuid(),
       }),
-      execute: async ({ email }: { email: string }) => await usersTools.unbanUser({ email }),
+      execute: async ({ userId }: { userId: string }) => await usersTools.unbanUser({ userId }),
     } as any),
     deleteUser: tool({
       description:
         'IRREVERSIBLE deletion of a user account from the database. Use with caution and only delete a user upon direct request.',
       parameters: z.object({
-        email: z.email(),
+        userId: z.string().uuid(),
       }),
-      execute: async ({ email }: { email: string }) => await usersTools.deleteUser({ email }),
+      execute: async ({ userId }: { userId: string }) => await usersTools.deleteUser({ userId }),
     } as any),
     updateUserRole: tool({
       description:
         'Change user access level. Allows you to assign the role ADMIN, MODERATOR, USER or SUPER_ADMIN.',
       parameters: z.object({
-        email: z.email(),
+        userId: z.string().uuid(),
         newRole: z.enum(['ADMIN', 'USER', 'MODERATOR', 'SUPER_ADMIN']),
       }),
       execute: async ({
-        email,
+        userId,
         newRole,
       }: {
-        email: string;
+        userId: string;
         newRole: 'ADMIN' | 'USER' | 'MODERATOR' | 'SUPER_ADMIN';
-      }) => await usersTools.updateUserRole({ email, newRole }),
+      }) => await usersTools.updateUserRole({ userId, newRole }),
     } as any),
   };
 };
