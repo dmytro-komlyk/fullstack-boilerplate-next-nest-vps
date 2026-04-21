@@ -1,12 +1,82 @@
 'use client';
 
+import { Button } from '@heroui/react';
 import { trpc } from '@package/api/client';
 import { AnimatePresence, motion } from 'framer-motion';
+import { getLocalizedError } from 'i18n/error-handler';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { LuChevronDown, LuDatabase, LuSend, LuTerminal, LuX } from 'react-icons/lu';
+import { TbAlertTriangleFilled } from 'react-icons/tb';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { showToast } from '../Toast';
+
+const ActionConfirmation = ({ data, onConfirm, onCancel }: any) => {
+  const { tool, args } = data;
+  const [isPending, setIsPending] = useState(false);
+
+  const tAdmin = useTranslations('AI.Admin.confirmation');
+  const tAdminTools = useTranslations('AI.Admin.tools');
+
+  const handleConfirmClick = async () => {
+    setIsPending(true);
+    try {
+      await onConfirm();
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="mt-3 overflow-hidden border border-amber-200 dark:border-amber-500/30 rounded-2xl bg-white dark:bg-navy-900 shadow-xl"
+    >
+      <div className="bg-amber-500/10 px-4 py-2 border-b border-amber-200 dark:border-amber-500/30 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <TbAlertTriangleFilled className="size-3.5 text-amber-600" />
+          <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">
+            {tAdminTools.has(tool) ? tAdminTools(tool) : tool}
+          </span>
+        </div>
+      </div>
+
+      <div className="p-4">
+        <div className="space-y-3 mb-4">
+          {Object.entries(args).map(([key, value]) => (
+            <div key={key} className="flex flex-col gap-1">
+              <span className="text-[9px] text-gray-400 uppercase font-bold tracking-tight">
+                {key}
+              </span>
+              <div className="text-xs font-mono bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-100 dark:border-white/10 break-all text-gray-700 dark:text-gray-300">
+                {String(value)}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <Button
+            isLoading={isPending}
+            isDisabled={isPending}
+            onPress={handleConfirmClick}
+            className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-md shadow-amber-500/20"
+          >
+            {tAdmin('confirmBtn')}
+          </Button>
+          <Button
+            onPress={onCancel}
+            className="flex-1 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 py-2 rounded-xl text-xs font-bold transition-all hover:bg-gray-200 dark:hover:bg-white/20"
+          >
+            {tAdmin('cancelBtn')}
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 const AgentThinkingSteps = ({ steps }: { steps: any[] }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -103,6 +173,11 @@ export const AiAssistantPlugin = () => {
   const [currentSteps, setCurrentSteps] = useState<any[]>([]);
 
   const t = useTranslations('AI.Admin');
+  const tСonfirmation = useTranslations('AI.Admin.confirmation');
+  const tTools = useTranslations('AI.Admin.tools');
+  const tUserResults = useTranslations('User.edit');
+  const te = useTranslations('Common.Errors');
+
   const QUICK_ACTIONS = t.raw('quickActions') as { label: string; query: string }[];
 
   useEffect(() => {
@@ -143,6 +218,7 @@ export const AiAssistantPlugin = () => {
       },
     }
   );
+  const confirmMutation = trpc.ai.confirmAction.useMutation();
 
   const handleSend = (overrideQuery?: string) => {
     const query = overrideQuery || input;
@@ -155,6 +231,42 @@ export const AiAssistantPlugin = () => {
     setSubscriptionInput({ prompt: query, history, locale });
     setInput('');
     setIsStreaming(true);
+  };
+
+  const handleConfirm = async (messageIndex: number, tool: string, args: any) => {
+    try {
+      const result = await confirmMutation.mutateAsync({
+        tool: tool as any,
+        args: args,
+      });
+
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        const humanToolName = tTools.has(tool) ? tTools(tool) : tool;
+        const headerKey = result.isInfo ? 'info' : 'success';
+
+        const translationContext = {
+          ...args,
+          ...result,
+          id: args.email || args.userId || '?',
+        };
+
+        const finalMessage = result.message
+          ? tUserResults(result.message, translationContext)
+          : 'Success';
+
+        newMessages[messageIndex] = {
+          role: 'assistant',
+          content: tСonfirmation(headerKey, {
+            tool: humanToolName,
+            message: finalMessage,
+          }),
+        };
+        return newMessages;
+      });
+    } catch (error: any) {
+      showToast.error(getLocalizedError(error.message, te));
+    }
   };
 
   return (
@@ -201,89 +313,114 @@ export const AiAssistantPlugin = () => {
                   <p className="text-xs font-medium italic">{t('welcome')}</p>
                 </div>
               )}
-              {messages.map((m, i) => (
-                <div
-                  key={i}
-                  className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
+              {messages.map((m, i) => {
+                const isConfirmation =
+                  typeof m.content === 'object' && m.content?.type === 'confirmation';
+
+                const isLastMessage = i === messages.length - 1;
+
+                return (
                   <div
-                    className={`prose prose-sm dark:prose-invert max-w-[92%] p-3.5 rounded-2xl text-[13px] shadow-xs wrap-break-word overflow-hidden ${
-                      m.role === 'user'
-                        ? 'bg-indigo-600 text-white rounded-tr-none'
-                        : 'bg-white dark:bg-navy-800 border border-gray-100 dark:border-white/5 text-gray-800 dark:text-gray-200 rounded-tl-none'
-                    }`}
+                    key={i}
+                    className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} gap-2 w-full`}
                   >
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        p: ({ children }) => (
-                          <div className="mb-2 last:mb-0 leading-relaxed text-[13px]">
-                            {children}
-                          </div>
-                        ),
-                        a: ({ href, children }) => {
-                          const url = href || '';
-                          const isDownload =
-                            url.includes('/exports/') || /\.(csv|xlsx|pdf|zip)$/i.test(url);
+                    <div
+                      className={`prose prose-sm dark:prose-invert max-h-fit max-w-[92%] p-3.5 rounded-2xl text-[13px] shadow-xs wrap-break-word overflow-hidden ${
+                        m.role === 'user'
+                          ? 'bg-indigo-600 text-white rounded-tr-none'
+                          : 'bg-white dark:bg-navy-800 border border-gray-100 dark:border-white/5 text-gray-800 dark:text-gray-200 rounded-tl-none'
+                      }`}
+                    >
+                      {typeof m.content === 'string' ? (
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            p: ({ children }) => (
+                              <div className="mb-2 last:mb-0 leading-relaxed text-[13px]">
+                                {children}
+                              </div>
+                            ),
+                            a: ({ href, children }) => {
+                              const url = href || '';
+                              const isDownload =
+                                url.includes('/exports/') || /\.(csv|xlsx|pdf|zip)$/i.test(url);
 
-                          if (isDownload) {
-                            const fileName = url.split('/').pop() || 'file.csv';
+                              if (isDownload) {
+                                const fileName = url.split('/').pop() || 'file.csv';
 
-                            return (
-                              <div className="my-3 block">
+                                return (
+                                  <div className="my-3 block">
+                                    <a
+                                      href={url}
+                                      download={fileName}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center justify-center gap-3 px-5 py-3 bg-linear-to-r from-indigo-600 to-indigo-800 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-indigo-500/40 hover:scale-[1.02] transition-all no-underline border border-white/10"
+                                    >
+                                      <span className="text-base">📥</span>
+                                      {fileName}
+                                    </a>
+                                  </div>
+                                );
+                              }
+                              return (
                                 <a
                                   href={url}
-                                  download={fileName}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="flex items-center justify-center gap-3 px-5 py-3 bg-linear-to-r from-indigo-600 to-indigo-800 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-indigo-500/40 hover:scale-[1.02] transition-all no-underline border border-white/10"
+                                  className="text-indigo-500 dark:text-indigo-400 font-semibold no-underline hover:text-indigo-600 transition-colors"
                                 >
-                                  <span className="text-base">📥</span>
-                                  {fileName}
+                                  {children}
                                 </a>
-                              </div>
-                            );
-                          }
-                          return (
-                            <a
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-indigo-500 dark:text-indigo-400 font-semibold no-underline hover:text-indigo-600 transition-colors"
-                            >
-                              {children}
-                            </a>
-                          );
-                        },
-                        ul: ({ children }) => (
-                          <ul className="space-y-1.5 my-3 list-none p-0">{children}</ul>
-                        ),
-                        li: ({ children }) => (
-                          <li className="flex items-start gap-2">
-                            <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
-                            <span className="text-[13px]">{children}</span>
-                          </li>
-                        ),
-                        strong: ({ children }) => (
-                          <strong className="font-bold text-indigo-600 dark:text-indigo-400">
-                            {children}
-                          </strong>
-                        ),
-                      }}
-                    >
-                      {m.content}
-                    </ReactMarkdown>
-                    {m.role === 'assistant' && !m.content && isStreaming && (
-                      <div className="flex items-center gap-1 py-1 px-2">
-                        <div className="size-1.5 bg-indigo-500/50 rounded-full animate-bounce [animation-duration:0.8s]" />
-                        <div className="size-1.5 bg-indigo-500/50 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.2s]" />
-                        <div className="size-1.5 bg-indigo-500/50 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.4s]" />
-                      </div>
-                    )}
+                              );
+                            },
+                            ul: ({ children }) => (
+                              <ul className="space-y-1.5 my-3 list-none p-0">{children}</ul>
+                            ),
+                            li: ({ children }) => (
+                              <li className="flex items-start gap-2">
+                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
+                                <span className="text-[13px]">{children}</span>
+                              </li>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="font-bold text-indigo-600 dark:text-indigo-400">
+                                {children}
+                              </strong>
+                            ),
+                          }}
+                        >
+                          {m.content}
+                        </ReactMarkdown>
+                      ) : isConfirmation ? (
+                        <ActionConfirmation
+                          data={m.content}
+                          onConfirm={() => handleConfirm(i, m.content.tool, m.content.args)}
+                          onCancel={() => {
+                            setMessages((prev) => {
+                              const newMessages = [...prev];
+                              newMessages[i] = {
+                                role: 'assistant',
+                                content: tСonfirmation('cancelled', { tool: m.content.tool }),
+                              };
+                              return newMessages;
+                            });
+                          }}
+                        />
+                      ) : null}
+
+                      {m.role === 'assistant' && !m.content && isStreaming && (
+                        <div className="flex items-center gap-1 py-1 px-2">
+                          <div className="size-1.5 bg-indigo-500/50 rounded-full animate-bounce [animation-duration:0.8s]" />
+                          <div className="size-1.5 bg-indigo-500/50 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.2s]" />
+                          <div className="size-1.5 bg-indigo-500/50 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.4s]" />
+                        </div>
+                      )}
+                    </div>
+                    {isLastMessage && isStreaming && <AgentThinkingSteps steps={currentSteps} />}
                   </div>
-                </div>
-              ))}
-              {isStreaming && <AgentThinkingSteps steps={currentSteps} />}
+                );
+              })}
             </div>
 
             {/* Quick Actions */}
