@@ -1,7 +1,9 @@
+import { TRPCError } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
 
-import { procedure, router } from '../trpc/trpc.server';
-import { promptSchema } from './ai.schema';
+import { procedure, protectedProcedure, router } from '../trpc/trpc.server';
+import { banUser, unbanUser } from '../users/user.service';
+import { promptSchema, toolSchema } from './ai.schema';
 import { createSubscriptionStream } from './ai.service';
 
 export const aiRouter = router({
@@ -26,5 +28,18 @@ export const aiRouter = router({
         onComplete: () => emit.complete(),
       });
     });
+  }),
+  confirmAction: protectedProcedure.input(toolSchema).mutation(async ({ input }) => {
+    const { tool, args } = input;
+
+    switch (tool) {
+      case 'banUser':
+        return await banUser({ userId: args.userId });
+      case 'unbanUser':
+        return await unbanUser({ userId: args.userId });
+      // ... add other cases as needed
+      default:
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Unknown tool' });
+    }
   }),
 });
