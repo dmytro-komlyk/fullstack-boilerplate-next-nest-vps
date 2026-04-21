@@ -15,6 +15,23 @@
   },
   "Admin": {
     "header": { "title": "Admin Copilot", "status": "Online | Connected to DB" },
+    "confirmation": {
+      "title": "Confirmation Required",
+      "actionLabel": "Action: {tool}",
+      "banUser": "Ban User",
+      "confirmBtn": "Yes, execute",
+      "cancelBtn": "Cancel",
+      "success": "✅ Action **{tool}** successfully executed: {message}",
+      "info": "ℹ️ Status of **{tool}**: {message}",
+      "cancelled": "❌ Action **{tool}** was cancelled by the administrator."
+    },
+    "tools": {
+      "banUser": "Ban User",
+      "unbanUser": "Unban User",
+      "deleteUser": "Delete User",
+      "updateUserRole": "Update User Role",
+      "unlockUser": "Unlock User Account"
+    },
     "welcome": "How can I help you with admin tasks today?",
     "inputPlaceholder": "Query system stats or users...",
     "quickActions": [
@@ -24,5 +41,8 @@
       { "label": "📊 Roles", "query": "Show user distribution by roles" },
       { "label": "📊 Export CSV", "query": "Export all users as a CSV report" }
     ]
+  },
+  "Errors": {
+    "privateData": "I'm sorry, I cannot access private account data."
   }
 }

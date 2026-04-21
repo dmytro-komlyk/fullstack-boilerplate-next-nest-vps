@@ -2,6 +2,7 @@ import aiEn from './locales/en/ai.json';
 import authEn from './locales/en/auth.json';
 import commonEn from './locales/en/common.json';
 import emailEn from './locales/en/email.json';
+import userEn from './locales/en/user.json';
 
 export const supportedLanguages = ['en', 'uk'] as const;
 export type Language = (typeof supportedLanguages)[number];
@@ -11,6 +12,9 @@ export const defaultLanguage: Language = 'en';
 export type I18nTranslations = {
   Auth: typeof authEn;
   Common: typeof commonEn;
+  User: typeof userEn;
+  Email: typeof emailEn;
+  AI: typeof aiEn;
 };
 
 export const languageNames: Record<Language, string> = {
@@ -24,6 +28,7 @@ export const getMessagesForLocale = async (locale: string) => {
       Auth: (await import(`./locales/${locale}/auth.json`)).default,
       Common: (await import(`./locales/${locale}/common.json`)).default,
       Email: (await import(`./locales/${locale}/email.json`)).default,
+      User: (await import(`./locales/${locale}/user.json`)).default,
       AI: (await import(`./locales/${locale}/ai.json`)).default,
     };
   } catch (error) {
@@ -32,6 +37,7 @@ export const getMessagesForLocale = async (locale: string) => {
       Auth: authEn,
       Common: commonEn,
       Email: emailEn,
+      User: userEn,
       AI: aiEn,
     };
   }

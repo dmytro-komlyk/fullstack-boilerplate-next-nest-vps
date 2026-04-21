@@ -1,0 +1,9 @@
+{
+  "edit": {
+    "unbannedSuccess": "User **{id}** has been successfully unbanned.",
+    "bannedSuccess": "User **{id}** has been banned.",
+    "roleUpdated": "User **{id}** role has been changed to **{role}**.",
+    "alreadyBanned": "User **{id}** is already banned.",
+    "alreadyActive": "User **{id}** is already active."
+  }
+}
