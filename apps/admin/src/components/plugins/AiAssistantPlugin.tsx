@@ -180,15 +180,13 @@ export const AiAssistantPlugin = () => {
 
   const QUICK_ACTIONS = t.raw('quickActions') as { label: string; query: string }[];
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      const scrollContainer = scrollRef.current;
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollHeight,
-        behavior: isStreaming ? 'auto' : 'smooth',
-      });
-    }
-  }, [messages, isStreaming]);
+  const {
+    data: historyData,
+    // isLoading: isHistoryLoading,
+    refetch: refetchHistory,
+  } = trpc.ai.getHistory.useQuery(undefined, {
+    enabled: false,
+  });
 
   trpc.ai.askAdminAssistant.useSubscription(
     subscriptionInput || { prompt: '', history: [], locale },
@@ -211,8 +209,7 @@ export const AiAssistantPlugin = () => {
         setSubscriptionInput(null);
         setTimeout(() => setCurrentSteps([]), 3000);
       },
-      onError: (err) => {
-        console.error(err);
+      onError: () => {
         setIsStreaming(false);
         setSubscriptionInput(null);
       },
@@ -268,6 +265,33 @@ export const AiAssistantPlugin = () => {
       showToast.error(getLocalizedError(error.message, te));
     }
   };
+
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      refetchHistory();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (historyData && historyData.length > 0) {
+      setMessages(
+        historyData.map((m) => ({
+          role: m.role,
+          content: m.content,
+        }))
+      );
+    }
+  }, [historyData]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      const scrollContainer = scrollRef.current;
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: isStreaming ? 'auto' : 'smooth',
+      });
+    }
+  }, [messages, isStreaming]);
 
   return (
     <div className="fixed bottom-6 right-6 z-9999 flex flex-col items-end gap-4">
