@@ -2,6 +2,7 @@ import { INestApplicationContext } from '@nestjs/common';
 import { prisma } from '@package/prisma';
 import { inferAsyncReturnType } from '@trpc/server';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import Redis from 'ioredis';
 import { JwtPayload } from 'jsonwebtoken';
 import { Logger, PinoLogger } from 'nestjs-pino';
 
@@ -34,6 +35,7 @@ export type ServerContext = {
 export type FullServerContext = ServerContext & {
   logger: Logger;
   domain: Domain;
+  redis: Redis;
 };
 
 // ---- NestJS / Fastify ----
@@ -48,10 +50,12 @@ export interface FastifyContextOptions {
 }
 
 export async function createContext({
+  app,
   req,
   connection,
   logger,
 }: FastifyContextOptions): Promise<FullServerContext> {
+  const redis = app.get<Redis>('REDIS');
   const loggerContext =
     logger ??
     new PinoLogger({
@@ -61,12 +65,18 @@ export async function createContext({
     });
 
   const headers = req?.headers || connection?.headers || {};
+  let query = (req?.query as Record<string, string>) || {};
+  if (Object.keys(query).length === 0 && req?.url) {
+    const url = new URL(req.url, `http://${headers.host || 'localhost'}`);
+    query = Object.fromEntries(url.searchParams.entries());
+  }
+
   const host = (headers['host'] as string) || null;
   const origin = (headers['origin'] as string) || null;
   const userAgent = (headers['user-agent'] as string) || null;
   const ip = (headers['x-forwarded-for'] as string) || req?.ip || 'unknown';
-  const clientId = (headers['x-client-id'] as string) || null;
-  const locale = (headers['x-locale'] as string) || 'uk';
+  const clientId = (headers['x-client-id'] as string) || query['clientId'] || null;
+  const locale = (headers['x-locale'] as string) || query['locale'] || 'uk';
 
   // if (!clientId && userAgent) {
   //   clientId = crypto.createHash('md5').update(`${userAgent}-${ip}`).digest('hex');
@@ -75,7 +85,7 @@ export async function createContext({
   const cleanHost = host?.split(':')[0] || null;
 
   let user: ServerContext['user'] = null;
-  const sessionToken = headers['x-session-token'] as string | null;
+  const sessionToken = (headers['x-session-token'] as string) || query['sessionToken'] || null;
 
   // Web
   if (sessionToken) {
@@ -135,7 +145,8 @@ export async function createContext({
   }
 
   // Mobile
-  const authHeader = headers.authorization as string | undefined;
+  const authHeader =
+    (headers.authorization as string) || (query['token'] ? `Bearer ${query['token']}` : undefined);
 
   if (!user && authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
@@ -175,6 +186,7 @@ export async function createContext({
     sessionToken,
     user,
     logger: loggerContext,
+    redis,
     domain: {
       host: cleanHost,
       origin: origin,
