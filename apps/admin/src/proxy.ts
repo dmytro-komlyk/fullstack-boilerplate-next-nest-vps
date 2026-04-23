@@ -37,10 +37,15 @@ export async function proxy(request: NextRequest) {
     `/${currentLocale}${path.startsWith('/') ? path : `/${path}`}`;
 
   const isAuthRoute = purePathname.startsWith('/auth');
+  const isPublicAuthRoute =
+    purePathname.startsWith('/auth/sign-in') ||
+    purePathname.startsWith('/auth/sign-up') ||
+    purePathname === '/auth';
+
   const session = await auth();
 
-  if (!session?.user) {
-    if (isAuthRoute) {
+  if (!session) {
+    if (isPublicAuthRoute) {
       return response;
     }
 
