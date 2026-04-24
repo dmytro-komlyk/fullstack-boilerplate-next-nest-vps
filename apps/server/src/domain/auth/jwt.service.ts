@@ -75,8 +75,18 @@ export async function generateBackendTokens(
 
   // 2. Access token
   if (options.updateAccess) {
-    const accessExpDate = addHours(now, 1);
-    // const accessExpDate = addMinutes(now, 2); // for test
+    let accessExpDate = addHours(now, 1);
+    if (!options.updateRefresh) {
+      const currentRefreshToken = await prisma.token.findUnique({
+        where: {
+          userId_type_clientId: { userId, type: 'REFRESH', clientId },
+        },
+      });
+
+      if (currentRefreshToken && currentRefreshToken.expiresAt < accessExpDate) {
+        accessExpDate = currentRefreshToken.expiresAt;
+      }
+    }
     const accessExpUnix = Math.floor(accessExpDate.getTime() / 1000);
 
     const accessPayload = {
@@ -120,8 +130,8 @@ export async function generateBackendTokens(
 
   // 3. Refresh token
   if (options.updateRefresh) {
-    const refreshExpDate = addDays(now, 7);
-    // const refreshExpDate = addMinutes(now, 10); // for test
+    const refreshExpDate = addDays(now, 30);
+    // const refreshExpDate = addDays(now, 7); // for financial reasons
     const refreshExpUnix = Math.floor(refreshExpDate.getTime() / 1000);
 
     const refreshPayload = {

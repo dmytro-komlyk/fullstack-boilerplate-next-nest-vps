@@ -13,10 +13,12 @@ async function getClientContext() {
   const h = await headers();
   const c = await cookies();
   const clientId = h.get('x-client-id') || c.get('x-client-id')?.value || undefined;
+  const ip = h.get('x-forwarded-for')?.split(',')[0] || h.get('x-real-ip') || '127.0.0.1';
 
   return {
     ua: h.get('user-agent') || undefined,
     origin: h.get('origin') || undefined,
+    ip: ip.trim(),
     host: h.get('host') || undefined,
     clientId,
   };
@@ -63,6 +65,7 @@ export const authOptions: AuthConfig = {
             origin: ctx.origin,
             host: ctx.host,
             'x-client-id': ctx.clientId,
+            'x-forwarded-for': ctx.ip,
           });
 
           const response = await remoteServerClient.auth.login.mutate({
@@ -108,10 +111,9 @@ export const authOptions: AuthConfig = {
   useSecureCookies: process.env.NODE_ENV === 'production',
   session: {
     strategy: 'jwt',
-    // maxAge: 5 * 60, // for test
-    // updateAge: 60, // for test
-    maxAge: 30 * 24 * 60 * 60,
-    updateAge: 24 * 60 * 60,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    // maxAge: 7 * 24 * 60 * 60, // 7 days for financeal reasons
+    updateAge: 24 * 60 * 60, // 24 hours
   },
   pages: {
     signIn: '/auth/sign-in',
@@ -165,6 +167,7 @@ export const authOptions: AuthConfig = {
         origin: ctx.origin,
         host: ctx.host,
         'x-client-id': ctx.clientId,
+        'x-forwarded-for': ctx.ip,
       });
 
       if (account && account?.provider !== 'login') {
@@ -216,8 +219,6 @@ export const authOptions: AuthConfig = {
       trigger?: 'signIn' | 'signUp' | 'update';
       session?: Session;
     }): Promise<JWT> => {
-      console.log(`Auth JWT Token = ${JSON.stringify(token)}`);
-      console.log(`Auth JWT User = ${JSON.stringify(user)}`);
       const ctx = await getClientContext();
 
       if (trigger === 'update' && session) {
@@ -288,9 +289,12 @@ export const authOptions: AuthConfig = {
       const currentTime = Math.floor(Date.now() / 1000);
 
       if (token.refreshTokenExp && currentTime >= token.refreshTokenExp) {
-        console.warn('Refresh token expired, session is dead.');
-        token.error = 'RefreshTokenExpired';
-        return token;
+        return {
+          ...token,
+          error: 'RefreshTokenExpired',
+          accessToken: '',
+          accessTokenExp: 0,
+        };
       }
 
       if (token.accessTokenExp && currentTime < (token.accessTokenExp as number) - 30) {
@@ -302,6 +306,7 @@ export const authOptions: AuthConfig = {
           'x-client-id': (token.clientId as string) || ctx.clientId,
           host: ctx.host,
           origin: ctx.origin,
+          'x-forwarded-for': ctx.ip,
         });
 
         const updated = await remoteServerClient.auth.refresh.mutate({

@@ -49,6 +49,16 @@ export interface FastifyContextOptions {
   };
 }
 
+function normalizeIp(rawIp: string | undefined | null): string {
+  const ipParts = rawIp ? rawIp.split(',') : ['127.0.0.1'];
+  let ip = (ipParts[0] || '127.0.0.1').trim().replace(/^.*:ffff:/, '');
+
+  if (ip === '::1') {
+    ip = '127.0.0.1';
+  }
+  return ip;
+}
+
 export async function createContext({
   app,
   req,
@@ -74,7 +84,13 @@ export async function createContext({
   const host = (headers['host'] as string) || null;
   const origin = (headers['origin'] as string) || null;
   const userAgent = (headers['user-agent'] as string) || null;
-  const ip = (headers['x-forwarded-for'] as string) || req?.ip || 'unknown';
+  const rawIp =
+    (headers['x-forwarded-for'] as string) ||
+    (headers['x-real-ip'] as string) ||
+    req?.ip ||
+    '127.0.0.1';
+  const ip = normalizeIp(rawIp);
+
   const clientId = (headers['x-client-id'] as string) || query['clientId'] || null;
   const locale = (headers['x-locale'] as string) || query['locale'] || 'uk';
 

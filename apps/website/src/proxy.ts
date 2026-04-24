@@ -40,7 +40,7 @@ export async function proxy(request: NextRequest) {
     purePathname === '/' || purePathname === '' || purePathname.startsWith('/auth');
   const session = await auth();
 
-  if (!session?.user) {
+  if (!session) {
     if (isPublicRoute) return response;
 
     const signInUrl = new URL(getLocalePath('/auth/sign-in'), origin);
@@ -72,11 +72,14 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (!session?.user?.accessToken) {
+  if (session?.user?.accessToken) {
     const token = jwt.decode(session.user.accessToken) as { exp?: number } | null;
     const now = Math.floor(Date.now() / 1000);
 
-    if (token?.exp && token.exp < now) {
+    const isExpired = token?.exp && token.exp < now;
+    const isRefreshTokenExpired = (session as any).error === 'RefreshTokenExpired';
+
+    if (isExpired || isRefreshTokenExpired) {
       const signInUrl = new URL(getLocalePath('/auth/sign-in'), origin);
       const deleteCookie = (name: string) =>
         `${

@@ -75,8 +75,6 @@ const Navbar = ({ routes }: INavbarProps) => {
 
   const tabs = subRoutes[activeRoute.path.toLowerCase()] || [];
 
-  console.log(activeRoute.name);
-
   return (
     <nav className="sticky top-4 z-40 flex flex-row flex-wrap items-center justify-between rounded-xl bg-white/10 p-2 backdrop-blur-xl dark:bg-[#0b14374d]">
       <div className="flex flex-col">

@@ -28,7 +28,7 @@ export function Providers({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <SessionProvider session={session}>
+      <SessionProvider session={session} refetchInterval={30} refetchOnWindowFocus={true}>
         <TrpcProvider>
           <ThemeUIProvider defaultThemeFromCookie={defaultThemeFromCookie}>
             <HeroUIProvider navigate={router.push}>{children}</HeroUIProvider>
