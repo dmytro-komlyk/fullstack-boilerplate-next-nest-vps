@@ -40,7 +40,7 @@ function extractAllJSON(text: string): any[] {
     if (endIdx !== -1) {
       const maybeJson = sanitized.substring(startIdx, endIdx + 1);
       try {
-        results.push(JSON.parse(maybeJson));
+        results.push(JSON.parse(maybeJson.trim()));
       } catch (e) {
         console.error('FAILED TO PARSE JSON CHUNK:', JSON.stringify(maybeJson));
       }
@@ -70,6 +70,9 @@ export async function runAgent({
     data?: any;
   }) => void;
 }) {
+  const lang = (AGENT_MESSAGES[language as Language] ? language : 'en') as Language;
+  const t = AGENT_MESSAGES[lang];
+
   const tools = getTools(isAdmin);
   const usedTools = new Set<string>();
 
@@ -98,7 +101,7 @@ export async function runAgent({
 
     onStep?.({
       type: 'thinking',
-      message: language === 'uk' ? `Розмірковую (крок ${steps})...` : `Thinking (step ${steps})...`,
+      message: t.thinking(steps),
     });
 
     const res = await handleAssistant({
@@ -123,6 +126,11 @@ export async function runAgent({
     console.log('RAW LLM:', text);
     const jsonList = extractAllJSON(text);
 
+    if (jsonList.length === 0 && text.trim().length > 0) {
+      console.log('PLAIN TEXT RESPONSE (NO JSON):', text);
+      return text.trim();
+    }
+
     if (jsonList.length === 0) {
       console.log('INVALID JSON:', text);
       executionLogs += `\nStep ${steps}: Received invalid JSON.`;
@@ -130,6 +138,19 @@ export async function runAgent({
     }
 
     const toolCalls = jsonList.filter((j) => j.type === 'tool');
+
+    const unknownTool = toolCalls.find((call) => !tools[call.tool]);
+    if (unknownTool) {
+      console.log(`BLOCKED: Model tried to call unknown/admin tool: ${unknownTool.tool}`);
+      return t.adminOnly;
+    }
+
+    if (!isAdmin) {
+      const triesAdminTool = toolCalls.some((call) => DANGEROUS_TOOLS.includes(call.tool as any));
+      if (triesAdminTool) {
+        return t.noPermission;
+      }
+    }
 
     const hasDangerousTool = toolCalls.some((call) => DANGEROUS_TOOLS.includes(call.tool));
 
@@ -147,10 +168,7 @@ export async function runAgent({
 
     if (hasInvalidArgs) {
       executionLogs += `\nStep ${steps}: [ERROR] You are using placeholder values like 'user_not_found'. You MUST provide a final answer stating the user does not exist.`;
-      if (steps > 2)
-        return language === 'uk'
-          ? 'Користувача не знайдено в базі даних.'
-          : 'User not found in the database.';
+      if (steps > 2) return t.userNotFound;
     }
 
     const repeatedTool = toolCalls.find((call) => usedTools.has(call.tool));
@@ -194,7 +212,7 @@ export async function runAgent({
 
         onStep?.({
           type: 'tool_start',
-          message: language === 'uk' ? `Викликаю: ${json.tool}` : `Calling: ${json.tool}`,
+          message: t.calling(json.tool),
           data: json.args,
         });
 
@@ -207,10 +225,7 @@ export async function runAgent({
 
           onStep?.({
             type: 'tool_end',
-            message:
-              language === 'uk'
-                ? `Дані від ${json.tool} отримано`
-                : `Data from ${json.tool} received`,
+            message: t.received(json.tool),
             data: result,
           });
           return { tool: json.tool, result };
@@ -257,5 +272,5 @@ export async function runAgent({
     executionLogs += `\nStep ${steps}: Executed [${toolCalls.map((c) => c.tool).join(', ')}]`;
   }
 
-  return '❌ Failed to complete request (Max steps reached)';
+  return t.maxSteps;
 }

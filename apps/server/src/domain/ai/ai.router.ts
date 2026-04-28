@@ -40,14 +40,23 @@ export const aiRouter = router({
       });
     });
   }),
-  askPublicAssistant: procedure.input(promptSchema).subscription(({ input }) => {
+  askPublicAssistant: procedure.input(promptSchema).subscription(({ input, ctx }) => {
     return observable<{ type: 'token' | 'step'; content: any }>((emit) => {
-      createSubscriptionStream({
-        ...input,
-        isAdmin: false,
-        onStep: (step) => emit.next({ type: 'step', content: step }),
-        onToken: (token) => emit.next({ type: 'token', content: token }),
-        onComplete: () => emit.complete(),
+      const run = async () => {
+        createSubscriptionStream({
+          ...input,
+          isAdmin: false,
+          onStep: (step) => emit.next({ type: 'step', content: step }),
+          onToken: (token) => {
+            emit.next({ type: 'token', content: token });
+          },
+          onComplete: () => emit.complete(),
+        });
+      };
+
+      run().catch((err) => {
+        ctx.logger.error(err);
+        emit.error(err);
       });
     });
   }),

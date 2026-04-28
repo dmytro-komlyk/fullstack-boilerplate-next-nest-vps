@@ -20,6 +20,7 @@ export async function handleAssistant({
       prompt,
       history,
       language,
+      ...(disableTools !== undefined && { disableTools }),
     });
   }
 

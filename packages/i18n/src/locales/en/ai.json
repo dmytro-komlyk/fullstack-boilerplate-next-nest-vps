@@ -9,8 +9,10 @@
         "query": "What is the tech stack used in Omni-Stack?"
       },
       { "label": "🛠 Features", "query": "Tell me about the main features of this project" },
-      { "label": "📱 Mobile", "query": "Is there mobile app support?" },
-      { "label": "🛡 Security", "query": "How is authentication and protection implemented?" }
+      { "label": "📦 Monorepo Structure", "query": "Explain the project structure and packages" },
+      { "label": "📱 Mobile Support", "query": "How does mobile integration work?" },
+      { "label": "🛡 Security", "query": "How is authentication and protection implemented?" },
+      { "label": "🚢 How to Deploy?", "query": "Tell me about DevOps and VPS deployment" }
     ]
   },
   "Admin": {

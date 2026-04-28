@@ -9,7 +9,7 @@ import { statsTools } from './stats.tools';
 import { systemTools } from './system.tools';
 import { usersTools } from './users.tools';
 
-export const getTools = (isAdmin: boolean) => {
+export const getTools = (isAdmin: boolean): any => {
   const publicTools = {
     getWelcomeMessage: tool({
       description:
@@ -17,12 +17,69 @@ export const getTools = (isAdmin: boolean) => {
       parameters: z.object({}),
       execute: async () => await systemTools.getWelcomeMessage(),
     } as any),
-
     getSystemStatus: tool({
       description:
         'Check system health, database connection, and support response time. Use this to answer questions about platform stability.',
       parameters: z.object({}),
       execute: async () => await systemTools.getSystemStatus(),
+    } as any),
+    getProjectInfo: tool({
+      description: 'Get deep technical details about architecture, devops, and monorepo structure.',
+      parameters: z.object({
+        topic: z
+          .enum(['stack', 'features', 'mobile', 'security', 'devops', 'structure', 'all'])
+          .optional()
+          .default('all'),
+      }),
+      execute: async ({
+        topic,
+      }: {
+        topic: 'stack' | 'features' | 'mobile' | 'security' | 'devops' | 'structure' | 'all';
+      }) => {
+        const info = {
+          stack:
+            'Frontend: Next.js 16 (App Router), HeroUI (NextUI), Tailwind. Backend: NestJS (Modular). API: tRPC.',
+
+          features:
+            '100% Type-safety, Shared Zod schemas, 2FA with Backup codes, Real-time subscriptions.',
+          mobile:
+            'Native Expo (React Native) integration with shared packages for state (Zustand) and API.',
+          security: 'Full 2FA, Role-Based Access Control (RBAC), JWT for mobile, NextAuth for web.',
+          devops:
+            'Docker-based orchestration, GitHub Actions CI/CD with Smart Build System (label-based builds).',
+          structure:
+            'Monorepo: /apps (admin, website, mobile, server) and /packages (api, store, prisma, ui, shared).',
+        };
+        return topic === 'all' ? info : info[topic as keyof typeof info];
+      },
+    } as any),
+    getInstallationSteps: tool({
+      description: 'Get step-by-step instructions on how to install and run Omni-Stack locally.',
+      parameters: z.object({
+        environment: z.enum(['local', 'docker']).default('local'),
+      }),
+      execute: async ({ environment }: { environment: 'local' | 'docker' }) => {
+        if (environment === 'docker') {
+          return '1. pnpm run setup:local:env | 2. docker compose -f docker-compose.local.yml up -d --build';
+        }
+        return '1. pnpm install | 2. pnpm run setup:local:env | 3. pnpm dev';
+      },
+    } as any),
+    getPackageDetails: tool({
+      description: 'Explains what each package in the /packages folder does.',
+      parameters: z.object({
+        packageName: z.string().optional(),
+      }),
+      execute: async ({ packageName }: { packageName?: string }) => {
+        const packages = {
+          api: 'Shared tRPC router & Zod schemas. The core of type-safety.',
+          store: 'Global state management using Zustand.',
+          shared: 'Common components, hooks, utilities and constants used across web and mobile.',
+          prisma: 'Centralized Database schema and ORM client.',
+          ui: 'Shared design system and theme provider.',
+        };
+        return packageName ? packages[packageName as keyof typeof packages] : packages;
+      },
     } as any),
   };
 
