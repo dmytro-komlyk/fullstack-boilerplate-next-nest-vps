@@ -1,4 +1,4 @@
-const AGENT_MESSAGES = {
+export const AGENT_MESSAGES = {
   uk: {
     thinking: (step: number) => `Розмірковую (крок ${step})...`,
     calling: (tool: string) => `Викликаю: ${tool}`,
@@ -25,4 +25,4 @@ const AGENT_MESSAGES = {
   },
 } as const;
 
-type Language = keyof typeof AGENT_MESSAGES;
+export type Language = keyof typeof AGENT_MESSAGES;
