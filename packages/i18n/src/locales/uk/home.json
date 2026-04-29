@@ -1,0 +1,61 @@
+{
+  "header": {
+    "nav": {
+      "features": "Можливості",
+      "documentation": "Документація"
+    },
+    "user": {
+      "dashboard": "Панель керування",
+      "profile": "Мій профіль",
+      "logout": "Вийти",
+      "logging_out": "Вихід..."
+    },
+    "auth": {
+      "login": "Увійти",
+      "signup": "Реєстрація"
+    }
+  },
+  "hero": {
+    "badge": "v1.0.0 Готовий до Production",
+    "title_part1": "The Ultimate",
+    "title_highlight": "Fullstack",
+    "title_part2": "Monorepo Engine",
+    "description": "Прискорюйте розробку за допомогою <strong>Omni-tRPC-Stack</strong>. Високопродуктивна архітектура, що безшовно поєднує Next.js, Nest.js та Expo з 100% Type-Safety.",
+    "buttons": {
+      "get_started": "Почати роботу",
+      "github": "Переглянути на GitHub"
+    }
+  },
+  "capabilities": {
+    "title": "Ключові Можливості",
+    "items": {
+      "truth": {
+        "title": "Single Source of Truth",
+        "desc": "Забудьте про дублювання логіки валідації. Використовуйте спільні Zod-схеми для Web, Mobile та Server одночасно."
+      },
+      "safety": {
+        "title": "E2E Type-Safety",
+        "desc": "Відчуйте магію tRPC. Відловлюйте помилки в API ще на етапі компіляції, перш ніж вони потраплять у продакшн."
+      },
+      "mobile": {
+        "title": "Native Mobile",
+        "desc": "Це не просто web-wrapper. Повноцінний застосунок на Expo вже інтегрований та готовий до спільного використання логіки."
+      },
+      "devops": {
+        "title": "DevOps-as-a-Service",
+        "desc": "Розгортання промислового рівня: від оркестрації Docker до автоматизованих GitHub Actions CI/CD для вашого VPS."
+      },
+      "security": {
+        "title": "Просунута Безпека",
+        "desc": "Повноцінна 2FA з кодами відновлення, RBAC та безпечне керування сесіями, вже налаштоване для роботи."
+      }
+    }
+  },
+  "tech_stack": {
+    "title": "Потужність вашого виробництва"
+  },
+  "status": {
+    "cicd": "CI/CD: ГОТОВИЙ ДО ПРОДАКШНУ",
+    "auth": "AUTH: 2FA ТА RBAC УВІМКНЕНО"
+  }
+}
