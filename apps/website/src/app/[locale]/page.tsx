@@ -3,8 +3,9 @@
 import Header from '@/components/header/Header';
 import { AiAssistantPlugin } from '@/components/plugins/AiAssistantPlugin';
 import SettingsWidgetPlugin from '@/components/plugins/SettingsWidgetPlugin';
-import { Button, Chip } from '@heroui/react';
+import { Button, Chip, Link } from '@heroui/react';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   LuArrowRight,
   LuBox,
@@ -17,6 +18,8 @@ import {
 } from 'react-icons/lu';
 
 export default function Home() {
+  const t = useTranslations('Home');
+
   const techStack = [
     { name: 'Next.js 16', category: 'Frontend' },
     { name: 'Nest.js', category: 'Backend' },
@@ -30,32 +33,32 @@ export default function Home() {
 
   const highlights = [
     {
-      title: 'Single Source of Truth',
-      desc: 'Forget about duplicating validation logic. Use Shared Zod schemas across Web, Mobile, and Server simultaneously.',
+      title: t('capabilities.items.truth.title'),
+      desc: t('capabilities.items.truth.desc'),
       icon: <LuBox className="text-orange-500 size-6" />,
       color: 'bg-orange-500/10',
     },
     {
-      title: 'E2E Type-Safety',
-      desc: 'Experience the magic of tRPC. Catch API breaking changes at compile time before they ever reach production.',
+      title: t('capabilities.items.safety.title'),
+      desc: t('capabilities.items.safety.desc'),
       icon: <LuZap className="text-brand-500 size-6" />,
       color: 'bg-brand-500/10',
     },
     {
-      title: 'Native Mobile',
-      desc: 'Not just a web-wrapper. A fully-fledged Expo app is baked in, sharing logic and state out of the box.',
+      title: t('capabilities.items.mobile.title'),
+      desc: t('capabilities.items.mobile.desc'),
       icon: <LuSmartphone className="text-purple-500 size-6" />,
       color: 'bg-purple-500/10',
     },
     {
-      title: 'DevOps-as-a-Service',
-      desc: 'Industrial-grade deployment. From Docker orchestration to automated GitHub Actions CI/CD for your VPS.',
+      title: t('capabilities.items.devops.title'),
+      desc: t('capabilities.items.devops.desc'),
       icon: <LuServer className="text-blue-500 size-6" />,
       color: 'bg-blue-500/10',
     },
     {
-      title: 'Advanced Security',
-      desc: 'Full 2FA with backup codes, RBAC, and secure session management pre-configured for production.',
+      title: t('capabilities.items.security.title'),
+      desc: t('capabilities.items.security.desc'),
       icon: <LuShieldCheck className="text-green-500 size-6" />,
       color: 'bg-green-500/10',
     },
@@ -81,7 +84,7 @@ export default function Home() {
               className="mb-8 py-4 px-6 border-1 border-brand-500/20 bg-brand-500/5 text-brand-500 font-medium"
               startContent={<LuZap className="size-4" />}
             >
-              v1.0.0 Production Ready
+              {t('hero.badge')}
             </Chip>
           </motion.div>
 
@@ -91,44 +94,53 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-5xl md:text-8xl font-black tracking-tight text-gray-900 dark:text-white mb-8 leading-[1.1]"
           >
-            The Ultimate <span className="text-brand-500">Fullstack</span>{' '}
+            {t('hero.title_part1')}{' '}
+            <span className="text-brand-500">{t('hero.title_highlight')}</span>{' '}
             <br className="hidden md:block" />
-            Monorepo Engine
+            {t('hero.title_part2')}
           </motion.h1>
 
           <motion.p
+            dangerouslySetInnerHTML={{ __html: t.raw('hero.description') }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
             className="text-xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl leading-relaxed"
-          >
-            Accelerate your development with <strong>Omni-tRPC-Stack</strong>. A high-performance
-            architecture seamlessly integrating Next.js, Nest.js, and Expo with 100% Type-Safety.
-          </motion.p>
+          />
 
           <div className="flex flex-wrap justify-center gap-4 mb-32">
             <Button
+              as={Link}
+              href="https://github.com/new?template_name=Omni-tRPC-Stack&template_owner=dmytro-komlyk"
+              target="_blank"
+              rel="noopener noreferrer"
               size="lg"
               color="primary"
               className="bg-brand-500 font-bold px-10 h-16 rounded-2xl text-white shadow-xl shadow-brand-500/30 text-lg transition-transform hover:scale-105"
               endContent={<LuArrowRight />}
             >
-              Get Started
+              {t('hero.buttons.get_started')}
             </Button>
             <Button
+              as={Link}
+              href="https://github.com/dmytro-komlyk/Omni-tRPC-Stack"
+              target="_blank"
+              rel="noopener noreferrer"
               size="lg"
               variant="bordered"
               className="font-bold px-10 h-16 rounded-2xl border-2 dark:text-white text-lg transition-transform hover:scale-105"
               startContent={<LuGithub />}
             >
-              View on GitHub
+              {t('hero.buttons.github')}
             </Button>
           </div>
 
           {/* Architecture Highlights - 5 Grid */}
           <div className="w-full mb-40">
             <h2 className="text-3xl font-black mb-16 text-gray-900 dark:text-white uppercase tracking-widest">
-              Core Capabilities
+              {t('capabilities.title')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
               {highlights.map((item, idx) => (
@@ -148,7 +160,7 @@ export default function Home() {
           {/* Tech Stack Grid */}
           <div className="w-full max-w-4xl mb-40">
             <h2 className="text-2xl font-bold mb-10 text-gray-500 dark:text-gray-400 uppercase tracking-widest text-center">
-              Powering your production
+              {t('tech_stack.title')}
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {techStack.map((tech, i) => (
@@ -172,11 +184,11 @@ export default function Home() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
-              CI/CD: PRODUCTION READY
+              {t('status.cicd')}
             </div>
             <div className="flex items-center gap-3 px-6 py-3 bg-gray-50 dark:bg-white/5 rounded-full border border-gray-200 dark:border-white/10 text-xs font-mono dark:text-gray-300">
               <LuLock className="size-3 text-brand-500" />
-              AUTH: 2FA & RBAC ENABLED
+              {t('status.auth')}
             </div>
           </div>
         </div>

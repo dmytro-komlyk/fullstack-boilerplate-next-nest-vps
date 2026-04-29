@@ -20,8 +20,9 @@ import {
   User,
 } from '@heroui/react';
 import { useSession } from '@package/next-auth';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { LuLayoutDashboard, LuLogOut, LuShoppingBasket, LuUser } from 'react-icons/lu';
+import { LuLayoutDashboard, LuLogOut, LuOrbit, LuUser } from 'react-icons/lu';
 
 import { useLogout } from '@/hooks/useLogout';
 
@@ -29,11 +30,11 @@ const Header = () => {
   const { data: session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { handleLogout, isLoading } = useLogout();
+  const t = useTranslations('Home.header');
 
   const navLinks = [
-    { label: 'Features', href: '#features' },
-    { label: 'Documentation', href: '/docs' },
-    { label: 'Pricing', href: '/pricing' },
+    { label: t('nav.features'), href: '#features' },
+    { label: t('nav.documentation'), href: '#documentation' },
   ];
 
   return (
@@ -70,7 +71,7 @@ const Header = () => {
         <NavbarBrand>
           <Link href={baseUrl} className="flex items-center gap-2 group">
             <div className="bg-brand-500 p-1.5 rounded-lg group-hover:rotate-12 transition-transform">
-              <LuShoppingBasket className="text-white size-5" />
+              <LuOrbit className="text-white size-5" />
             </div>
             <span className="text-2xl font-black tracking-tight text-gray-900 dark:text-white">
               {appName}
@@ -131,7 +132,7 @@ const Header = () => {
                   href={`${baseUrl}/dashboard`}
                   startContent={<LuLayoutDashboard className="size-4" />}
                 >
-                  Dashboard
+                  {t('user.dashboard')}
                 </DropdownItem>
                 <DropdownItem
                   key="profile"
@@ -139,7 +140,7 @@ const Header = () => {
                   href={`${baseUrl}/profile`}
                   startContent={<LuUser className="size-4" />}
                 >
-                  My Profile
+                  {t('user.profile')}
                 </DropdownItem>
               </DropdownSection>
 
@@ -157,7 +158,7 @@ const Header = () => {
                 }
                 onPress={() => handleLogout('manual')}
               >
-                {isLoading ? 'Logging out...' : 'Log Out'}
+                {isLoading ? t('user.logging_out') : t('user.logout')}
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
@@ -169,7 +170,7 @@ const Header = () => {
               variant="light"
               className="font-bold hidden md:flex"
             >
-              Log In
+              {t('auth.login')}
             </Button>
             <Button
               as={Link}
@@ -177,7 +178,7 @@ const Header = () => {
               color="primary"
               className="bg-brand-500 font-bold shadow-lg shadow-brand-500/20 px-6 rounded-xl text-white"
             >
-              Sign Up
+              {t('auth.signup')}
             </Button>
           </NavbarItem>
         )}
