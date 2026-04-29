@@ -51,6 +51,19 @@
       }
     }
   },
+  "ecosystem": {
+    "title": "Complete Ecosystem",
+    "admin": {
+      "title": "Admin Dashboard",
+      "desc": "Powerful admin panel built with NestJS and Next.js. Manage users, roles (RBAC), and monitor the system.",
+      "button": "Enter Admin"
+    },
+    "mobile": {
+      "title": "Cross-platform Mobile",
+      "desc": "A production-ready Expo app with tRPC integration. Shared business logic and types across Web and Mobile.",
+      "scan": "Scan to open in Expo Go"
+    }
+  },
   "tech_stack": {
     "title": "Powering your production"
   },

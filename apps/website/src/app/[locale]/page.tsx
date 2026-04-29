@@ -1,14 +1,17 @@
 'use client';
 
 import Header from '@/components/header/Header';
+import EcosystemSection from '@/components/home/EcosystemSection';
 import { AiAssistantPlugin } from '@/components/plugins/AiAssistantPlugin';
 import SettingsWidgetPlugin from '@/components/plugins/SettingsWidgetPlugin';
+import MagneticWrapper from '@/components/wrappers/MagneticWrapper';
 import { Button, Chip, Link } from '@heroui/react';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
   LuArrowRight,
   LuBox,
+  LuChevronDown,
   LuGithub,
   LuLock,
   LuServer,
@@ -71,6 +74,7 @@ export default function Home() {
       <SettingsWidgetPlugin />
       <AiAssistantPlugin />
       <main className="relative z-10 container mx-auto px-4 pt-40 pb-32">
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_50%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
         <div className="flex flex-col items-center text-center max-w-6xl mx-auto">
           {/* Hero Section */}
           <motion.div
@@ -110,35 +114,58 @@ export default function Home() {
             className="text-xl text-gray-600 dark:text-gray-400 mb-12 max-w-3xl leading-relaxed"
           />
 
+          {/* Hero Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-32">
-            <Button
-              as={Link}
-              href="https://github.com/new?template_name=Omni-tRPC-Stack&template_owner=dmytro-komlyk"
-              target="_blank"
-              rel="noopener noreferrer"
-              size="lg"
-              color="primary"
-              className="bg-brand-500 font-bold px-10 h-16 rounded-2xl text-white shadow-xl shadow-brand-500/30 text-lg transition-transform hover:scale-105"
-              endContent={<LuArrowRight />}
-            >
-              {t('hero.buttons.get_started')}
-            </Button>
-            <Button
-              as={Link}
-              href="https://github.com/dmytro-komlyk/Omni-tRPC-Stack"
-              target="_blank"
-              rel="noopener noreferrer"
-              size="lg"
-              variant="bordered"
-              className="font-bold px-10 h-16 rounded-2xl border-2 dark:text-white text-lg transition-transform hover:scale-105"
-              startContent={<LuGithub />}
-            >
-              {t('hero.buttons.github')}
-            </Button>
+            <MagneticWrapper offset={1.2}>
+              <motion.div whileTap={{ scale: 0.97 }}>
+                <Button
+                  as={Link}
+                  href="https://github.com/new?template_name=Omni-tRPC-Stack&template_owner=dmytro-komlyk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="lg"
+                  color="primary"
+                  className="bg-brand-500 font-bold px-10 h-16 rounded-2xl text-white shadow-xl shadow-brand-500/30 text-lg transition-transform hover:scale-105 will-change-transform"
+                  endContent={<LuArrowRight />}
+                >
+                  {t('hero.buttons.get_started')}
+                </Button>
+              </motion.div>
+            </MagneticWrapper>
+
+            <MagneticWrapper offset={0.8}>
+              <motion.div whileTap={{ scale: 0.97 }}>
+                <Button
+                  as={Link}
+                  href="https://github.com/dmytro-komlyk/Omni-tRPC-Stack"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="lg"
+                  variant="bordered"
+                  className="font-bold px-10 h-16 rounded-2xl border-2 dark:text-white text-lg transition-transform hover:scale-105 will-change-transform"
+                  startContent={<LuGithub />}
+                >
+                  {t('hero.buttons.github')}
+                </Button>
+              </motion.div>
+            </MagneticWrapper>
           </div>
 
+          {/* Scroll Indicator */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2 }}
+            className="hidden md:flex flex-col items-center gap-3 mb-20"
+          >
+            <div className="w-px h-20 bg-linear-to-b from-brand-500 to-transparent" />
+            <motion.div animate={{ y: [0, 5, 0] }} transition={{ duration: 2, repeat: Infinity }}>
+              <LuChevronDown className="text-brand-500/50 size-6" />
+            </motion.div>
+          </motion.div>
+
           {/* Architecture Highlights - 5 Grid */}
-          <div className="w-full mb-40">
+          <section className="w-full mb-40">
             <h2 className="text-3xl font-black mb-16 text-gray-900 dark:text-white uppercase tracking-widest">
               {t('capabilities.title')}
             </h2>
@@ -155,10 +182,13 @@ export default function Home() {
                 </motion.div>
               ))}
             </div>
-          </div>
+          </section>
+
+          {/* Ecosystem */}
+          <EcosystemSection />
 
           {/* Tech Stack Grid */}
-          <div className="w-full max-w-4xl mb-40">
+          <section className="w-full max-w-4xl mb-40">
             <h2 className="text-2xl font-bold mb-10 text-gray-500 dark:text-gray-400 uppercase tracking-widest text-center">
               {t('tech_stack.title')}
             </h2>
@@ -175,7 +205,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </div>
+          </section>
 
           {/* Status Bar */}
           <div className="flex flex-wrap justify-center gap-8 border-t border-gray-100 dark:border-white/10 pt-16 w-full opacity-60 italic">
