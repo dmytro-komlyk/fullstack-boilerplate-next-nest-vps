@@ -133,8 +133,9 @@ const Navbar = ({ routes }: INavbarProps) => {
                 }}
                 startContent={<span>{lang.flag}</span>}
                 className="rounded-xl transition-colors data-[hover=true]:bg-gray-100 dark:data-[hover=true]:bg-white/10"
+                classNames={{ title: 'text-sm font-medium' }}
               >
-                <span className="text-sm font-medium">{lang.label}</span>
+                {lang.label}
               </ListboxItem>
             ))}
           </Listbox>
@@ -206,10 +207,9 @@ const Navbar = ({ routes }: INavbarProps) => {
                         <div className="text-gray-600 dark:text-white">{route.icon}</div>
                       }
                       className="h-10 rounded-xl transition-colors data-[hover=true]:bg-gray-100 dark:data-[hover=true]:bg-white/10"
+                      classNames={{ title: 'text-sm font-medium text-gray-900 dark:text-white' }}
                     >
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {translatedName}
-                      </span>
+                      {translatedName}
                     </ListboxItem>
                   );
                 })}
