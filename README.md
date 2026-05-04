@@ -21,11 +21,11 @@
 
 ### Why Omni-Stack?
 
-- **🧩 Single Source of Truth:** Forget about duplicating validation logic. Use Shared Zod schemas to validate data across Web, Mobile, and Server simultaneously. Change once, update everywhere.
+- **🧩 Single Source of Truth:** Forget about duplicating validation logic. Use shared Zod schemas to validate data across Web, Mobile, and Server simultaneously. Change once, update everywhere.
 - **🛡️ E2E Type-Safety (Zero-runtime errors):** Experience the magic of tRPC. Catch API breaking changes at compile time before they ever reach production. If your backend changes, your frontend won't build until it's fixed.
-- **📱 Native Mobile Integration:** Not just a web-wrapper. A fully-fledged Expo (React Native) application is baked into the monorepo, sharing logic and state with your web apps out of the box.
+- **📱 Native Mobile Integration:** Not just a web-wrapper. A fully-fledged Expo (React Native) application is baked into the monorepo, sharing logic and state with your web apps out of the box — including deep linking on both iOS and Android.
 - **🚢 DevOps-as-a-Service:** Industrial-grade deployment. From Docker Orchestration to automated GitHub Actions CI/CD for your own VPS. It's not just a boilerplate; it's a complete production pipeline.
-- **🔐 Advanced Security Included:** Full 2FA (Two-Factor Authentication) with Backup Codes, Role-based Access Control (RBAC), and secure Session management are already pre-configured.
+- **🔐 Advanced Security Included:** Full 2FA (TOTP) with backup codes, account lockout protection, role-based access control (RBAC), and secure session management are pre-configured across web and mobile.
 
 ---
 
@@ -44,12 +44,15 @@
 - **Mobile:** [Expo](https://expo.dev/) (React Native) + Expo Router
 - **UI Toolkit:** [HeroUI](https://heroui.com/) (ex. NextUI) + TailwindCSS
 - **State:** Zustand + TanStack Query
+- **i18n:** react-i18next (Mobile) + next-intl (Web) with shared locale support
 
 ### ⚙️ Backend
 
 - **Core:** [Nest.js](https://nestjs.com/) (Modular Architecture)
 - **Auth:** [NextAuth.js](https://next-auth.js.org/) (Web) + JWT (Mobile)
+- **OAuth Providers:** Google, Facebook, Apple
 - **Validation:** Shared Zod schemas across the entire Monorepo
+- **AI:** [Ollama](https://ollama.com/) (self-hosted LLM) via Vercel AI SDK — streaming assistants for admin & website
 
 ## 📁 Project Structure
 
@@ -67,11 +70,116 @@
 │ ├── ui # Shared theme provider
 │ ├── next-auth # Centralized Auth configurations & providers
 │ ├── shared # Common components, hooks, utilities and constants
+│ ├── ai # AI assistants & tools (Ollama, Vercel AI SDK)
+│ ├── i18n # Shared translations (en/uk)
 │ ├── tailwind-config # Base TailwindCSS configurations
 │ └── eslint-config # Centralized linting rules
 ├── docker-compose.local.yml # Local development orchestration
 └── docker-compose.prod-ci.yml # Production deploy orchestration
 ```
+
+## 🔐 Authentication & Security
+
+The stack ships with a complete, production-grade auth system that works across web and mobile.
+
+### Features
+
+| Feature                                  | Web (Next.js) | Mobile (Expo) |
+| :--------------------------------------- | :-----------: | :-----------: |
+| Email + Password sign-in                 |      ✅       |      ✅       |
+| OAuth (Google, Facebook, Apple)          |      ✅       |      ✅       |
+| Two-Factor Authentication (TOTP)         |      ✅       |      ✅       |
+| 2FA backup codes                         |      ✅       |       —       |
+| Account lockout (brute-force protection) |      ✅       |      ✅       |
+| Role-based access control (RBAC)         |      ✅       |      ✅       |
+| Admin-only domain guard                  |      ✅       |       —       |
+| JWT session tokens                       |       —       |      ✅       |
+| NextAuth.js sessions                     |      ✅       |       —       |
+
+### 2FA Flow
+
+**Web:** Users can enable 2FA during sign-up or from their profile. After sign-in, if 2FA is active they are redirected to `/auth/two-factor/verify`. If they lose their authenticator they can use a one-time backup code. The setup flow lives at `/auth/two-factor/setup`.
+
+**Mobile:** After a successful credential login, if the account requires 2FA, the user is pushed to the `verify-2fa` screen with a short-lived `mfaToken`. On success, the full JWT session is stored in the native auth store.
+
+### Account Lockout
+
+After repeated failed login attempts the account is automatically locked until `lockedUntil` expires. The schema tracks `failedLoginAttempts`, `lockedUntil`, `passwordChangedAt`, `isOnline`, and `lastActiveAt`.
+
+## 🤖 AI Assistants
+
+The `@package/ai` package provides two built-in AI assistants powered by a self-hosted [Ollama](https://ollama.com/) model. Both stream responses over tRPC WebSocket subscriptions (`useSubscription`) so the UI updates in real time.
+
+### Public assistant (Website)
+
+Embedded as a floating chat widget (`AiAssistantPlugin`) on the website landing page. It answers questions about the project architecture and guides visitors through the stack. Quick-action buttons let users ask about the tech stack, project structure, mobile integration, or DevOps with one click.
+
+**Capabilities**
+
+| Tool                | Description                                                             |
+| :------------------ | :---------------------------------------------------------------------- |
+| `getWelcomeMessage` | Returns assistant greeting and capability overview                      |
+| `getSystemStatus`   | Reports platform health and DB status                                   |
+| `getProjectInfo`    | Deep-dives into stack, features, mobile, security, devops, or structure |
+| `getPackageDetails` | Lists all monorepo packages and their purpose                           |
+
+The public assistant **cannot** call any admin tools. Requests for ban/unban, user deletion, or statistics return a hard-coded permission error.
+
+### Admin assistant (Admin Dashboard)
+
+Embedded in the protected admin layout so it is available on every admin page. It uses the same streaming widget but exposes a full set of admin tools with a **confirmation step** for destructive actions (ban, unban, delete, unlock).
+
+**Available tools**
+
+| Category | Tools                                                                                                                 |
+| :------- | :-------------------------------------------------------------------------------------------------------------------- |
+| Users    | `getUserList`, `getAdminList`, `getRecentUsers`, `findUser`, `banUser`, `unbanUser`, `deleteUser`, `exportUsersToCSV` |
+| Stats    | `getUserCounts`, `getActiveUsers`, `getGrowthRate`, `getRoleDistribution`, `getRegistrationsByDay`, `getTopUsers`     |
+| Security | `getUserSessions`, `unlockUser`, `getSecurityAlerts`                                                                  |
+| Invites  | `getInviteList`, `createInvite`, `revokeInvite`                                                                       |
+| System   | `getWelcomeMessage`, `getSystemStatus`, `getProjectInfo`                                                              |
+
+Destructive tools (`banUser`, `unbanUser`, `deleteUser`, `unlockUser`) trigger a confirmation dialog before execution. The assistant never invents data — it always calls a tool if one exists.
+
+### Configuration
+
+Set these environment variables on the server:
+
+```env
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_BASE_MODEL=llama3
+```
+
+The model name can be any model available in your Ollama instance. Swap it out without changing application code.
+
+### Architecture
+
+```
+packages/ai/
+├── assistants/
+│   ├── admin.assistant.ts   # Admin streaming handler (tool filtering by prompt)
+│   └── public.assistant.ts  # Public streaming handler (read-only tools)
+├── agent/
+│   └── index.ts             # Multi-step agent loop (up to 6 steps, confirmation support)
+├── tools/
+│   ├── users.tools.ts       # User CRUD + CSV export
+│   ├── stats.tools.ts       # Analytics and growth metrics
+│   ├── security.tools.ts    # Sessions, lockout, security alerts
+│   ├── invites.tools.ts     # Invite management
+│   └── system.tools.ts      # System health + project knowledge base
+└── index.ts                 # handleAssistant() — routes to admin or public handler
+```
+
+## 📱 Mobile Deep Linking
+
+The Nest.js server hosts the required verification files for Universal Links (iOS) and App Links (Android) under `apps/server/static/.well-known/`:
+
+| File                         | Platform | Purpose                                           |
+| :--------------------------- | :------- | :------------------------------------------------ |
+| `apple-app-site-association` | iOS      | Handles Universal Links (e.g. email verification) |
+| `assetlinks.json`            | Android  | Handles App Links                                 |
+
+Before publishing, replace `ABC123DE45.com.omni.app` in the AASA file and `SHA256_FINGERPRINT_HERE_EAS_BUILD_ONLY` in assetlinks.json with your real values from the Apple Developer portal and EAS build.
 
 ## 🚀 Getting Started
 
@@ -79,7 +187,7 @@
 
 Ensure you have the following installed:
 
-- Node.js (v20+)
+- Node.js **v22** (use `.nvmrc` — `nvm use`)
 - PNPM (v9+)
 - Docker Desktop
 

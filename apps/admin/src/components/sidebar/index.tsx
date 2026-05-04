@@ -21,6 +21,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { appName, websiteUrl } from '@/utils/constants';
 
 import type { IRoute } from '@/types/navigation';
+import { useTranslations } from 'next-intl';
 import Links from './components/Links';
 
 interface ISidebarProps {
@@ -28,6 +29,7 @@ interface ISidebarProps {
 }
 
 const Sidebar = ({ routes }: ISidebarProps) => {
+  const t = useTranslations('Common.Sidebar');
   const pathname = usePathname();
   const { isSideBarOpen, setSideBarOpen } = useUIStore();
   const { onOpenChange } = useDisclosure({
@@ -133,7 +135,7 @@ const Sidebar = ({ routes }: ISidebarProps) => {
                     : 'font-medium text-gray-600'
                 }`}
               >
-                {settingsRoute.name}
+                {t.has(settingsRoute.path) ? t(settingsRoute.path) : settingsRoute.name}
               </p>
             </li>
             {activeRoute(settingsRoute.path) ? (

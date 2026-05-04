@@ -10,6 +10,7 @@ declare module 'next-auth' {
     avatarUrl: string | null;
     forcePasswordChange?: boolean;
     isTwoFactorEnabled?: boolean;
+    twoFactorSetupPending?: boolean;
     accessToken?: string;
     accessTokenExp?: Date | string | number;
     refreshTokenExp?: Date | string | number;
@@ -30,8 +31,9 @@ declare module 'next-auth' {
       requires2FA?: boolean;
       forcePasswordChange?: boolean;
       isTwoFactorEnabled?: boolean;
+      twoFactorSetupPending?: boolean;
     } & DefaultSession['user'];
-    error?: 'RefreshAccessTokenError' | 'RefreshTokenExpired';
+    error?: 'RefreshAccessTokenError' | 'RefreshTokenExpired' | 'MfaTokenExpired';
   }
 }
 
@@ -50,6 +52,12 @@ declare module 'next-auth/jwt' {
     clientId?: string | undefined;
     forcePasswordChange?: boolean;
     isTwoFactorEnabled?: boolean;
-    error?: 'RefreshAccessTokenError' | 'RefreshTokenExpired' | null | undefined;
+    twoFactorSetupPending?: boolean;
+    error?:
+      | 'RefreshAccessTokenError'
+      | 'RefreshTokenExpired'
+      | 'MfaTokenExpired'
+      | null
+      | undefined;
   }
 }

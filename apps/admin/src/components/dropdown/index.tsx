@@ -1,48 +1,50 @@
+'use client';
+
+import { Popover, PopoverContent, PopoverTrigger } from '@heroui/react';
 import React from 'react';
 
 interface DropdownProps {
-  button: React.ReactNode;
+  button: React.ReactElement;
   children: React.ReactNode;
-  classNames: string;
-  animation?: string;
+  classNames?: string;
   // eslint-disable-next-line no-unused-vars
   onOpenChange?: (isOpen: boolean) => void;
   isOpen: boolean;
-}
-
-function useOutsideAlerter(ref: any, setX: any): void {
-  React.useEffect(() => {
-    function handleClickOutside(event: any) {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setX(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [ref, setX]);
+  placement?:
+    | 'top'
+    | 'bottom'
+    | 'left'
+    | 'right'
+    | 'top-start'
+    | 'top-end'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'left-start'
+    | 'left-end'
+    | 'right-start'
+    | 'right-end';
 }
 
 const Dropdown = (props: DropdownProps) => {
-  const { button, children, classNames, animation, onOpenChange, isOpen } = props;
-  const wrapperRef = React.useRef(null);
-
-  useOutsideAlerter(wrapperRef, () => onOpenChange?.(false));
+  const { button, children, classNames, onOpenChange, isOpen, placement = 'bottom-end' } = props;
 
   return (
-    <div ref={wrapperRef} className="relative flex">
-      <div className="flex" onMouseDown={() => onOpenChange?.(!isOpen)}>
-        {button}
-      </div>
-      <div
-        className={`${classNames} absolute z-10 ${
-          animation || 'origin-top-right transition-all duration-300 ease-in-out'
-        } ${isOpen ? 'scale-100' : 'scale-0'}`}
-      >
-        {children}
-      </div>
-    </div>
+    <Popover
+      isOpen={isOpen}
+      onOpenChange={(open) => onOpenChange?.(open)}
+      placement={placement}
+      offset={10}
+      showArrow={false}
+      backdrop="transparent"
+    >
+      <PopoverTrigger>
+        <div className="inline-flex cursor-pointer outline-none">{button}</div>
+      </PopoverTrigger>
+
+      <PopoverContent className={`${classNames} pointer-events-auto`}>
+        <div className="w-full h-full">{children}</div>
+      </PopoverContent>
+    </Popover>
   );
 };
 

@@ -1,0 +1,74 @@
+{
+  "header": {
+    "nav": {
+      "features": "Features",
+      "documentation": "Documentation"
+    },
+    "user": {
+      "dashboard": "Dashboard",
+      "profile": "My Profile",
+      "logout": "Log Out",
+      "logging_out": "Logging out..."
+    },
+    "auth": {
+      "login": "Log In",
+      "signup": "Sign Up"
+    }
+  },
+  "hero": {
+    "badge": "v1.0.0 Production Ready",
+    "title_part1": "The Ultimate",
+    "title_highlight": "Fullstack",
+    "title_part2": "Monorepo Engine",
+    "description": "Accelerate your development with <strong>Omni-tRPC-Stack</strong>. A high-performance architecture seamlessly integrating Next.js, Nest.js, and Expo with 100% Type-Safety.",
+    "buttons": {
+      "get_started": "Get Started",
+      "github": "View on GitHub"
+    }
+  },
+  "capabilities": {
+    "title": "Core Capabilities",
+    "items": {
+      "truth": {
+        "title": "Single Source of Truth",
+        "desc": "Forget about duplicating validation logic. Use Shared Zod schemas across Web, Mobile, and Server simultaneously."
+      },
+      "safety": {
+        "title": "E2E Type-Safety",
+        "desc": "Experience the magic of tRPC. Catch API breaking changes at compile time before they ever reach production."
+      },
+      "mobile": {
+        "title": "Native Mobile",
+        "desc": "Not just a web-wrapper. A fully-fledged Expo app is baked in, sharing logic and state out of the box."
+      },
+      "devops": {
+        "title": "DevOps-as-a-Service",
+        "desc": "Industrial-grade deployment. From Docker orchestration to automated GitHub Actions CI/CD for your VPS."
+      },
+      "security": {
+        "title": "Advanced Security",
+        "desc": "Full 2FA with backup codes, RBAC, and secure session management pre-configured for production."
+      }
+    }
+  },
+  "ecosystem": {
+    "title": "Complete Ecosystem",
+    "admin": {
+      "title": "Admin Dashboard",
+      "desc": "Powerful admin panel built with NestJS and Next.js. Manage users, roles (RBAC), and monitor the system.",
+      "button": "Enter Admin"
+    },
+    "mobile": {
+      "title": "Cross-platform Mobile",
+      "desc": "A production-ready Expo app with tRPC integration. Shared business logic and types across Web and Mobile.",
+      "scan": "Scan to open in Expo Go"
+    }
+  },
+  "tech_stack": {
+    "title": "Powering your production"
+  },
+  "status": {
+    "cicd": "CI/CD: PRODUCTION READY",
+    "auth": "AUTH: 2FA & RBAC ENABLED"
+  }
+}

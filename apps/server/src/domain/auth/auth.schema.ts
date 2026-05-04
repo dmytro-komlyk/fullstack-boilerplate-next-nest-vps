@@ -6,31 +6,32 @@ export type ProviderType = z.infer<typeof providerType>;
 export const userRole = z.enum(['USER', 'MODERATOR', 'ADMIN', 'SUPER_ADMIN']);
 export type UserRole = z.infer<typeof userRole>;
 
-export const tokenType = z.enum(['access', 'refresh', 'reset']);
-export type TokenJWT = z.infer<typeof tokenType>;
+export const userStatus = z.enum(['ACTIVE', 'BANNED', 'PENDING']);
+export type UserStatus = z.infer<typeof userStatus>;
 
 export const checkTokenSchema = z.object({
   token: z.string().min(1),
-  type: tokenType,
 });
 
-export const outputCheckAuthSchema = z.object({
-  email: z.string().email(),
+export const outputCheckTokenSchema = z.object({
+  success: z.boolean(),
+  email: z.email().optional(),
+  message: z.string().min(1),
 });
 
 export type CheckTokenData = z.infer<typeof checkTokenSchema>;
-export type OutputCheckAuthData = z.infer<typeof outputCheckAuthSchema>;
+export type OutputCheckTokenData = z.infer<typeof outputCheckTokenSchema>;
 
 export const signInSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
+  email: z.string().email('invalidEmail'),
+  password: z.string().min(1, 'required'),
 });
 
 export type SignInData = z.infer<typeof signInSchema>;
 
 export const signInFormSchema = z.object({
-  email: z.string().email('Must be a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().min(1, 'required').email('invalidEmail'),
+  password: z.string().min(1, 'required'),
 });
 
 export type SignInFormData = z.infer<typeof signInSchema>;
@@ -70,24 +71,21 @@ export const signUpSchema = z.object({
   email: z.string().email().min(1),
   password: z.string().min(6),
   nickName: z.string().min(3),
+  twoFactorSetupPending: z.boolean(),
 });
 
 export type SignUpData = z.infer<typeof signUpSchema>;
 
 export const signUpFormSchema = z
   .object({
-    nickName: z.string().min(3, 'Nickname too short').nonempty('Enter your name'),
-    email: z
-      .string()
-      .max(30, 'email must not exceed 30 characters')
-      .email('Invalid email address')
-      .nonempty('Enter your email address'),
-    password: z.string().min(6, 'Minimum character count is 6').nonempty('Enter your password'),
-    passwordConfirmation: z.string().nonempty('Confirm your password'),
-    isTwoFactorEnabled: z.boolean(),
+    nickName: z.string().min(3, 'nicknameTooShort|3').nonempty('enterName'),
+    email: z.string().max(30, 'emailTooLong|30').email('invalidEmail').nonempty('required'),
+    password: z.string().min(6, 'passwordTooShort|6').nonempty('enterPassword'),
+    passwordConfirmation: z.string().nonempty('confirmPassword'),
+    twoFactorSetupPending: z.boolean(),
   })
   .refine((data) => data.password === data.passwordConfirmation, {
-    message: "Passwords don't match",
+    message: 'passwordsDontMatch', // Ключ!
     path: ['passwordConfirmation'],
   });
 
@@ -119,13 +117,13 @@ export const outputSignOutSchema = z.object({
 export type OutputSignOutData = z.infer<typeof outputSignOutSchema>;
 
 export const resendVerificationEmailSchema = z.object({
-  email: z.string().email('Incorrect email'),
+  email: z.string().email('invalidEmail'),
 });
 
 export type ResendVerificationEmailData = z.infer<typeof resendVerificationEmailSchema>;
 
 export const verifyEmailSchema = resendVerificationEmailSchema.extend({
-  token: z.string().min(1, 'Token is required'),
+  token: z.string().min(1, 'tokenRequired|1'),
 });
 
 export type VerifyEmailData = z.infer<typeof verifyEmailSchema>;
@@ -134,6 +132,7 @@ export const verifyEmailOutputSchema = z.object({
   success: z.boolean(),
   message: z.string(),
   userId: z.string().optional(),
+  twoFactorSetupPending: z.boolean().optional(),
 });
 
 export type VerifyEmailOutputData = z.infer<typeof verifyEmailOutputSchema>;
@@ -146,6 +145,7 @@ const userBaseSchema = z.object({
   avatarUrl: z.string().nullable(),
   forcePasswordChange: z.boolean(),
   isTwoFactorEnabled: z.boolean().optional(),
+  twoFactorSetupPending: z.boolean().optional(),
 });
 
 export const outputAuthSchema = z.discriminatedUnion('status', [
@@ -211,7 +211,7 @@ export const outputTokenSchema = z.object({
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email('Enter a valid email format').min(1, 'Enter email'),
+  email: z.string().min(1, 'required').email('invalidEmail'),
 });
 
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
@@ -222,18 +222,18 @@ export type ForgotPasswordOutputData = z.infer<typeof forgotPasswordOutputSchema
 
 export const resetPasswordFormSchema = z
   .object({
-    password: z.string().min(6, 'Minimum character count is 6').nonempty('Enter your password'),
-    passwordConfirmation: z.string().nonempty('Confirm your password'),
+    password: z.string().min(6, 'passwordTooShort|6').nonempty('enterPassword'),
+    passwordConfirmation: z.string().nonempty('confirmPassword'),
   })
   .refine((data) => data.password === data.passwordConfirmation, {
-    message: "Passwords don't match",
+    message: 'passwordsDontMatch',
     path: ['passwordConfirmation'],
   });
 
 export type ResetPasswordFormData = z.infer<typeof resetPasswordFormSchema>;
 
 export const changeForcedPasswordSchema = z.object({
-  password: z.string().min(6),
+  password: z.string().min(6, 'passwordTooShort|6').nonempty('enterPassword'),
 });
 
 export type ChangeForcedPasswordData = z.infer<typeof changeForcedPasswordSchema>;
@@ -243,8 +243,8 @@ export const outputChangeForcedPasswordSchema = verifyEmailOutputSchema.extend({
 export type OutputChangeForcedPasswordData = z.infer<typeof outputChangeForcedPasswordSchema>;
 
 export const resetPasswordSchema = changeForcedPasswordSchema.extend({
-  token: z.string().min(1, 'Token is required'),
-  email: z.string().email('Incorrect email'),
+  token: z.string().min(1, 'tokenRequired|1'),
+  email: z.string().email('invalidEmail'),
 });
 
 export type ResetPasswordData = z.infer<typeof resetPasswordSchema>;

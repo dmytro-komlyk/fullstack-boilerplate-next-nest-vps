@@ -27,6 +27,7 @@ async function main() {
       emailVerified: new Date(),
       forcePasswordChange: true,
       isTwoFactorEnabled: false,
+      twoFactorSetupPending: true,
     },
   });
 }

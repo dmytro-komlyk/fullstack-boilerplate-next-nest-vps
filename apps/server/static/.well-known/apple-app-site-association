@@ -2,7 +2,7 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["ABC123DE45.com.boilerplate.app"], // ABC123DE45 — this is your App ID prefix (in the Apple Developer portal)
+        "appIDs": ["ABC123DE45.com.omni.app"], // ABC123DE45 — this is your App ID prefix (in the Apple Developer portal)
         "components": [
           {
             "/": "/auth/verify-email*",

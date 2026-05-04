@@ -1,10 +1,13 @@
+/* Modules */
+import KeyvRedis from '@keyv/redis';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
-/* Modules */
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import Keyv from 'keyv';
 import { LoggerModule } from 'nestjs-pino';
 
 import { PrismaModule } from './prisma/prisma.module';
+import { RedisProvider } from './redis/redis.provider';
 import { TrpcModule } from './trpc/trpc.module';
 
 @Module({
@@ -13,9 +16,22 @@ import { TrpcModule } from './trpc/trpc.module';
       envFilePath: ['.env.local', '.env'],
       isGlobal: true,
     }),
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      ttl: 3600,
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => {
+        const redis = new KeyvRedis(
+          `redis://${config.get('REDIS_HOST', 'localhost')}:${config.get('REDIS_PORT', 6379)}`
+        );
+        return {
+          stores: [
+            new Keyv({
+              store: redis,
+              ttl: 60_000, // ms
+            }),
+          ],
+        };
+      },
     }),
     LoggerModule.forRoot({
       pinoHttp: {
@@ -36,5 +52,7 @@ import { TrpcModule } from './trpc/trpc.module';
     TrpcModule,
     // other modules
   ],
+  providers: [RedisProvider],
+  exports: [RedisProvider],
 })
 export class AppModule {}

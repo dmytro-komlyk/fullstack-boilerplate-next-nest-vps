@@ -9,6 +9,7 @@ import { IoMdNotificationsOutline } from 'react-icons/io';
 import { RiErrorWarningFill } from 'react-icons/ri';
 
 import Dropdown from '@/components/dropdown';
+import { useTranslations } from 'next-intl';
 
 export type SeverityLevel = 'info' | 'warning' | 'error' | 'success' | 'critical';
 
@@ -22,6 +23,7 @@ export const mapSeverityIcon: Record<SeverityLevel, ReactNode> = {
 
 const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const t = useTranslations('Common.Notifications');
 
   const handleDropdownChange = async (value: boolean) => {
     setIsOpen(value);
@@ -46,34 +48,31 @@ const NotificationDropdown = () => {
           </button>
         </Badge>
       }
-      animation="origin-[65%_0%] md:origin-top-right transition-all duration-300 ease-in-out"
-      classNames="py-2 top-4 -left-[230px] md:-left-[440px] w-max"
+      classNames="py-2 top-4 -left-[230px] md:-left-[440px] w-max flex w-87.5 flex-col gap-4 rounded-[20px] bg-white p-6 shadow-xl sm:w-115 dark:bg-gray-800 dark:text-white"
     >
-      <div className="flex w-87.5 flex-col gap-4 rounded-[20px] bg-white p-6 shadow-xl sm:w-115 dark:bg-navy-800 dark:text-white">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-white/10">
-          <h4 className="text-lg font-bold text-navy-700 dark:text-white">Notifications</h4>
-          <span className="rounded-full bg-brand-500/10 px-2 py-1 text-[10px] font-bold text-brand-500 uppercase tracking-wider">
-            Coming Soon
-          </span>
-        </div>
-
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-          <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gray-50 dark:bg-white/5">
-            <IoMdNotificationsOutline className="size-10 text-gray-300 dark:text-white/20" />
-          </div>
-          <h5 className="mb-1 text-base font-bold text-navy-700 dark:text-white">Stay Tuned!</h5>
-          <p className="max-w-50 text-sm font-medium text-gray-500 dark:text-gray-400">
-            We are currently building the notification system for your admin panel.
-          </p>
-        </div>
-
-        <button
-          disabled
-          className="w-full rounded-xl bg-gray-100 py-3 text-sm font-bold text-gray-400 transition duration-200 dark:bg-white/5"
-        >
-          Mark all as read
-        </button>
+      <div className="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-white/10">
+        <h4 className="text-lg font-bold text-navy-700 dark:text-white">{t('title')}</h4>
+        <span className="rounded-full bg-brand-500  px-2 py-1 text-[10px] font-bold text-white uppercase tracking-wider">
+          {t('comingSoon')}
+        </span>
       </div>
+
+      <div className="flex flex-col items-center justify-center py-10 text-center">
+        <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gray-50 dark:bg-white/5">
+          <IoMdNotificationsOutline className="size-10 text-gray-300 dark:text-white/20" />
+        </div>
+        <h5 className="mb-1 text-base font-bold text-navy-700 dark:text-white">{t('stayTuned')}</h5>
+        <p className="max-w-50 text-sm font-medium text-gray-500 dark:text-gray-400">
+          {t('description')}
+        </p>
+      </div>
+
+      <button
+        disabled
+        className="w-full rounded-xl bg-gray-100 py-3 text-sm font-bold text-gray-400 transition duration-200 dark:bg-white/5"
+      >
+        {t('markAsRead')}
+      </button>
     </Dropdown>
   );
 };

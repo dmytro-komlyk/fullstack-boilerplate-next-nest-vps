@@ -1,12 +1,14 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { TbKey, TbShieldCheck } from 'react-icons/tb';
 import ChangePasswordForm from './ChangePasswordForm';
 import TwoFactor from './TwoFactor';
 
 const OnboardingClient = ({ initialStep }: { user: any; initialStep: 'PASSWORD' | '2FA' }) => {
+  const t = useTranslations('Auth.Onboarding');
   const [step, setStep] = useState<'PASSWORD' | '2FA'>(initialStep);
 
   return (
@@ -22,7 +24,7 @@ const OnboardingClient = ({ initialStep }: { user: any; initialStep: 'PASSWORD' 
               <TbShieldCheck className="text-white" />
             )}
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/90">
-              {step === 'PASSWORD' ? 'Security Protocol: Step 1' : 'Security Protocol: Step 2'}
+              {step === 'PASSWORD' ? t('steps.password') : t('steps.twoFactor')}
             </span>
           </div>
           <div className="flex gap-1.5">
@@ -45,10 +47,10 @@ const OnboardingClient = ({ initialStep }: { user: any; initialStep: 'PASSWORD' 
                 exit={{ opacity: 0, x: 20 }}
               >
                 <h3 className="mb-2 text-3xl font-black tracking-tight text-navy-800 dark:text-white">
-                  Update Password
+                  {t('PasswordStep.title')}
                 </h3>
                 <p className="mb-8 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Your account was created with a temporary password. Please set a new secure one.
+                  {t('PasswordStep.description')}
                 </p>
                 <ChangePasswordForm onSuccess={() => setStep('2FA')} />
               </motion.div>
@@ -60,10 +62,10 @@ const OnboardingClient = ({ initialStep }: { user: any; initialStep: 'PASSWORD' 
                 exit={{ opacity: 0, x: 20 }}
               >
                 <h3 className="mb-2 text-3xl font-black tracking-tight text-navy-800 dark:text-white">
-                  Enable 2FA
+                  {t('TwoFactorStep.title')}
                 </h3>
                 <p className="mb-8 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Scan the QR code to link your authenticator app and secure your admin access.
+                  {t('TwoFactorStep.description')}
                 </p>
                 <TwoFactor mode="setup" />
               </motion.div>

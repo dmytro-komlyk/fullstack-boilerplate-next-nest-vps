@@ -13,10 +13,12 @@ async function getClientContext() {
   const h = await headers();
   const c = await cookies();
   const clientId = h.get('x-client-id') || c.get('x-client-id')?.value || undefined;
+  const ip = h.get('x-forwarded-for')?.split(',')[0] || h.get('x-real-ip') || '127.0.0.1';
 
   return {
     ua: h.get('user-agent') || undefined,
     origin: h.get('origin') || undefined,
+    ip: ip.trim(),
     host: h.get('host') || undefined,
     clientId,
   };
@@ -63,6 +65,7 @@ export const authOptions: AuthConfig = {
             origin: ctx.origin,
             host: ctx.host,
             'x-client-id': ctx.clientId,
+            'x-forwarded-for': ctx.ip,
           });
 
           const response = await remoteServerClient.auth.login.mutate({
@@ -76,6 +79,7 @@ export const authOptions: AuthConfig = {
               requires2FA: true,
               mfaToken: response.mfaToken,
               isTwoFactorEnabled: response.user.isTwoFactorEnabled,
+              twoFactorSetupPending: response.user.twoFactorSetupPending,
               clientId: ctx.clientId,
               accessToken: '',
               sessionToken: '',
@@ -93,6 +97,9 @@ export const authOptions: AuthConfig = {
             sessionToken: response.sessionToken,
             isTwoFactorEnabled: response.user.isTwoFactorEnabled as boolean,
             clientId: ctx.clientId!,
+            ...(response.user.twoFactorSetupPending !== undefined
+              ? { twoFactorSetupPending: response.user.twoFactorSetupPending }
+              : {}),
           };
         } catch (error: any) {
           console.error('Authorize Error:', error.message);
@@ -108,10 +115,9 @@ export const authOptions: AuthConfig = {
   useSecureCookies: process.env.NODE_ENV === 'production',
   session: {
     strategy: 'jwt',
-    // maxAge: 5 * 60, // for test
-    // updateAge: 60, // for test
-    maxAge: 30 * 24 * 60 * 60,
-    updateAge: 24 * 60 * 60,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    // maxAge: 7 * 24 * 60 * 60, // 7 days for financeal reasons
+    updateAge: 24 * 60 * 60, // 24 hours
   },
   pages: {
     signIn: '/auth/sign-in',
@@ -165,6 +171,7 @@ export const authOptions: AuthConfig = {
         origin: ctx.origin,
         host: ctx.host,
         'x-client-id': ctx.clientId,
+        'x-forwarded-for': ctx.ip,
       });
 
       if (account && account?.provider !== 'login') {
@@ -195,6 +202,13 @@ export const authOptions: AuthConfig = {
           user.nickName = response.user.nickName;
           user.sessionToken = response.sessionToken;
           user.clientId = ctx.clientId!;
+          user.forcePasswordChange = response.user.forcePasswordChange;
+          if (response.user.isTwoFactorEnabled !== undefined) {
+            user.isTwoFactorEnabled = response.user.isTwoFactorEnabled;
+          }
+          if (response.user.twoFactorSetupPending !== undefined) {
+            user.twoFactorSetupPending = response.user.twoFactorSetupPending;
+          }
 
           return true;
         } catch (error) {
@@ -216,8 +230,6 @@ export const authOptions: AuthConfig = {
       trigger?: 'signIn' | 'signUp' | 'update';
       session?: Session;
     }): Promise<JWT> => {
-      console.log(`Auth JWT Token = ${JSON.stringify(token)}`);
-      console.log(`Auth JWT User = ${JSON.stringify(user)}`);
       const ctx = await getClientContext();
 
       if (trigger === 'update' && session) {
@@ -242,6 +254,7 @@ export const authOptions: AuthConfig = {
             clientId: user.clientId || ctx.clientId || 'unknown',
             requires2FA: true,
             isTwoFactorEnabled: user.isTwoFactorEnabled as boolean,
+            twoFactorSetupPending: user.twoFactorSetupPending as boolean,
             mfaToken: user.mfaToken,
             accessToken: '',
             sessionToken: '',
@@ -269,6 +282,7 @@ export const authOptions: AuthConfig = {
           clientId: user.clientId || ctx.clientId || 'unknown',
           requires2FA: user.requires2FA || false,
           isTwoFactorEnabled: user.isTwoFactorEnabled as boolean,
+          twoFactorSetupPending: user.twoFactorSetupPending as boolean,
           mfaToken: user.mfaToken || undefined,
           forcePasswordChange: user.forcePasswordChange as boolean,
           error: undefined,
@@ -276,15 +290,24 @@ export const authOptions: AuthConfig = {
       }
 
       if (token.requires2FA) {
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (token.iat && currentTime > (token.iat as number) + 600) {
+          token.error = 'MfaTokenExpired';
+          return token;
+        }
+
         return token;
       }
 
       const currentTime = Math.floor(Date.now() / 1000);
 
       if (token.refreshTokenExp && currentTime >= token.refreshTokenExp) {
-        console.warn('Refresh token expired, session is dead.');
-        token.error = 'RefreshTokenExpired';
-        return token;
+        return {
+          ...token,
+          error: 'RefreshTokenExpired',
+          accessToken: '',
+          accessTokenExp: 0,
+        };
       }
 
       if (token.accessTokenExp && currentTime < (token.accessTokenExp as number) - 30) {
@@ -296,6 +319,7 @@ export const authOptions: AuthConfig = {
           'x-client-id': (token.clientId as string) || ctx.clientId,
           host: ctx.host,
           origin: ctx.origin,
+          'x-forwarded-for': ctx.ip,
         });
 
         const updated = await remoteServerClient.auth.refresh.mutate({
@@ -331,6 +355,7 @@ export const authOptions: AuthConfig = {
           mfaToken: token.mfaToken as string,
           forcePasswordChange: token.forcePasswordChange as boolean,
           isTwoFactorEnabled: token.isTwoFactorEnabled,
+          twoFactorSetupPending: token.twoFactorSetupPending as boolean,
         };
         (session as any).error = token.error || null;
       }

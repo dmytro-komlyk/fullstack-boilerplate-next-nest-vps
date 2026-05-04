@@ -1,7 +1,7 @@
-<html lang='en'>
+<html lang='{{lang}}'>
   <head>
     <meta charset='UTF-8' />
-    <title>You're invited to join {{appName}} team</title>
+    <title>{{t.subject}}</title>
   </head>
   <body
     style='margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,Helvetica,sans-serif;color:#333;'
@@ -22,30 +22,22 @@
           >
             <tr>
               <td style='padding:24px 24px 16px 24px; background-color:#2196F3;'>
-                <h1 style='margin:0;font-size:22px;color:#ffffff;'>
-                  Join the Team
-                </h1>
+                <h1 style='margin:0;font-size:22px;color:#ffffff;'>{{t.title}}</h1>
               </td>
             </tr>
 
             <tr>
               <td style='padding:24px 24px 16px 24px;'>
+                <p style='margin:0 0 12px 0;font-size:16px;line-height:1.5;'>{{t.greeting}}</p>
                 <p style='margin:0 0 12px 0;font-size:16px;line-height:1.5;'>
-                  Hello,
-                </p>
-                <p style='margin:0 0 12px 0;font-size:16px;line-height:1.5;'>
-                  You have been invited to join the
+                  {{t.description}}
                   <strong>{{appName}}</strong>
-                  administration panel as a
+                  {{t.asRole}}
                   <span
                     style='background-color:#e3f2fd; color:#1976d2; padding:2px 6px; border-radius:4px; font-weight:bold;'
-                  >
-                    {{role}}
-                  </span>.
+                  >{{role}}</span>.
                 </p>
-                <p style='margin:0;font-size:16px;line-height:1.5;'>
-                  To accept this invitation and set up your account, please click the button below.
-                </p>
+                <p style='margin:0;font-size:16px;line-height:1.5;'>{{t.action}}</p>
               </td>
             </tr>
 
@@ -55,16 +47,14 @@
                   href='{{link}}'
                   style='display:inline-block;padding:14px 28px;background-color:#2196F3;color:#ffffff;text-decoration:none;border-radius:6px;font-size:16px;font-weight:bold;'
                 >
-                  Accept Invitation
+                  {{t.button}}
                 </a>
               </td>
             </tr>
 
             <tr>
               <td style='padding:0 24px 24px 24px;'>
-                <p style='margin:0;font-size:13px;line-height:1.5;color:#f44336;'>
-                  * This invitation link is unique to you and will expire in 7 days.
-                </p>
+                <p style='margin:0;font-size:13px;line-height:1.5;color:#f44336;'>{{t.expiry}}</p>
               </td>
             </tr>
 
@@ -72,22 +62,16 @@
               <td style='padding:0 24px 24px 24px;'>
                 <p
                   style='margin:0 0 8px 0;font-size:14px;line-height:1.5;color:#666;border-top:1px solid #eee;padding-top:16px;'
-                >
-                  If the button doesn’t work, copy and paste this link into your browser:
-                </p>
+                >{{t.trouble}}</p>
                 <p style='margin:0;font-size:14px;word-break:break-all;'>
-                  <a href='{{link}}' style='color:#2196F3;text-decoration:none;'>
-                    {{link}}
-                  </a>
+                  <a href='{{link}}' style='color:#2196F3;text-decoration:none;'>{{link}}</a>
                 </p>
               </td>
             </tr>
 
             <tr>
               <td style='padding:16px 24px;background-color:#fafafa;border-top:1px solid #eee;'>
-                <p style='margin:0;font-size:12px;line-height:1.5;color:#999;'>
-                  If you weren't expecting this invitation, you can ignore this email.
-                </p>
+                <p style='margin:0;font-size:12px;line-height:1.5;color:#999;'>{{t.ignore}}</p>
               </td>
             </tr>
           </table>

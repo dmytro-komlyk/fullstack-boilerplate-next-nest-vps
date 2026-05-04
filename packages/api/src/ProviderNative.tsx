@@ -5,7 +5,7 @@ import { useConfigStore } from '@package/store/config-native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink, loggerLink } from '@trpc/client';
 import * as Device from 'expo-device';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 import { trpc } from './client';
 import { queryClient } from './query-client-native';

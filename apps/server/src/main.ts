@@ -52,7 +52,14 @@ async function bootstrap() {
         Boolean
       ),
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'x-session-token', 'x-client-id'],
+      allowedHeaders: [
+        'Content-Type',
+        'Accept',
+        'Authorization',
+        'x-session-token',
+        'x-client-id',
+        'x-locale',
+      ],
       credentials: true,
     });
 

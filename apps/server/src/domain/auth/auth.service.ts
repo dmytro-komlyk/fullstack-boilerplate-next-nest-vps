@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 
+import { getEmailTranslations } from '@package/i18n';
 import { prisma } from '@package/prisma';
 import { TRPCError } from '@trpc/server';
 import { compare, hash } from 'bcryptjs';
@@ -8,6 +9,7 @@ import { sendEmail } from '../../utils/nodemailer/sendEmail';
 import { Domain } from '../trpc/trpc.context';
 import {
   ActiveTwoFatorData,
+  CheckTokenData,
   ForgotPasswordFormData,
   ForgotPasswordOutputData,
   InputBackendTokens,
@@ -16,6 +18,7 @@ import {
   OutputActiveTwoFatorData,
   OutputAuthData,
   OutputAuthProviderData,
+  OutputCheckTokenData,
   OutputInviteData,
   OutputSetupTwoFatorData,
   OutputSignOutData,
@@ -31,7 +34,7 @@ import {
   UserRole,
   VerifyEmailOutputData,
 } from './auth.schema';
-import { generateBackendTokens, verifyToken } from './jwt.service';
+import { generateBackendTokens, verifyToken as verifyJWTToken } from './jwt.service';
 import {
   generateBackupCodes,
   generateTwoFactorSecret,
@@ -53,8 +56,15 @@ export async function signIn({
   if (!user) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: 'Invalid email or password',
+      message: 'invalidCredentials',
       cause: 'User not found',
+    });
+  }
+
+  if (user.status === 'BANNED') {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'accountBanned',
     });
   }
 
@@ -64,14 +74,14 @@ export async function signIn({
   if (isAdminHost && !isAdminRole) {
     throw new TRPCError({
       code: 'FORBIDDEN',
-      message: 'Access denied. This area is for administrative personnel only.',
+      message: 'adminOnly',
     });
   }
 
   if (!isAdminHost && isAdminRole) {
     throw new TRPCError({
       code: 'FORBIDDEN',
-      message: 'Admins must log in through the administrative console.',
+      message: 'mustLoginAsAdmin',
     });
   }
 
@@ -84,7 +94,7 @@ export async function signIn({
 
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: `It looks like you previously signed up with ${providerNames}. Please use that method to log in.`,
+      message: `socialAccountFound|${providerNames}`,
     });
   }
 
@@ -108,18 +118,26 @@ export async function signIn({
       },
     });
 
-    const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${encodeURIComponent(data.email)}`;
+    const t = await getEmailTranslations(domain.locale, 'verify');
+
+    const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${data.email}`;
 
     await sendEmail({
       email: data.email,
-      payload: { link, name: user.nickName, appName: process.env.APP_NAME },
+      payload: {
+        link,
+        name: user.nickName,
+        appName: process.env.APP_NAME as string,
+        t,
+        lang: domain.locale,
+      },
       template: '/templates/verifyEmail.handlebars',
-      subject: 'Verify your email',
+      subject: t.subject,
     });
 
     throw new TRPCError({
       code: 'FORBIDDEN',
-      message: 'Email is not verified. Please check your email.',
+      message: 'emailNotVerified',
     });
   }
 
@@ -132,7 +150,7 @@ export async function signIn({
 
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: `Your account has been temporarily suspended due to too many failed login attempts. Please try again in ${remainingMinutes} minutes.`,
+        message: `accountRemaining|${remainingMinutes}`,
       });
     }
 
@@ -159,13 +177,13 @@ export async function signIn({
 
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: `Too many failed attempts. Account suspended for ${minutes} minutes.`,
+        message: `accountSuspended|${minutes}`,
       });
     }
 
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: `Incorrect email or password. Remaining attempts: ${5 - updatedUser.failedLoginAttempts}`,
+      message: `incorrectPasswordAttempts|${5 - updatedUser.failedLoginAttempts}`,
     });
   }
 
@@ -204,6 +222,7 @@ export async function signIn({
         avatarUrl: user.avatarUrl,
         forcePasswordChange: user.forcePasswordChange,
         isTwoFactorEnabled: user.isTwoFactorEnabled,
+        twoFactorSetupPending: user.twoFactorSetupPending,
       },
     };
   }
@@ -252,6 +271,7 @@ export async function signIn({
       avatarUrl: user.avatarUrl,
       forcePasswordChange: user.forcePasswordChange,
       isTwoFactorEnabled: user.isTwoFactorEnabled,
+      twoFactorSetupPending: user.twoFactorSetupPending,
     },
   };
 }
@@ -267,7 +287,7 @@ export async function setup2FALogin({
   if (currentUser?.isTwoFactorEnabled) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: '2FA is already enabled',
+      message: 'twoFactorAlreadyEnabled',
     });
   }
 
@@ -288,17 +308,17 @@ export async function verify2FALogin({
   data: { mfaToken: string; code: string };
   domain: Domain;
 }): Promise<OutputAuthData> {
-  const payload = await verifyToken({ type: '2fa', token: data.mfaToken });
+  const payload = await verifyJWTToken({ type: '2fa', token: data.mfaToken });
 
   if (!payload.sub) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: 'User ID is missing in token',
+      message: 'twoFactorVerifyToken',
     });
   }
 
   if (payload.type !== '2FA_PENDING') {
-    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid token type' });
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'twoFactorInvalidToken' });
   }
 
   const user = await prisma.user.findUnique({
@@ -306,13 +326,13 @@ export async function verify2FALogin({
   });
 
   if (!user || !user.twoFactorSecret) {
-    throw new TRPCError({ code: 'UNAUTHORIZED', message: '2FA not configured' });
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'twoFactorNotConfigured' });
   }
 
   const isValid = await verifyTwoFactorToken(data.code, user.twoFactorSecret);
 
   if (!isValid) {
-    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid 2FA code' });
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'twoFactorInvalidCode' });
   }
 
   const isWeb = !!domain.origin;
@@ -356,6 +376,7 @@ export async function verify2FALogin({
       avatarUrl: user.avatarUrl,
       forcePasswordChange: user.forcePasswordChange,
       isTwoFactorEnabled: user.isTwoFactorEnabled,
+      twoFactorSetupPending: user.twoFactorSetupPending,
     },
   };
 }
@@ -378,7 +399,7 @@ export async function activate2FA({
   if (!user || !user.twoFactorSecret) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: '2FA secret not found. Please restart the setup process.',
+      message: 'twoFactorSecretNotFound',
     });
   }
 
@@ -387,7 +408,7 @@ export async function activate2FA({
   if (!isValid) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: 'Invalid verification code. Please try again.',
+      message: 'twoFactorInvalidVerificationCode',
     });
   }
 
@@ -397,6 +418,7 @@ export async function activate2FA({
     where: { id: user.id },
     data: {
       isTwoFactorEnabled: true,
+      twoFactorSetupPending: false,
       twoFactorBackupCodes: hashed,
     },
   });
@@ -416,7 +438,10 @@ export async function activate2FA({
   };
 }
 
-export async function verifyEmail(input: { token: string; email: string }) {
+export async function verifyEmail(input: {
+  token: string;
+  email: string;
+}): Promise<VerifyEmailOutputData> {
   const user = await prisma.user.findUnique({
     where: { email: input.email },
   });
@@ -424,12 +449,12 @@ export async function verifyEmail(input: { token: string; email: string }) {
   if (!user) {
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: 'User not found',
+      message: 'userNotFound',
     });
   }
 
   if (user.emailVerified) {
-    return { success: true, message: 'Email already verified', userId: user.id };
+    return { success: true, message: 'emailAlreadyVerified', userId: user.id };
   }
 
   const verificationToken = await prisma.verificationToken.findFirst({
@@ -445,13 +470,13 @@ export async function verifyEmail(input: { token: string; email: string }) {
   if (!verificationToken || !verificationToken.user) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Invalid or expired verification token',
+      message: 'invalidVerificationToken',
     });
   }
 
   await prisma.user.update({
     where: { id: verificationToken.user.id },
-    data: { emailVerified: new Date() },
+    data: { emailVerified: new Date(), status: 'ACTIVE' },
   });
 
   await prisma.verificationToken.deleteMany({
@@ -464,8 +489,37 @@ export async function verifyEmail(input: { token: string; email: string }) {
 
   return {
     success: true,
-    message: 'Email successfully verified',
+    message: 'emailVerified',
+    twoFactorSetupPending: user.twoFactorSetupPending,
     userId: verificationToken.user.id,
+  };
+}
+
+export async function verifyToken(input: CheckTokenData): Promise<OutputCheckTokenData> {
+  const tokenRecord = await prisma.verificationToken.findFirst({
+    where: { token: input.token },
+    include: { user: true },
+  });
+
+  if (!tokenRecord || !tokenRecord.user) {
+    return {
+      success: false,
+      message: 'invalidResetLink',
+    };
+  }
+
+  if (tokenRecord.expiresAt < new Date()) {
+    return {
+      success: false,
+      email: tokenRecord.user.email as string,
+      message: 'invalidResetLink',
+    };
+  }
+
+  return {
+    success: true,
+    email: tokenRecord.user.email as string,
+    message: 'validToken',
   };
 }
 
@@ -490,15 +544,15 @@ export async function resendVerification({
   const isAdminHost = domain.origin?.includes('admin');
 
   if (user && isAdminHost && user.role === 'USER') {
-    return { success: true, message: 'Verification email sent again' };
+    return { success: true, message: 'verificationEmailSent' };
   }
 
   if (!user) {
-    return { success: true, message: 'Verification email sent again' };
+    return { success: true, message: 'verificationEmailSent' };
   }
 
   if (user.emailVerified) {
-    return { success: false, message: 'Email already verified' };
+    return { success: false, message: 'emailAlreadyVerified' };
   }
 
   const lastToken = user.verificationTokens?.[0];
@@ -514,7 +568,7 @@ export async function resendVerification({
       const waitSeconds = Math.ceil((cooldownInMinutes - diffInMinutes) * 60);
       throw new TRPCError({
         code: 'TOO_MANY_REQUESTS',
-        message: `Please wait ${waitSeconds} seconds before sending a new request.`,
+        message: `tooManyRequests|${waitSeconds}`,
       });
     }
   }
@@ -538,18 +592,26 @@ export async function resendVerification({
     },
   });
 
-  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${encodeURIComponent(data.email)}`;
+  const t = await getEmailTranslations(domain.locale, 'verify');
+
+  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${data.email}`;
 
   await sendEmail({
     email: data.email,
-    payload: { link, name: user.nickName, appName: process.env.APP_NAME },
+    payload: {
+      link,
+      name: user.nickName,
+      appName: process.env.APP_NAME as string,
+      t,
+      lang: domain.locale,
+    },
     template: '/templates/verifyEmail.handlebars',
-    subject: 'Verify your email',
+    subject: t.subject,
   });
 
   return {
     success: true,
-    message: 'Verification email sent again',
+    message: 'verificationEmailSent',
   };
 }
 
@@ -659,6 +721,8 @@ export async function signInProvider({
       nickName: user.nickName,
       avatarUrl: user.avatarUrl || data.avatarUrl,
       forcePasswordChange: user.forcePasswordChange,
+      isTwoFactorEnabled: user.isTwoFactorEnabled,
+      twoFactorSetupPending: user.twoFactorSetupPending,
     },
   };
 }
@@ -677,7 +741,7 @@ export async function signUp({
     if (!data.inviteToken) {
       throw new TRPCError({
         code: 'FORBIDDEN',
-        message: 'Registration on this domain requires an invitation.',
+        message: 'requireInvitation',
       });
     }
 
@@ -693,7 +757,7 @@ export async function signUp({
     if (!invite) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: 'Invalid, expired, or already used invitation.',
+        message: 'invalidInvitation',
       });
     }
 
@@ -708,7 +772,7 @@ export async function signUp({
     if (existingUser.emailVerified) {
       throw new TRPCError({
         code: 'CONFLICT',
-        message: 'User with this email already exists',
+        message: 'userAlreadyExists',
       });
     }
 
@@ -730,19 +794,26 @@ export async function signUp({
         userId: existingUser.id,
       },
     });
+    const t = await getEmailTranslations(domain.locale, 'verify');
 
-    const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${encodeURIComponent(data.email)}`;
+    const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${data.email}`;
 
     await sendEmail({
       email: data.email,
-      payload: { link, name: existingUser.nickName, appName: process.env.APP_NAME },
+      payload: {
+        link,
+        name: existingUser.nickName,
+        appName: process.env.APP_NAME as string,
+        t,
+        lang: domain.locale,
+      },
       template: '/templates/verifyEmail.handlebars',
-      subject: 'Verify your email',
+      subject: t.subject,
     });
 
     return {
       success: true,
-      message: 'Verification email sent again',
+      message: 'verificationEmailSent',
       userId: existingUser.id,
     };
   }
@@ -755,7 +826,9 @@ export async function signUp({
       password: hashedPassword,
       nickName: data.nickName,
       role: assignedRole,
+      status: 'PENDING',
       emailVerified: null,
+      twoFactorSetupPending: data.twoFactorSetupPending,
     },
   });
 
@@ -771,18 +844,26 @@ export async function signUp({
     },
   });
 
-  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${encodeURIComponent(data.email)}`;
+  const t = await getEmailTranslations(domain.locale, 'verify');
+
+  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${data.email}`;
 
   await sendEmail({
     email: data.email,
-    payload: { link, name: user.nickName, appName: process.env.APP_NAME },
+    payload: {
+      link,
+      name: user.nickName,
+      appName: process.env.APP_NAME as string,
+      t,
+      lang: domain.locale,
+    },
     template: '/templates/verifyEmail.handlebars',
-    subject: 'Verify your email',
+    subject: t.subject,
   });
 
   return {
     success: true,
-    message: 'Registration successful. Please check your email for verification.',
+    message: 'registrationUser',
     userId: user.id,
   };
 }
@@ -828,7 +909,7 @@ export async function signOut({
   return {
     userId,
     success: true,
-    message: 'You have been successfully logged out',
+    message: 'logoutSuccess',
     isLogined: false,
   };
 }
@@ -856,7 +937,7 @@ export async function receivePasswordResetLink({
   if (!user) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: 'Invalid email',
+      message: 'invalidEmail',
       cause: 'User not found',
     });
   }
@@ -864,8 +945,7 @@ export async function receivePasswordResetLink({
   const isAdminHost = domain.origin?.includes('admin');
   const isAdminRole = ['ADMIN', 'SUPER_ADMIN'].includes(user.role);
 
-  const SUCCESS_MESSAGE =
-    'If an account exists for that email, a reset link has been sent. Please check your inbox and spam folder.';
+  const SUCCESS_MESSAGE = 'recoveryEmailSent';
 
   if (!user) {
     return {
@@ -897,7 +977,7 @@ export async function receivePasswordResetLink({
       const waitSeconds = Math.ceil((cooldownInMinutes - diffInMinutes) * 60);
       throw new TRPCError({
         code: 'TOO_MANY_REQUESTS',
-        message: `Please wait ${waitSeconds} seconds before sending a new request.`,
+        message: `tooManyRequests|${waitSeconds}`,
       });
     }
   }
@@ -922,13 +1002,21 @@ export async function receivePasswordResetLink({
     },
   });
 
-  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/reset-password?token=${token}&email=${encodeURIComponent(data.email)}`;
+  const t = await getEmailTranslations(domain.locale, 'resetPassword');
+
+  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/reset-password?token=${token}&email=${data.email}`;
 
   await sendEmail({
     email: data.email,
-    payload: { link, name: user.nickName, appName: process.env.APP_NAME },
+    payload: {
+      link,
+      name: user.nickName,
+      appName: process.env.APP_NAME as string,
+      t,
+      lang: domain.locale,
+    },
     template: '/templates/forgotPasswordEmail.handlebars',
-    subject: 'Reset your password',
+    subject: t.subject,
   });
 
   return {
@@ -961,7 +1049,7 @@ export async function resetPassword({
   if (user && isAdminHost && user.role === 'USER') {
     throw new TRPCError({
       code: 'FORBIDDEN',
-      message: 'Access denied.',
+      message: 'accessDenied',
     });
   }
 
@@ -970,7 +1058,7 @@ export async function resetPassword({
   if (!user || !tokenRecord || tokenRecord.expiresAt < new Date()) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Invalid or expired password reset link.',
+      message: 'invalidResetLink',
     });
   }
 
@@ -992,6 +1080,14 @@ export async function resetPassword({
     },
   });
 
+  const emailTranslations = await getEmailTranslations(domain.locale, 'passwordChanged');
+  const appName = process.env.APP_NAME as string;
+
+  const t = {
+    ...emailTranslations,
+    description: emailTranslations.description.replace('{{appName}}', appName),
+  };
+
   const loginLink = `${domain.origin}/auth/sign-in`;
 
   await sendEmail({
@@ -999,16 +1095,17 @@ export async function resetPassword({
     payload: {
       link: loginLink,
       name: user.nickName || user.firstName,
-      appName: process.env.APP_NAME,
+      appName,
+      t,
+      lang: domain.locale,
     },
     template: '/templates/passwordUpdatedConfirmation.handlebars',
-    subject: 'Security Notice: Your password has been changed',
+    subject: t.subject,
   });
 
   return {
     success: true,
-    message:
-      'Your password has been successfully updated. You can now log in with your new credentials.',
+    message: 'passwordUpdated',
   };
 }
 
@@ -1026,7 +1123,7 @@ export async function changeForcedPassword({
   if (!user) {
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: 'User session not found.',
+      message: 'userSessionNotFound',
     });
   }
 
@@ -1035,7 +1132,7 @@ export async function changeForcedPassword({
   if (isAdminHost && user.role === 'USER') {
     throw new TRPCError({
       code: 'FORBIDDEN',
-      message: 'Access denied.',
+      message: 'accessDenied',
     });
   }
 
@@ -1058,21 +1155,32 @@ export async function changeForcedPassword({
     },
   });
 
+  const emailTranslations = await getEmailTranslations(domain.locale, 'passwordChanged');
+  const appName = process.env.APP_NAME as string;
+
+  const t = {
+    ...emailTranslations,
+    description: emailTranslations.description.replace('{{appName}}', appName),
+  };
+
   const loginLink = `${domain.origin}/auth/sign-in`;
+
   await sendEmail({
     email: user.email!,
     payload: {
       link: loginLink,
       name: user.nickName || user.firstName || 'Admin',
-      appName: process.env.APP_NAME || 'Admin Console',
+      appName,
+      t,
+      lang: domain.locale,
     },
     template: '/templates/passwordUpdatedConfirmation.handlebars',
-    subject: 'Security Notice: Your credentials have been initialized',
+    subject: t.subject,
   });
 
   return {
     success: true,
-    message: 'Security protocol initialized. Your permanent password is now active.',
+    message: 'securityProtocolInitialized',
   };
 }
 
@@ -1098,6 +1206,7 @@ export async function updateAccessBackendToken({
 
 export async function createInvite({
   data,
+  domain,
 }: {
   data: InviteUserData;
   domain: Domain;
@@ -1107,7 +1216,7 @@ export async function createInvite({
   if (existingUser) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'User with this email already exists.',
+      message: 'userAlreadyExists',
     });
   }
 
@@ -1116,7 +1225,7 @@ export async function createInvite({
   });
 
   const token = crypto.randomBytes(32).toString('hex');
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
 
   const invite = await prisma.invite.create({
     data: {
@@ -1128,21 +1237,29 @@ export async function createInvite({
     },
   });
 
-  const link = `${process.env.APP_ADMIN_URL}/auth/sign-up?token=${token}&email=${encodeURIComponent(invite.email)}`;
+  const t = await getEmailTranslations(domain.locale, 'verify'); // invite email can use same translations as verify email for now, can be changed later if needed
+
+  const link = `${process.env.APP_ADMIN_URL}/auth/sign-up?token=${token}`;
+
+  const subject = t.subject.includes('{{appName}}')
+    ? t.subject.replace('{{appName}}', process.env.APP_NAME)
+    : t.subject;
 
   await sendEmail({
     email: invite.email,
     payload: {
       link,
       role: invite.role,
-      appName: process.env.APP_NAME,
+      appName: process.env.APP_NAME as string,
+      t,
+      lang: domain.locale,
     },
     template: '/templates/inviteEmail.handlebars',
-    subject: `Invitation to join ${process.env.APP_NAME}`,
+    subject: subject,
   });
 
   return {
     success: true,
-    message: 'Invitation sent successfully',
+    message: 'inviteSent',
   };
 }

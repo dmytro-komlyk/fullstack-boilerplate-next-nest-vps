@@ -4,12 +4,13 @@
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
@@ -34,22 +35,25 @@
     "clean": "rimraf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.4.2",
-    "@prisma/client": "^7.4.2",
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
     "bcryptjs": "^3.0.3",
     "otplib": "^13.3.0",
-    "pg": "^8.16.3",
-    "prisma": "^7.4.2"
+    "pg": "^8.20.0",
+    "prisma": "^7.7.0"
   },
   "devDependencies": {
-    "@prisma/config": "^7.4.2",
+    "@prisma/config": "^7.7.0",
     "@types/node": "^24.10.1",
-    "@types/pg": "^8.16.0",
+    "@types/pg": "^8.20.0",
     "concurrently": "^9.2.1",
     "dotenv": "^16.6.1",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5.5.3"
+  },
+  "engines": {
+    "node": ">=22 <25"
   }
 }
