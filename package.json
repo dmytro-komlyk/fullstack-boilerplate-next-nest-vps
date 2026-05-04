@@ -31,6 +31,7 @@
     "dev:admin": "dotenv -e .env -- turbo run dev --parallel --filter=admin... --filter=server...",
     "dev:ios:mobile": "dotenv -e .env -- turbo run dev ios --parallel --filter=mobile...  --filter=server...",
     "dev:android:mobile": "dotenv -e .env -- turbo run dev android --parallel --filter=mobile... --filter=server...",
+    "dev:website+mobile": "dotenv -e .env -- turbo run dev ios --parallel --filter=mobile... --filter=website... --filter=server...",
     "dev:server": "dotenv -e .env -- turbo run dev --filter=server...",
     "start": "dotenv -e .env -- turbo run start --filter=website... --filter=admin... --filter=server...",
     "start:website": "dotenv -e .env -- turbo run start --parallel --filter=website... --filter=server...",
@@ -63,6 +64,10 @@
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "turbo": "^2.8.20"
+  },
+  "engines": {
+    "node": ">=22 <25",
+    "pnpm": ">=10"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
