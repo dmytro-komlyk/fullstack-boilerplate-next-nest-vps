@@ -82,6 +82,11 @@ expo-env.d.ts
 /ios
 /android
 
+# Claude Code local settings
+.claude/*.local.json
+.claude/stats.json
+CLAUDE.local.md
+
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json

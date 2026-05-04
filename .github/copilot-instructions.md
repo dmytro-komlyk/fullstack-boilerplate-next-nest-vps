@@ -41,6 +41,7 @@ You MUST respect the monorepo boundaries and use workspace aliases:
 - **Architecture:** Strict Modular Architecture (Modules, Controllers, Services).
 - **Integration:** NestJS acts as the host for the tRPC router.
 - **Validation:** Use shared Zod schemas from `@package/api` for request/response validation.
+- **Error Handling:** Use `TRPCError` with precise codes (e.g., `UNAUTHORIZED`, `NOT_FOUND`).
 
 ## 4. Database (Prisma)
 
@@ -55,8 +56,21 @@ You MUST respect the monorepo boundaries and use workspace aliases:
 # Workflow Requirements
 
 - **Commits:** Follow Conventional Commits (feat, fix, docs, refactor, etc.).
-- **Imports:** Always prefer workspace aliases over relative paths when crossing package boundaries (e.g., import from `@package/shared` instead of `../../packages/shared`).
+- **Imports:** Always prefer workspace aliases over relative paths when crossing package boundaries (e.g., `@package/shared`).
+- **Testing:** New services or logic should include unit tests (`.spec.ts`).
 - **Automation:** Be aware of the CI/CD pipeline (GitHub Actions) for SSH deployment to VPS.
+
+# Agent Capabilities & Constraints
+
+- **Autonomous Refactoring:** You are encouraged to refactor code to match the Modular Architecture in NestJS.
+- **Dry Run:** Before applying complex changes, describe the plan and wait for approval.
+- **Dependency Management:** Never add dependencies to `apps/*` if they can be shared in `packages/*`.
+
+# Tech-Specific Nuances
+
+- **tRPC + Zod:** Single Source of Truth is `packages/api`. If a field is added to the DB, it MUST be updated in the Zod schema first.
+- **State Management:** Zustand stores must be modular and located in `packages/store`.
+- **Tailwind:** Never hardcode colors; use the theme defined in `@package/tailwindcss-config`.
 
 # File Path Map for Imports
 
