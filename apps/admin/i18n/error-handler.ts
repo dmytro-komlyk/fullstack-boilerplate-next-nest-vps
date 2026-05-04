@@ -9,6 +9,7 @@ export const getLocalizedError = (rawError: string | undefined | null, te: any):
         count: value,
         seconds: value,
         minutes: value,
+        provider: value,
         providers: value,
       });
     }

@@ -13,7 +13,7 @@ export default async function OnBoarding() {
     return <OnboardingClient initialStep="PASSWORD" user={user} />;
   }
 
-  if (!user?.isTwoFactorEnabled) {
+  if (user?.twoFactorSetupPending && !user?.isTwoFactorEnabled) {
     return <OnboardingClient initialStep="2FA" user={user} />;
   }
 

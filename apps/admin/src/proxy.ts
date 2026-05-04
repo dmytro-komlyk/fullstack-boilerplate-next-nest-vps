@@ -61,11 +61,15 @@ export async function proxy(request: NextRequest) {
   }
 
   if (session?.user) {
-    const { forcePasswordChange, isTwoFactorEnabled, requires2FA } = session.user;
+    const { forcePasswordChange, isTwoFactorEnabled, requires2FA, twoFactorSetupPending } =
+      session.user;
+    const requiresTwoFactorSetup = Boolean(twoFactorSetupPending && !isTwoFactorEnabled);
 
-    if (isAuthRoute && !requires2FA && isTwoFactorEnabled && !forcePasswordChange) {
-      const dashboardUrl = new URL(getLocalePath('/dashboard'), request.url);
-      const redirectResponse = NextResponse.redirect(dashboardUrl);
+    if (isAuthRoute && !requires2FA) {
+      const targetPath =
+        forcePasswordChange || requiresTwoFactorSetup ? '/profile/onboarding' : '/dashboard';
+      const redirectUrl = new URL(getLocalePath(targetPath), request.url);
+      const redirectResponse = NextResponse.redirect(redirectUrl);
       response.headers.forEach((v, k) => redirectResponse.headers.set(k, v));
       return redirectResponse;
     }
@@ -81,7 +85,7 @@ export async function proxy(request: NextRequest) {
       return response;
     }
 
-    if (forcePasswordChange || !isTwoFactorEnabled) {
+    if (forcePasswordChange || requiresTwoFactorSetup) {
       if (!purePathname.startsWith('/profile/onboarding')) {
         const onboardUrl = new URL(getLocalePath('/profile/onboarding'), request.url);
         const redirectResponse = NextResponse.redirect(onboardUrl);

@@ -73,7 +73,11 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
         setIsActivated(true);
 
         await update({
-          user: { ...session?.user, isTwoFactorEnabled: true },
+          user: {
+            ...session?.user,
+            isTwoFactorEnabled: true,
+            twoFactorSetupPending: false,
+          },
         });
 
         if (data.backupCodes) {

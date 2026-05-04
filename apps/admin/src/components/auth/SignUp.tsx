@@ -41,7 +41,7 @@ const SignUp = ({ callbackUrl }: SignUpProps) => {
       email: '',
       password: '',
       passwordConfirmation: '',
-      isTwoFactorEnabled: false,
+      twoFactorSetupPending: false,
     },
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -207,7 +207,7 @@ const SignUp = ({ callbackUrl }: SignUpProps) => {
         {/* 2FA Enabled */}
         <div className="mb-6 ml-1">
           <Controller
-            name="isTwoFactorEnabled"
+            name="twoFactorSetupPending"
             control={control}
             render={({ field }) => (
               <Checkbox
