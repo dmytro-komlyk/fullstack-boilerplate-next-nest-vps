@@ -54,9 +54,10 @@ model User {
   nickName  String?
   avatarUrl String?
 
-  isTwoFactorEnabled   Boolean  @default(false)
-  twoFactorSecret      String?
-  twoFactorBackupCodes String[] @default([])
+  isTwoFactorEnabled    Boolean  @default(false)
+  twoFactorSetupPending Boolean  @default(false)
+  twoFactorSecret       String?
+  twoFactorBackupCodes  String[] @default([])
 
   isOnline     Boolean   @default(false)
   lastActiveAt DateTime?
