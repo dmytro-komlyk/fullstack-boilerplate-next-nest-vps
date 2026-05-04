@@ -53,7 +53,9 @@
     "invalidResetLink": "Invalid or expired password reset link.",
     "requireInvitation": "Registration on this domain requires an invitation.",
     "invalidInvitation": "Invalid, expired, or already used invitation.",
-    "sessionExpired": "Your session has expired. Please sign in again."
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "unknown": "An unknown error occurred. Please try again.",
+    "missingToken": "Authentication token is missing. Please log in again."
   },
   "Navbar": {
     "logout": "Log Out"

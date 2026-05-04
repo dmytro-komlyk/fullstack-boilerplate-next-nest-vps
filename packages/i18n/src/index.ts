@@ -5,6 +5,13 @@ import emailEn from './locales/en/email.json';
 import homeEn from './locales/en/home.json';
 import userEn from './locales/en/user.json';
 
+import aiUk from './locales/uk/ai.json';
+import authUk from './locales/uk/auth.json';
+import commonUk from './locales/uk/common.json';
+import emailUk from './locales/uk/email.json';
+import homeUk from './locales/uk/home.json';
+import userUk from './locales/uk/user.json';
+
 export const supportedLanguages = ['en', 'uk'] as const;
 export type Language = (typeof supportedLanguages)[number];
 
@@ -53,4 +60,19 @@ export const getEmailTranslations = async (
 ) => {
   const messages = await getMessagesForLocale(locale);
   return messages.Email[type];
+};
+
+export {
+  aiEn,
+  aiUk,
+  authEn,
+  authUk,
+  commonEn,
+  commonUk,
+  emailEn,
+  emailUk,
+  homeEn,
+  homeUk,
+  userEn,
+  userUk,
 };
