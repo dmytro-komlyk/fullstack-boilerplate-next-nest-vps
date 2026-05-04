@@ -79,6 +79,7 @@ export const authOptions: AuthConfig = {
               requires2FA: true,
               mfaToken: response.mfaToken,
               isTwoFactorEnabled: response.user.isTwoFactorEnabled,
+              twoFactorSetupPending: response.user.twoFactorSetupPending,
               clientId: ctx.clientId,
               accessToken: '',
               sessionToken: '',
@@ -96,6 +97,9 @@ export const authOptions: AuthConfig = {
             sessionToken: response.sessionToken,
             isTwoFactorEnabled: response.user.isTwoFactorEnabled as boolean,
             clientId: ctx.clientId!,
+            ...(response.user.twoFactorSetupPending !== undefined
+              ? { twoFactorSetupPending: response.user.twoFactorSetupPending }
+              : {}),
           };
         } catch (error: any) {
           console.error('Authorize Error:', error.message);
@@ -198,6 +202,13 @@ export const authOptions: AuthConfig = {
           user.nickName = response.user.nickName;
           user.sessionToken = response.sessionToken;
           user.clientId = ctx.clientId!;
+          user.forcePasswordChange = response.user.forcePasswordChange;
+          if (response.user.isTwoFactorEnabled !== undefined) {
+            user.isTwoFactorEnabled = response.user.isTwoFactorEnabled;
+          }
+          if (response.user.twoFactorSetupPending !== undefined) {
+            user.twoFactorSetupPending = response.user.twoFactorSetupPending;
+          }
 
           return true;
         } catch (error) {
@@ -243,6 +254,7 @@ export const authOptions: AuthConfig = {
             clientId: user.clientId || ctx.clientId || 'unknown',
             requires2FA: true,
             isTwoFactorEnabled: user.isTwoFactorEnabled as boolean,
+            twoFactorSetupPending: user.twoFactorSetupPending as boolean,
             mfaToken: user.mfaToken,
             accessToken: '',
             sessionToken: '',
@@ -270,6 +282,7 @@ export const authOptions: AuthConfig = {
           clientId: user.clientId || ctx.clientId || 'unknown',
           requires2FA: user.requires2FA || false,
           isTwoFactorEnabled: user.isTwoFactorEnabled as boolean,
+          twoFactorSetupPending: user.twoFactorSetupPending as boolean,
           mfaToken: user.mfaToken || undefined,
           forcePasswordChange: user.forcePasswordChange as boolean,
           error: undefined,
@@ -342,6 +355,7 @@ export const authOptions: AuthConfig = {
           mfaToken: token.mfaToken as string,
           forcePasswordChange: token.forcePasswordChange as boolean,
           isTwoFactorEnabled: token.isTwoFactorEnabled,
+          twoFactorSetupPending: token.twoFactorSetupPending as boolean,
         };
         (session as any).error = token.error || null;
       }

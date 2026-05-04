@@ -18,7 +18,7 @@ export async function verifyGoogleMobileToken(
     try {
       const { tokens } = await googleClient.getToken({
         code: tokenOrCode,
-        redirect_uri: 'com.boilerplate.app://',
+        redirect_uri: 'com.omni.app://',
       });
       idToken = tokens.id_token!;
     } catch (err: any) {

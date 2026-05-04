@@ -120,7 +120,7 @@ export async function signIn({
 
     const t = await getEmailTranslations(domain.locale, 'verify');
 
-    const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}`;
+    const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${data.email}`;
 
     await sendEmail({
       email: data.email,
@@ -222,6 +222,7 @@ export async function signIn({
         avatarUrl: user.avatarUrl,
         forcePasswordChange: user.forcePasswordChange,
         isTwoFactorEnabled: user.isTwoFactorEnabled,
+        twoFactorSetupPending: user.twoFactorSetupPending,
       },
     };
   }
@@ -270,6 +271,7 @@ export async function signIn({
       avatarUrl: user.avatarUrl,
       forcePasswordChange: user.forcePasswordChange,
       isTwoFactorEnabled: user.isTwoFactorEnabled,
+      twoFactorSetupPending: user.twoFactorSetupPending,
     },
   };
 }
@@ -374,6 +376,7 @@ export async function verify2FALogin({
       avatarUrl: user.avatarUrl,
       forcePasswordChange: user.forcePasswordChange,
       isTwoFactorEnabled: user.isTwoFactorEnabled,
+      twoFactorSetupPending: user.twoFactorSetupPending,
     },
   };
 }
@@ -415,6 +418,7 @@ export async function activate2FA({
     where: { id: user.id },
     data: {
       isTwoFactorEnabled: true,
+      twoFactorSetupPending: false,
       twoFactorBackupCodes: hashed,
     },
   });
@@ -434,7 +438,10 @@ export async function activate2FA({
   };
 }
 
-export async function verifyEmail(input: { token: string; email: string }) {
+export async function verifyEmail(input: {
+  token: string;
+  email: string;
+}): Promise<VerifyEmailOutputData> {
   const user = await prisma.user.findUnique({
     where: { email: input.email },
   });
@@ -483,6 +490,7 @@ export async function verifyEmail(input: { token: string; email: string }) {
   return {
     success: true,
     message: 'emailVerified',
+    twoFactorSetupPending: user.twoFactorSetupPending,
     userId: verificationToken.user.id,
   };
 }
@@ -586,7 +594,7 @@ export async function resendVerification({
 
   const t = await getEmailTranslations(domain.locale, 'verify');
 
-  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}`;
+  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${data.email}`;
 
   await sendEmail({
     email: data.email,
@@ -713,6 +721,8 @@ export async function signInProvider({
       nickName: user.nickName,
       avatarUrl: user.avatarUrl || data.avatarUrl,
       forcePasswordChange: user.forcePasswordChange,
+      isTwoFactorEnabled: user.isTwoFactorEnabled,
+      twoFactorSetupPending: user.twoFactorSetupPending,
     },
   };
 }
@@ -786,7 +796,7 @@ export async function signUp({
     });
     const t = await getEmailTranslations(domain.locale, 'verify');
 
-    const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}`;
+    const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${data.email}`;
 
     await sendEmail({
       email: data.email,
@@ -818,6 +828,7 @@ export async function signUp({
       role: assignedRole,
       status: 'PENDING',
       emailVerified: null,
+      twoFactorSetupPending: data.twoFactorSetupPending,
     },
   });
 
@@ -835,7 +846,7 @@ export async function signUp({
 
   const t = await getEmailTranslations(domain.locale, 'verify');
 
-  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}`;
+  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/verify-email?token=${token}&email=${data.email}`;
 
   await sendEmail({
     email: data.email,
@@ -993,7 +1004,7 @@ export async function receivePasswordResetLink({
 
   const t = await getEmailTranslations(domain.locale, 'resetPassword');
 
-  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/reset-password?token=${token}`;
+  const link = `${domain.origin || process.env.APP_WEBSITE_URL}/auth/reset-password?token=${token}&email=${data.email}`;
 
   await sendEmail({
     email: data.email,
