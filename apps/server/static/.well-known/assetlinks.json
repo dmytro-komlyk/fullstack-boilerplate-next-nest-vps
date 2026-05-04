@@ -3,7 +3,7 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.boilerplate.app",
+      "package_name": "com.omni.app",
       "sha256_cert_fingerprints": ["SHA256_FINGERPRINT_HERE_EAS_BUILD_ONLY"]
     }
   }
