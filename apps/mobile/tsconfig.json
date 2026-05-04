@@ -15,7 +15,7 @@
     "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "noEmit": false,
+    "noEmit": true,
     "composite": true,
     "declaration": true,
     "declarationMap": true,
@@ -28,6 +28,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "styles/global.js",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "**/*.json",

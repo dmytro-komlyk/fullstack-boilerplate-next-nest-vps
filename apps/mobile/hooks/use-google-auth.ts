@@ -21,7 +21,7 @@ export function useGoogleAuth() {
   const loginMobileProvider = trpc.auth.loginMobileProvider.useMutation();
 
   const redirectUri = AuthSession.makeRedirectUri({
-    scheme: 'com.boilerplate.app',
+    scheme: 'com.omni.app',
   });
 
   const [request, response, promptAsync] = Google.useAuthRequest({

@@ -1,24 +1,24 @@
 {
   "expo": {
-    "name": "boilerplate",
-    "slug": "mobile",
+    "name": "Omni",
+    "slug": "omni-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": ["com.boilerplate.app"],
+    "scheme": "omni",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.boilerplate.app",
-      "associatedDomains": ["applinks:boilerplate.localhost:3001"],
+      "bundleIdentifier": "com.omni.app",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.boilerplate.app",
+      "package": "com.omni.app",
       "intentFilters": [
         {
           "action": "VIEW",
@@ -69,8 +69,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "59849322-a506-43d8-9dda-7d4cce9a702a"
+        "projectId": "f9249939-db28-4b5b-a7c4-ccc13d9c6aa3"
       }
-    }
+    },
+    "owner": "dmytro_komlyk"
   }
 }
