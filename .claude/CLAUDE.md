@@ -65,6 +65,7 @@ You MUST respect the monorepo boundaries and use workspace aliases:
 - **Autonomous Refactoring:** You are encouraged to refactor code to match the Modular Architecture in NestJS.
 - **Dry Run:** Before applying complex changes, describe the plan and wait for approval.
 - **Dependency Management:** Never add dependencies to `apps/*` if they can be shared in `packages/*`.
+- **File Analysis:** Never analyze or read files inside `node_modules`, `.next`, `.turbo`, or `dist` folders unless explicitly asked.
 
 # Tech-Specific Nuances
 
