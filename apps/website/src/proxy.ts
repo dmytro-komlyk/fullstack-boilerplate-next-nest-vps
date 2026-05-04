@@ -14,8 +14,8 @@ const intlMiddleware = createIntlMiddleware({
 });
 
 export async function proxy(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
   const isProduction = process.env.NODE_ENV === 'production';
+  const { pathname, search, origin } = request.nextUrl;
 
   if (
     pathname.startsWith('/api') ||
@@ -52,12 +52,23 @@ export async function proxy(request: NextRequest) {
   }
 
   if (session?.user) {
-    const { requires2FA } = session.user;
+    const { requires2FA, isTwoFactorEnabled, twoFactorSetupPending } = session.user;
+    const requiresTwoFactorSetup = Boolean(twoFactorSetupPending && !isTwoFactorEnabled);
 
     if (requires2FA) {
       if (!purePathname.startsWith('/auth/two-factor/verify')) {
         const verifyUrl = new URL(getLocalePath('/auth/two-factor/verify'), origin);
         const redirectResponse = NextResponse.redirect(verifyUrl);
+        response.headers.forEach((v, k) => redirectResponse.headers.set(k, v));
+        return redirectResponse;
+      }
+      return response;
+    }
+
+    if (requiresTwoFactorSetup) {
+      if (!purePathname.startsWith('/auth/two-factor/setup')) {
+        const setupUrl = new URL(getLocalePath('/auth/two-factor/setup'), origin);
+        const redirectResponse = NextResponse.redirect(setupUrl);
         response.headers.forEach((v, k) => redirectResponse.headers.set(k, v));
         return redirectResponse;
       }
