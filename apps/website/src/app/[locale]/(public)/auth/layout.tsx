@@ -2,16 +2,29 @@
 
 import SettingsWidgetPlugin from '@/components/plugins/SettingsWidgetPlugin';
 import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
-import { PropsWithChildren } from 'react';
+import { useRouter } from 'next/navigation';
+import { PropsWithChildren, useEffect } from 'react';
 
 interface AuthProps extends PropsWithChildren {}
 
 export default function AuthLayout({ children }: AuthProps) {
+  const router = useRouter();
   const { data: session } = useSession();
+  const requiresTwoFactorSetup = Boolean(
+    session?.user?.twoFactorSetupPending && !session?.user?.isTwoFactorEnabled
+  );
+  const shouldRedirect = Boolean(
+    session?.user && !session.user.requires2FA && !requiresTwoFactorSetup
+  );
 
-  if (session?.user) {
-    redirect('/');
+  useEffect(() => {
+    if (shouldRedirect) {
+      router.replace('/');
+    }
+  }, [router, shouldRedirect]);
+
+  if (shouldRedirect) {
+    return null;
   }
 
   return (
