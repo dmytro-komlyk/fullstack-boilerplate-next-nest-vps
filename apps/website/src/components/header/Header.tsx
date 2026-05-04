@@ -113,7 +113,12 @@ const Header = () => {
 
             <DropdownMenu aria-label="User actions" variant="flat">
               <DropdownSection showDivider>
-                <DropdownItem isReadOnly key="user-info" className="h-14 gap-2">
+                <DropdownItem
+                  isReadOnly
+                  key="user-info"
+                  textValue={session.user.nickName || 'User'}
+                  className="h-14 gap-2"
+                >
                   <User
                     name={session.user.nickName || 'User'}
                     description={session.user.email}
@@ -128,6 +133,7 @@ const Header = () => {
               <DropdownSection showDivider>
                 <DropdownItem
                   key="dashboard"
+                  textValue={t('user.dashboard')}
                   as={Link}
                   href={`${baseUrl}/dashboard`}
                   startContent={<LuLayoutDashboard className="size-4" />}
@@ -136,6 +142,7 @@ const Header = () => {
                 </DropdownItem>
                 <DropdownItem
                   key="profile"
+                  textValue={t('user.profile')}
                   as={Link}
                   href={`${baseUrl}/profile`}
                   startContent={<LuUser className="size-4" />}
@@ -146,6 +153,7 @@ const Header = () => {
 
               <DropdownItem
                 key="logout"
+                textValue={isLoading ? t('user.logging_out') : t('user.logout')}
                 color="danger"
                 className="text-danger"
                 isDisabled={isLoading}
