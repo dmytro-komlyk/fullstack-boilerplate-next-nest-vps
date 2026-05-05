@@ -15,11 +15,11 @@ import {
 } from '@heroui/react';
 import { trpc } from '@package/api/client';
 import { getLocalizedError } from 'i18n/error-handler';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { showToast } from '../Toast';
 
@@ -40,6 +40,26 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const { data: session, update } = useSession();
+
+  useEffect(() => {
+    if (mode !== 'verify') return;
+    const mfaToken = session?.user?.mfaToken;
+    if (!mfaToken) return;
+    try {
+      const payload = JSON.parse(atob(mfaToken.split('.')[1]!));
+      const delay = payload.exp * 1000 - Date.now();
+      if (delay <= 0) {
+        signOut({ callbackUrl: '/auth/sign-in?toast=session_expired' });
+        return;
+      }
+      const timer = setTimeout(() => {
+        signOut({ callbackUrl: '/auth/sign-in?toast=session_expired' });
+      }, delay);
+      return () => clearTimeout(timer);
+    } catch {
+      // malformed token — ignore, will fail on submit
+    }
+  }, [mode, session?.user?.mfaToken]);
 
   const { data: setupData, isLoading: isSetupLoading } = trpc.auth.setup2FA.useQuery(undefined, {
     enabled: mode === 'setup' && !isActivated,
@@ -106,9 +126,7 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
     } catch (error: any) {
       if (error.message === 'tokenExpired' || error.message === 'invalidToken') {
         showToast.error(te('sessionExpired'));
-        setTimeout(() => {
-          window.location.href = '/auth/sign-in?toast=session_expired';
-        }, 1500);
+        signOut({ callbackUrl: '/auth/sign-in?toast=session_expired' });
         return;
       }
       showToast.error(getLocalizedError(error.message, te));
@@ -221,7 +239,7 @@ export default function TwoFactor({ mode = 'verify' }: { mode?: 'setup' | 'verif
               <Button
                 variant="light"
                 size="sm"
-                className="text-brand-500 hover:text-brand-600 text-sm font-medium dark:text-white"
+                className="p-0 text-brand-500 hover:text-brand-600 text-sm font-medium dark:text-white data-[hover=true]:bg-transparent"
                 onPress={toggleMode}
               >
                 {isBackupMode ? t('backToStandard') : t('lostAccess')}
