@@ -4,6 +4,21 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+const safeLocalStorage = {
+  getItem: (name: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(name);
+  },
+  setItem: (name: string, value: string): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(name, value);
+  },
+  removeItem: (name: string): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(name);
+  },
+};
+
 export interface ThemeState {
   theme: string;
   setTheme: (value: string) => void;
@@ -70,7 +85,7 @@ export const useUIStore = create<UIState>()(
     }),
     {
       name: 'ui',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => safeLocalStorage),
       partialize: (state) => ({
         isSideBarOpen: state.isSideBarOpen,
       }),
