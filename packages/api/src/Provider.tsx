@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createWSClient, httpBatchLink, loggerLink, splitLink, wsLink } from '@trpc/client';
 import { useSession } from 'next-auth/react';
 import React, { useMemo, useRef } from 'react';
+
 import { trpc } from './client';
 import { queryClient } from './query-client';
 
@@ -32,6 +33,10 @@ export function TrpcProvider({ children }: { children: React.ReactNode }) {
               params.append('locale', window.location.pathname.split('/')[1] || 'uk');
 
               return `${wsUrl}?${params.toString()}`;
+            },
+            lazy: {
+              enabled: true,
+              closeMs: 0,
             },
             retryDelayMs: () => 3000,
           })
