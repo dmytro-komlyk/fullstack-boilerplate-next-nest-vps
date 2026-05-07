@@ -1,9 +1,11 @@
+import DashboardPage from '@/components/dashboard/DashboardPage';
+
 export const dynamic = 'force-dynamic';
 
-export default async function Dashboard() {
+export default function Dashboard() {
   return (
     <div className="size-full">
-      <p className="px-2">Dashboard Page</p>
+      <DashboardPage />
     </div>
   );
 }
