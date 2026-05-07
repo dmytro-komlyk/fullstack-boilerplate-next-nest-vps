@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "todoist": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-todoist"],
+      "env": {
+        "TODOIST_API_TOKEN": "${TODOIST_API_TOKEN}"
+      }
+    }
+  }
+}

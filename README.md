@@ -170,6 +170,69 @@ packages/ai/
 └── index.ts                 # handleAssistant() — routes to admin or public handler
 ```
 
+## 🧠 Claude Code Agent Workflow
+
+This project includes a built-in AI agent workflow powered by **Claude Code** and **Todoist**. Tasks are created and tracked in Todoist, Claude implements the code, GitHub Copilot generates commit messages, and a git hook closes the task and opens a PR automatically after push.
+
+### How it works
+
+```
+/create-task "add user avatar upload"
+  ↓ Claude analyzes the codebase and creates a structured task in Todoist
+/work-on-tasks
+  ↓ Claude fetches the task, reads title + description, does a dry run
+  ↓ Creates a branch: feature/todoist-{id}-{slug}
+  ↓ Implements: schema → service → router → frontend
+  ↓ Reports changed files
+Copilot generates commit message in VS Code → user commits → git push
+  ↓ post-push hook runs automatically:
+     ✅ Closes task in Todoist
+     🔗 Creates GitHub PR with task description as body
+     💬 Adds PR link as comment to the Todoist task
+```
+
+### Setup
+
+1. **Get your Todoist API token** from [todoist.com/app/settings/integrations/developer](https://app.todoist.com/app/settings/integrations/developer)
+
+2. **Add to your shell profile** (`~/.zshrc` or `~/.bashrc`):
+
+   ```bash
+   export TODOIST_API_TOKEN=your_token_here
+   ```
+
+3. **Configure git hooks** (one-time):
+
+   ```bash
+   git config core.hooksPath .githooks
+   chmod +x .githooks/post-push
+   ```
+
+4. **Install GitHub CLI** and authenticate:
+
+   ```bash
+   brew install gh && gh auth login
+   ```
+
+### Commands
+
+| Command | Description |
+| :------ | :---------- |
+| `/create-task "idea"` | Analyzes codebase, composes a structured task and creates it in Todoist |
+| `/work-on-tasks` | Fetches today's P1 `@claude` tasks and implements the top one |
+| `/work-on-tasks {taskId}` | Jumps directly to a specific task by ID |
+
+### Todoist task format
+
+For Claude to pick up a task automatically, it must have:
+- **Priority:** P1
+- **Due date:** Today
+- **Label:** `@claude`
+
+Use `/create-task` to create correctly formatted tasks directly from Claude Code without opening Todoist.
+
+---
+
 ## 📱 Mobile Deep Linking
 
 The Nest.js server hosts the required verification files for Universal Links (iOS) and App Links (Android) under `apps/server/static/.well-known/`:

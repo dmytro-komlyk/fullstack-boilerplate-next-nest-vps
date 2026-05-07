@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ide__getDiagnostics",
+      "Bash(pnpm audit)",
+      "Bash(bash scripts/todoist-token.sh)"
+    ]
+  }
+}
