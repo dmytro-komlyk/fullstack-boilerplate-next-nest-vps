@@ -3,7 +3,7 @@
 import { Button } from '@heroui/react';
 import { trpc } from '@package/api/client';
 import { AnimatePresence, motion } from 'framer-motion';
-import { getLocalizedError } from 'i18n/error-handler';
+import { getLocalizedError } from '@/i18n/error-handler';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { LuChevronDown, LuDatabase, LuSend, LuTerminal, LuX } from 'react-icons/lu';

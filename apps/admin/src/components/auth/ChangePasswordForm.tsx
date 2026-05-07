@@ -4,7 +4,7 @@ import { showToast } from '@/components/Toast';
 import { Button, Input } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthSchema, trpc } from '@package/api';
-import { getLocalizedError } from 'i18n/error-handler';
+import { getLocalizedError } from '@/i18n/error-handler';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';

@@ -13,7 +13,7 @@ import {
   useDisclosure,
 } from '@heroui/react';
 import { trpc } from '@package/api/client';
-import { getLocalizedError } from 'i18n/error-handler';
+import { getLocalizedError } from '@/i18n/error-handler';
 import { signOut, useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';

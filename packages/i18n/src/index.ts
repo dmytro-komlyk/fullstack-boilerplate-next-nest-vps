@@ -4,7 +4,6 @@ import commonEn from './locales/en/common.json';
 import emailEn from './locales/en/email.json';
 import homeEn from './locales/en/home.json';
 import userEn from './locales/en/user.json';
-
 import aiUk from './locales/uk/ai.json';
 import authUk from './locales/uk/auth.json';
 import commonUk from './locales/uk/common.json';
