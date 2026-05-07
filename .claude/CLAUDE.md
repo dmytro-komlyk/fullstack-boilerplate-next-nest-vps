@@ -343,8 +343,60 @@ Rules enforced via `@package/eslint-config` — violations block CI:
 
 # Task Management & Automation (MCP)
 
-- **Morning Routine:** On startup, use `todoist.get_tasks` to retrieve today's tasks.
-- **Priority:** Focus on Priority 1 tasks or tags `@refactor`, `@feature`, `@bug`. Ignore non-coding tasks.
-- **Execution:** Dry Run first (state which packages are affected), wait for approval, then modify files.
-- **Context:** If a task mentions "auth", check `@package/next-auth` and `@package/api`. If "UI" — check `@package/ui` and `@package/tailwindcss-config`.
+## Agent Workflow: Claude + Copilot + Todoist
+
+The team uses a split-role workflow for feature development:
+
+| Role | Responsibility |
+| ---- | -------------- |
+| **Claude** | Reads Todoist tasks, implements code, creates branch |
+| **GitHub Copilot** | Generates commit message in VS Code Source Control (manual review) |
+| **git post-push hook** | Auto-closes Todoist task after push |
+
+### Trigger: `/work-on-tasks [taskId?]`
+
+Run `/work-on-tasks` in Claude Code to start the workflow. Optionally pass a task ID directly: `/work-on-tasks 123456789`.
+
+### Full Cycle
+
+```text
+User: /work-on-tasks
+  ↓
+Claude: todoist.get_tasks (filter: today | p1 | @claude)
+  ↓
+Claude: Dry Run — lists affected packages, waits for approval
+  ↓
+Claude: git checkout -b feature/todoist-{taskId}-{slug}
+  ↓
+Claude: implements code (schema → service → router → frontend)
+  ↓
+Claude: reports done, lists changed files
+  ↓
+User: opens VS Code → Copilot generates commit message → reviews → commits → pushes
+  ↓
+git post-push hook (.githooks/post-push): closes task #{taskId} in Todoist automatically
+```
+
+### Branch Naming Convention
+
+```text
+feature/todoist-{taskId}-{kebab-slug}   ← new features
+fix/todoist-{taskId}-{kebab-slug}       ← bug fixes
+```
+
+The post-push hook extracts the task ID from the branch name automatically.
+
+### Setup (one-time, already configured)
+
+```bash
+git config core.hooksPath .githooks   # uses committed hooks from .githooks/
+chmod +x .githooks/post-push
+```
+
+Todoist API token is read from `.mcp.json` automatically — no extra env setup needed.
+
+## Task Priorities & Tags
+
+- **Priority:** Focus on P1 tasks or tags `@claude`, `@refactor`, `@feature`, `@bug`. Ignore non-coding tasks.
+- **Context:** If a task mentions "auth" → check `@package/next-auth` and `@package/api`. If "UI" → check `@package/ui` and `@package/tailwindcss-config`.
 - **Environment check:** Confirm `node --version` is `>=22` before starting.

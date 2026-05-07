@@ -1,0 +1,99 @@
+#!/bin/bash
+# Post-push hook: closes Todoist task and creates a GitHub PR automatically.
+# Branch naming convention: feature/todoist-{taskId}-{description}
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+TASK_ID=$(echo "$BRANCH" | sed -n 's|.*todoist-\([a-zA-Z0-9][a-zA-Z0-9]*\)-.*|\1|p')
+
+if [ -z "$TASK_ID" ]; then
+  exit 0
+fi
+
+# --- Resolve Todoist token ---
+TOKEN="${TODOIST_API_TOKEN}"
+if [ -z "$TOKEN" ]; then
+  MCP_JSON="$(git rev-parse --show-toplevel)/.mcp.json"
+  if [ -f "$MCP_JSON" ]; then
+    TOKEN=$(python3 -c "
+import json, sys
+try:
+  d = json.load(open('$MCP_JSON'))
+  print(d['mcpServers']['todoist']['env']['TODOIST_API_TOKEN'])
+except Exception:
+  sys.exit(1)
+" 2>/dev/null)
+  fi
+fi
+
+if [ -z "$TOKEN" ]; then
+  echo "⚠️  TODOIST_API_TOKEN not found — skipping Todoist + PR steps"
+  exit 0
+fi
+
+# --- Fetch task details ---
+TASK_JSON=$(curl -s \
+  "https://api.todoist.com/api/v1/tasks/$TASK_ID" \
+  -H "Authorization: Bearer $TOKEN")
+
+TASK_TITLE=$(echo "$TASK_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('content',''))" 2>/dev/null)
+TASK_DESC=$(echo "$TASK_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('description',''))" 2>/dev/null)
+
+# --- Close Todoist task ---
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+  -X POST "https://api.todoist.com/api/v1/tasks/$TASK_ID/close" \
+  -H "Authorization: Bearer $TOKEN")
+
+if [ "$HTTP_CODE" = "204" ]; then
+  echo "✅ Todoist task #$TASK_ID marked as complete"
+else
+  echo "⚠️  Could not close Todoist task #$TASK_ID (HTTP $HTTP_CODE)"
+fi
+
+# --- Create GitHub PR ---
+if ! command -v gh &>/dev/null; then
+  echo "⚠️  gh CLI not found — skipping PR creation"
+  exit 0
+fi
+
+DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null)
+DEFAULT_BRANCH="${DEFAULT_BRANCH:-main}"
+
+PR_BODY="## Summary
+
+${TASK_DESC:-No description provided.}
+
+## Todoist
+
+Task ID: \`$TASK_ID\`
+
+## Test plan
+
+- [ ] Run affected services locally
+- [ ] Verify feature works end-to-end
+- [ ] Check for TypeScript errors
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+
+PR_URL=$(gh pr create \
+  --title "$TASK_TITLE" \
+  --body "$PR_BODY" \
+  --base "$DEFAULT_BRANCH" \
+  --head "$BRANCH" 2>&1)
+
+if echo "$PR_URL" | grep -q "https://"; then
+  echo "🔗 PR created: $PR_URL"
+else
+  echo "⚠️  PR creation failed: $PR_URL"
+  exit 0
+fi
+
+# --- Add comment to Todoist task with PR link ---
+COMMENT_BODY="✅ Implemented in branch \`$BRANCH\`\n🔗 PR: $PR_URL"
+
+curl -s -o /dev/null \
+  -X POST "https://api.todoist.com/api/v1/comments" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"task_id\": \"$TASK_ID\", \"content\": \"$COMMENT_BODY\"}"
+
+echo "💬 Comment added to Todoist task"
