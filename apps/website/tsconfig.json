@@ -10,7 +10,6 @@
     "declarationMap": true,
     "emitDeclarationOnly": true,
     "noEmit": false,
-    "baseUrl": ".",
     "module": "esnext",
     "moduleResolution": "bundler",
     "target": "esnext",
@@ -21,7 +20,8 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@/public/*": ["./public/*"]
+      "@/public/*": ["./public/*"],
+      "@/i18n/*": ["./i18n/*"]
     },
     "plugins": [{ "name": "next" }]
   },

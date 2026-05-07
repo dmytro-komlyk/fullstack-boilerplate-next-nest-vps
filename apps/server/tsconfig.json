@@ -21,7 +21,6 @@
     "noEmit": false,
     "allowImportingTsExtensions": false,
     "noImplicitAny": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
