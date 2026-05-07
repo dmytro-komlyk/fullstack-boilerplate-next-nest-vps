@@ -74,6 +74,7 @@ model User {
   sessions           Session[]
   tokens             Token[]
   verificationTokens VerificationToken[]
+  notifications      Notification[]
 
   @@map("users")
 }
@@ -170,4 +171,29 @@ enum TokenType {
   REFRESH
   RESET
   MAGIC_LINK
+}
+
+enum NotificationSeverity {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+model Notification {
+  id       String               @id @default(uuid())
+  userId   String
+  title    String
+  message  String
+  severity NotificationSeverity @default(INFO)
+  isRead   Boolean              @default(false)
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
 }
