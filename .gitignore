@@ -87,6 +87,9 @@ expo-env.d.ts
 .claude/stats.json
 CLAUDE.local.md
 
+# MCP local settings
+.mcp.json
+
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json
