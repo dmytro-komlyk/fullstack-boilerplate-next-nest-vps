@@ -6,11 +6,18 @@
 
     "declaration": true,
     "declarationMap": true,
+
     "rootDir": "./src",
     "outDir": "./dist",
+
     "incremental": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo.types",
-    "composite": false
+    "composite": false,
+
+    "paths": {
+      "@package/prisma": ["../prisma/dist/index.d.ts"],
+      "@package/prisma/*": ["../prisma/dist/*"]
+    }
   },
   "include": ["src/**/*", "../../types/globals.d.ts"]
 }

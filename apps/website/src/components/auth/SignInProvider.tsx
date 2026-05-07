@@ -7,10 +7,10 @@ import NextImage from 'next/image';
 import { useState } from 'react';
 
 import { baseUrl } from '@/utils/constants';
-import { getLocalizedError } from 'i18n/error-handler';
+import { getLocalizedError } from '@/i18n/error-handler';
 import { useTranslations } from 'next-intl';
-import FacebookLogo from 'public/icons/facebook-logo.svg';
-import GoogleLogo from 'public/icons/google-logo.svg';
+import FacebookLogo from '@/public/icons/facebook-logo.svg';
+import GoogleLogo from '@/public/icons/google-logo.svg';
 import { showToast } from '../Toast';
 
 const providers = {

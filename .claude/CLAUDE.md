@@ -340,3 +340,11 @@ Rules enforced via `@package/eslint-config` — violations block CI:
 | Tailwind config        | `packages/tailwindcss-config/src/index.ts`           | `@package/tailwindcss-config` |
 | AI utilities           | `packages/ai/src/`                                   | `@package/ai`                 |
 | Shared utilities       | `packages/shared/src/`                               | `@package/shared`             |
+
+# Task Management & Automation (MCP)
+
+- **Morning Routine:** On startup, use `todoist.get_tasks` to retrieve today's tasks.
+- **Priority:** Focus on Priority 1 tasks or tags `@refactor`, `@feature`, `@bug`. Ignore non-coding tasks.
+- **Execution:** Dry Run first (state which packages are affected), wait for approval, then modify files.
+- **Context:** If a task mentions "auth", check `@package/next-auth` and `@package/api`. If "UI" — check `@package/ui` and `@package/tailwindcss-config`.
+- **Environment check:** Confirm `node --version` is `>=22` before starting.

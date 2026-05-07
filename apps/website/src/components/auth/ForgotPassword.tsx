@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 
 import LoadingSpinner from '@/components/loading/LoadingSpinner';
-import { getLocalizedError } from 'i18n/error-handler';
+import { getLocalizedError } from '@/i18n/error-handler';
 import { useTranslations } from 'next-intl';
 import { showToast } from '../Toast';
 

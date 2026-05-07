@@ -1,17 +1,21 @@
 'use client';
 
 import { useThemeCookieStore } from '@package/store/ui';
-import { ThemeProvider } from 'next-themes';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export function ThemeUIProvider({
   children,
   defaultThemeFromCookie,
 }: {
   children: React.ReactNode;
-  defaultThemeFromCookie: string;
+  defaultThemeFromCookie?: string;
 }) {
   const { theme: zustandTheme, _hasHydrated } = useThemeCookieStore();
+
+  useEffect(() => {
+    const theme = _hasHydrated ? zustandTheme : (defaultThemeFromCookie ?? 'light');
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [zustandTheme, _hasHydrated, defaultThemeFromCookie]);
 
   if (!_hasHydrated) {
     return (
@@ -21,17 +25,5 @@ export function ThemeUIProvider({
     );
   }
 
-  return (
-    <ThemeProvider
-      attribute="class"
-      forcedTheme={_hasHydrated ? zustandTheme : undefined}
-      defaultTheme={defaultThemeFromCookie}
-      enableSystem={false}
-      disableTransitionOnChange
-      storageKey={undefined}
-      enableColorScheme={false}
-    >
-      {children}
-    </ThemeProvider>
-  );
+  return children;
 }

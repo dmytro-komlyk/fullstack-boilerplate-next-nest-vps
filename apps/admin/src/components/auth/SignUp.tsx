@@ -12,7 +12,7 @@ import { IoEyeOffOutline, IoEyeOutline } from 'react-icons/io5';
 
 import LoadingSpinner from '@/components/loading/LoadingSpinner';
 import { showToast } from '@/components/Toast';
-import { getLocalizedError } from 'i18n/error-handler';
+import { getLocalizedError } from '@/i18n/error-handler';
 
 interface SignUpProps {
   callbackUrl: string;

@@ -33,9 +33,9 @@
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
-    "next": "16.1.6",
+    "next": "^16.1.7",
     "next-auth": "^5.0.0-beta.25",
-    "next-intl": "^4.8.3",
+    "next-intl": "^4.9.1",
     "next-themes": "^0.4.4",
     "next-transpile-modules": "^10.0.1",
     "prop-types": "^15.8.1",
@@ -51,7 +51,7 @@
     "react-perfect-scrollbar": "^1.5.8",
     "remark-gfm": "^4.0.1",
     "ua-parser-js": "^2.0.9",
-    "uuid": "^13.0.0",
+    "uuid": "^14.0.0",
     "web-vitals": "^5.1.0"
   },
   "devDependencies": {
@@ -71,12 +71,12 @@
     "css-loader": "^7.1.2",
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.0.4",
-    "postcss": "^8.4.30",
+    "postcss": "^8.5.10",
     "rimraf": "^6.0.1",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.1.17",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.3"
+    "typescript": "~5.9.2"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
