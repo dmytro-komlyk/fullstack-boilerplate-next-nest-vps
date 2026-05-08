@@ -54,6 +54,10 @@ model User {
   nickName  String?
   avatarUrl String?
 
+  telegramChatId   String?
+  slackWebhookUrl  String?
+  discordWebhookUrl String?
+
   isTwoFactorEnabled    Boolean  @default(false)
   twoFactorSetupPending Boolean  @default(false)
   twoFactorSecret       String?

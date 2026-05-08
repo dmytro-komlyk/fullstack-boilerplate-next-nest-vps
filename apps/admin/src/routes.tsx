@@ -1,6 +1,6 @@
 import React from 'react';
 import { IconType } from 'react-icons';
-import { RxDashboard } from 'react-icons/rx';
+import { RxDashboard, RxGear } from 'react-icons/rx';
 
 interface IRoute {
   name: string;
@@ -15,6 +15,12 @@ const routes: IRoute[] = [
     layout: '/',
     path: 'dashboard',
     icon: <RxDashboard className="h-6 w-6" />,
+  },
+  {
+    name: 'Settings',
+    layout: '/',
+    path: 'settings',
+    icon: <RxGear className="h-6 w-6" />,
   },
 ];
 

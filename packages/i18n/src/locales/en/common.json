@@ -80,6 +80,32 @@
     "description": "We are currently building the notification system for your admin panel.",
     "markAsRead": "Mark all as read"
   },
+  "ProfileSettings": {
+    "title": "Profile settings",
+    "tabs": {
+      "profile": "Profile",
+      "integrations": "Integrations"
+    },
+    "form": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "nickName": "Nickname",
+      "avatarUrl": "Avatar URL",
+      "avatarPreview": "Avatar preview",
+      "telegramChatId": "Telegram chat ID",
+      "telegramChatIdHelper": "Message @userinfobot on Telegram to get your chat ID",
+      "slackWebhookUrl": "Slack webhook URL",
+      "slackWebhookUrlHelper": "Create an incoming webhook at api.slack.com/apps",
+      "discordWebhookUrl": "Discord webhook URL",
+      "discordWebhookUrlHelper": "Create a webhook in Discord channel settings → Integrations"
+    },
+    "save": "Save changes",
+    "saved": "Changes saved",
+    "connect": "Connect",
+    "connected": "Connected",
+    "disconnect": "Disconnect",
+    "edit": "Edit"
+  },
   "SettingsWidget": {
     "theme": {
       "light": "Light Mode",

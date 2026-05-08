@@ -1,5 +1,30 @@
 import { z } from 'zod';
 
+export const updateProfileSchema = z.object({
+  firstName: z.string().min(1).nullable().optional(),
+  lastName: z.string().min(1).nullable().optional(),
+  nickName: z.string().min(1).nullable().optional(),
+  avatarUrl: z.union([z.string().url(), z.literal('')]).nullable().optional(),
+});
+
+export const updateContactsSchema = z.object({
+  telegramChatId: z.string().nullable().optional(),
+  slackWebhookUrl: z.string().url().nullable().optional(),
+  discordWebhookUrl: z.string().url().nullable().optional(),
+});
+
+export const outputUserProfileSchema = z.object({
+  id: z.string(),
+  email: z.string().nullable(),
+  firstName: z.string().nullable(),
+  lastName: z.string().nullable(),
+  nickName: z.string().nullable(),
+  avatarUrl: z.string().nullable(),
+  telegramChatId: z.string().nullable(),
+  slackWebhookUrl: z.string().nullable(),
+  discordWebhookUrl: z.string().nullable(),
+});
+
 const sessionUserSchema = z.object({
   id: z.string(),
   email: z.string().nullable(),
