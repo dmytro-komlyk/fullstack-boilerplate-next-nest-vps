@@ -4,7 +4,10 @@ export const updateProfileSchema = z.object({
   firstName: z.string().min(1).nullable().optional(),
   lastName: z.string().min(1).nullable().optional(),
   nickName: z.string().min(1).nullable().optional(),
-  avatarUrl: z.union([z.string().url(), z.literal('')]).nullable().optional(),
+  avatarUrl: z
+    .union([z.string().url(), z.literal('')])
+    .nullable()
+    .optional(),
 });
 
 export const updateContactsSchema = z.object({

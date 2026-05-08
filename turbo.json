@@ -109,6 +109,11 @@
       "dependsOn": ["^build"],
       "outputs": [".expo/**", "dist/**"],
       "env": ["DATABASE_URL"]
+    },
+    "test": {
+      "dependsOn": ["^build:types"],
+      "cache": true,
+      "outputs": ["coverage/**"]
     }
   }
 }
