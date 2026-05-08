@@ -6,8 +6,14 @@
 
 **Next.js 16 • Nest.js • Expo • tRPC • Prisma**
 
-[![CI/CD Build](https://github.com/dmytro-komlyk/omni-trpc-stack/actions/workflows/ssh-build.yml/badge.svg)](https://github.com/dmytro-komlyk/omni-trpc-stack/actions/workflows/ssh-build.yml)
-[![CI/CD Deploy](https://github.com/dmytro-komlyk/omni-trpc-stack/actions/workflows/ssh-deploy.yml/badge.svg)](https://github.com/dmytro-komlyk/omni-trpc-stack/actions/workflows/ssh-deploy.yml)
+[![Unit Tests](https://github.com/dmytro-komlyk/Omni-tRPC-Stack/actions/workflows/ci-test.yml/badge.svg)](https://github.com/dmytro-komlyk/Omni-tRPC-Stack/actions/workflows/ci-test.yml)
+[![Coverage](https://codecov.io/gh/dmytro-komlyk/Omni-tRPC-Stack/branch/main/graph/badge.svg)](https://codecov.io/gh/dmytro-komlyk/Omni-tRPC-Stack)
+[![CI/CD Build](https://github.com/dmytro-komlyk/Omni-tRPC-Stack/actions/workflows/ssh-build.yml/badge.svg)](https://github.com/dmytro-komlyk/Omni-tRPC-Stack/actions/workflows/ssh-build.yml)
+[![CI/CD Deploy](https://github.com/dmytro-komlyk/Omni-tRPC-Stack/actions/workflows/ssh-deploy.yml/badge.svg)](https://github.com/dmytro-komlyk/Omni-tRPC-Stack/actions/workflows/ssh-deploy.yml)
+[![Node.js](https://img.shields.io/badge/node-22+-brightgreen)](https://nodejs.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-10-orange)](https://pnpm.io/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
+[![License: ISC](https://img.shields.io/badge/license-ISC-lightgrey)](./LICENSE)
 
 [Explore Documentation](#-getting-started) • [Report Bug](https://github.com/dmytro-komlyk/omni-trpc-stack/issues)
 
@@ -216,15 +222,16 @@ Copilot generates commit message in VS Code → user commits → git push
 
 ### Commands
 
-| Command | Description |
-| :------ | :---------- |
-| `/create-task "idea"` | Analyzes codebase, composes a structured task and creates it in Todoist |
-| `/work-on-tasks` | Fetches today's P1 `@claude` tasks and implements the top one |
-| `/work-on-tasks {taskId}` | Jumps directly to a specific task by ID |
+| Command                   | Description                                                             |
+| :------------------------ | :---------------------------------------------------------------------- |
+| `/create-task "idea"`     | Analyzes codebase, composes a structured task and creates it in Todoist |
+| `/work-on-tasks`          | Fetches today's P1 `@claude` tasks and implements the top one           |
+| `/work-on-tasks {taskId}` | Jumps directly to a specific task by ID                                 |
 
 ### Todoist task format
 
 For Claude to pick up a task automatically, it must have:
+
 - **Priority:** P1
 - **Due date:** Today
 - **Label:** `@claude`
@@ -251,7 +258,7 @@ Before publishing, replace `ABC123DE45.com.omni.app` in the AASA file and `SHA25
 Ensure you have the following installed:
 
 - Node.js **v22** (use `.nvmrc` — `nvm use`)
-- PNPM (v9+)
+- PNPM (v10+)
 - Docker Desktop
 
 ### Installation
@@ -336,7 +343,7 @@ This project uses GitHub Actions for continuous integration and continuous deplo
 
    | Secret Name           | Description                    | Example                          |
    | :-------------------- | :----------------------------- | :------------------------------- |
-   | `SSH_PASSWORD`        | Password for your VPS user     | `your_secure_password`           |
+   | `SSH_PRIVATE_KEY`     | Private SSH key for VPS access | `-----BEGIN OPENSSH PRIVATE KEY` |
    | `EXPO_TOKEN`          | Access token for Expo EAS      | `expo_token_abc123...`           |
    | `DOCKER_HUB_USERNAME` | Your Docker Hub username       | `dmytro_komlyk`                  |
    | `DOCKER_HUB_TOKEN`    | Docker Hub token or GitHub PAT | `ghp_your_personal_access_token` |
