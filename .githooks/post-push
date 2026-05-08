@@ -15,11 +15,16 @@ fi
 TOKEN="${TODOIST_API_TOKEN}"
 
 if [ -z "$TOKEN" ]; then
-  TOKEN=$(grep -oP '(?<=TODOIST_API_TOKEN=")[^"]+' "$HOME/.zshrc" 2>/dev/null)
-fi
-
-if [ -z "$TOKEN" ]; then
-  TOKEN=$(grep -oP "(?<=TODOIST_API_TOKEN=')[^']+" "$HOME/.zshrc" 2>/dev/null)
+  TOKEN=$(python3 -c "
+import re, os
+zshrc = os.path.expanduser('~/.zshrc')
+try:
+  content = open(zshrc).read()
+  m = re.search(r'TODOIST_API_TOKEN=[\"\\']?([A-Za-z0-9]+)[\"\\']?', content)
+  if m: print(m.group(1))
+except Exception:
+  pass
+" 2>/dev/null)
 fi
 
 if [ -z "$TOKEN" ]; then
