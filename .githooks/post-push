@@ -2,6 +2,8 @@
 # Post-push hook: closes Todoist task and creates a GitHub PR automatically.
 # Branch naming convention: feature/todoist-{taskId}-{description}
 
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 TASK_ID=$(echo "$BRANCH" | sed -n 's|.*todoist-\([a-zA-Z0-9][a-zA-Z0-9]*\)-.*|\1|p')
 
