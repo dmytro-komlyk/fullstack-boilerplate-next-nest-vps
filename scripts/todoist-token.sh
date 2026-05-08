@@ -1,6 +1,6 @@
 #!/bin/bash
 # Prints the Todoist API token from environment.
-# Set TODOIST_API_TOKEN in your shell profile or .env
+# Set TODOIST_API_TOKEN in your shell profile
 
 if [ -n "$TODOIST_API_TOKEN" ]; then
   echo "$TODOIST_API_TOKEN"
