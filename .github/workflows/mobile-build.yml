@@ -1,40 +1,53 @@
 name: Mobile Build (Expo EAS)
 
 on:
+  pull_request:
+    branches:
+      - main
+      - development
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
   push:
     branches: [main]
     paths:
       - 'apps/mobile/**'
       - 'packages/**'
       - 'pnpm-lock.yaml'
+
+concurrency:
+  group: mobile-build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
     steps:
-      - name: 🏗 Checkout
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: ⚙️ Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
-      - name: ⚙️ Setup Node
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'pnpm'
+          node-version: 22
+          cache: pnpm
 
-      - name: 🏗 Setup Expo
+      - name: Setup Expo
         uses: expo/expo-github-action@v8
         with:
           expo-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: 📦 Install dependencies
-        run: pnpm install
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: 🚀 Build on EAS
+      - name: Build on EAS
         run: |
           cd apps/mobile
           eas build --platform android --profile preview --non-interactive --no-wait

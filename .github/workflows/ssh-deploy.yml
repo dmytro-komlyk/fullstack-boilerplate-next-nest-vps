@@ -13,16 +13,18 @@ env:
 
 jobs:
   deploy:
-    name: 'Publish to VPS'
+    name: Publish to VPS
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: github.event.pull_request.merged == true
+
     steps:
-      - name: 'Execute Remote Commands'
+      - name: Execute Remote Commands
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ vars.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ vars.SSH_PORT }}
           script: |
             cd ${{ env.PROJECT_SSH_FOLDER }}
@@ -34,24 +36,16 @@ jobs:
             IS_ADMIN="${{ contains(github.event.pull_request.labels.*.name, 'admin') }}"
 
             SERVICES=""
-            if [ "$IS_BACKEND" == "true" ]; then
-                SERVICES="$SERVICES server"
-            fi
-            if [ "$IS_WEBSITE" == "true" ]; then
-                SERVICES="$SERVICES website"
-            fi
-            if [ "$IS_ADMIN" == "true" ]; then
-                SERVICES="$SERVICES admin"
+            if [ "$IS_BACKEND" = "true" ]; then SERVICES="$SERVICES server"; fi
+            if [ "$IS_WEBSITE" = "true" ]; then SERVICES="$SERVICES website"; fi
+            if [ "$IS_ADMIN" = "true" ]; then SERVICES="$SERVICES admin"; fi
+
+            if [ -z "$SERVICES" ]; then
+              echo "⚠️ No backend/website/admin labels found — skipping deploy"
+              exit 0
             fi
 
-            if [ ! -z "$SERVICES" ]; then
-                echo "🚀 Updating services:$SERVICES"
-                docker compose -f docker-compose.prod-ci.yml -p ${{ env.PROD_NAME }} pull $SERVICES
-                docker compose -f docker-compose.prod-ci.yml -p ${{ env.PROD_NAME }} up -d --no-deps $SERVICES
-            else
-                echo "⚠️ No relevant labels found. Updating entire stack..."
-                docker compose -f docker-compose.prod-ci.yml -p ${{ env.PROD_NAME }} pull
-                docker compose -f docker-compose.prod-ci.yml -p ${{ env.PROD_NAME }} up -d --remove-orphans
-            fi
-
+            echo "🚀 Deploying:$SERVICES"
+            docker compose -f docker-compose.prod-ci.yml -p ${{ env.PROD_NAME }} pull $SERVICES
+            docker compose -f docker-compose.prod-ci.yml -p ${{ env.PROD_NAME }} up -d --no-deps $SERVICES
             docker image prune -f
