@@ -13,18 +13,18 @@ fi
 
 # --- Resolve Todoist token ---
 TOKEN="${TODOIST_API_TOKEN}"
+
 if [ -z "$TOKEN" ]; then
-  MCP_JSON="$(git rev-parse --show-toplevel)/.mcp.json"
-  if [ -f "$MCP_JSON" ]; then
-    TOKEN=$(python3 -c "
-import json, sys
+  TOKEN=$(python3 -c "
+import re, os
+zshrc = os.path.expanduser('~/.zshrc')
 try:
-  d = json.load(open('$MCP_JSON'))
-  print(d['mcpServers']['todoist']['env']['TODOIST_API_TOKEN'])
+  content = open(zshrc).read()
+  m = re.search(r'TODOIST_API_TOKEN=[\"\\']?([A-Za-z0-9]+)[\"\\']?', content)
+  if m: print(m.group(1))
 except Exception:
-  sys.exit(1)
+  pass
 " 2>/dev/null)
-  fi
 fi
 
 if [ -z "$TOKEN" ]; then
