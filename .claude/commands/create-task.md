@@ -6,13 +6,27 @@ Create a properly formatted Todoist task directly from Claude Code.
 
 ### 1. Gather info from the user
 
-If `$ARGUMENTS` is provided — use it as the raw task idea and proceed automatically.
+Parse `$ARGUMENTS` as follows (all parts are optional):
 
-Otherwise ask: **"What should be implemented?"** — one sentence is enough.
+- **Due date** — any token that looks like a date or relative expression:
+  `tomorrow`, `today`, `next monday`, `friday`, `2026-05-10`, `in 2 days`, etc.
+  Extract it and remove it from the remaining text.
+- **Task idea** — the rest of the argument string after removing the due date token.
+
+Examples:
+
+- `/create-task tomorrow fix login bug` → due: "tomorrow", idea: "fix login bug"
+- `/create-task next monday: add avatar upload` → due: "next monday", idea: "add avatar upload"
+- `/create-task refactor auth module` → due: ask user (default: today)
+
+If no task idea is found after parsing — ask: **"What should be implemented?"**
+
+If no due date is found — ask: **"When should this be done? (default: today)"**
+Accept any natural language answer: "tomorrow", "friday", "next week", etc.
 
 ### 2. Resolve the Todoist project
 
-Read the token from `.mcp.json`:
+Read the token:
 
 ```bash
 bash scripts/todoist-token.sh
@@ -79,9 +93,11 @@ curl -s -X POST "https://api.todoist.com/api/v1/tasks" \
     "project_id": "{project_id}",
     "priority": 4,
     "labels": ["claude"],
-    "due_string": "today"
+    "due_string": "{due_date}"
   }'
 ```
+
+Where `{due_date}` is the resolved due date string (e.g. `"tomorrow"`, `"next monday"`, `"today"`).
 
 ### 6. Confirm
 
@@ -91,6 +107,7 @@ Print the created task:
 ✅ Task created in Todoist → {project name}
 
 #ID | P1 | {title}
+📅 Due: {due_date}
 
 📋 Description:
 {description}

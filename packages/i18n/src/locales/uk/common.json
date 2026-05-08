@@ -80,6 +80,32 @@
     "description": "Зараз ми розробляємо систему сповіщень для вашої адмін-панелі.",
     "markAsRead": "Позначити все як прочитане"
   },
+  "ProfileSettings": {
+    "title": "Налаштування профілю",
+    "tabs": {
+      "profile": "Профіль",
+      "integrations": "Інтеграції"
+    },
+    "form": {
+      "firstName": "Ім'я",
+      "lastName": "Прізвище",
+      "nickName": "Нікнейм",
+      "avatarUrl": "URL аватара",
+      "avatarPreview": "Попередній перегляд",
+      "telegramChatId": "Telegram chat ID",
+      "telegramChatIdHelper": "Напишіть @userinfobot у Telegram, щоб дізнатися свій chat ID",
+      "slackWebhookUrl": "Slack webhook URL",
+      "slackWebhookUrlHelper": "Створіть вхідний веб-хук на api.slack.com/apps",
+      "discordWebhookUrl": "Discord webhook URL",
+      "discordWebhookUrlHelper": "Створіть веб-хук у налаштуваннях каналу Discord → Integrations"
+    },
+    "save": "Зберегти зміни",
+    "saved": "Зміни збережено",
+    "connect": "Підключити",
+    "connected": "Підключено",
+    "disconnect": "Відключити",
+    "edit": "Змінити"
+  },
   "SettingsWidget": {
     "theme": {
       "light": "Світлий режим",

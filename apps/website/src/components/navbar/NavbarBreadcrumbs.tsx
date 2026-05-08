@@ -34,11 +34,14 @@ const NavbarBreadcrumbs = () => {
       radius="full"
       variant="solid"
       classNames={{
-        list: 'text-gray-800 dark:!bg-navy-800 bg-white px-3 dark:shadow-none',
+        list: 'text-gray-800 dark:bg-navy-800! bg-white px-3 dark:shadow-none',
+      }}
+      itemClasses={{
+        item: 'data-[active=true]:text-white',
       }}
     >
       <BreadcrumbItem>
-        <NavLink href="/">{t('home')}</NavLink>
+        <NavLink href={`/${locale}`}>{t('home')}</NavLink>
       </BreadcrumbItem>
       {breadcrumbs}
     </Breadcrumbs>

@@ -1,5 +1,8 @@
 import { prisma } from '@package/prisma';
 import { TRPCError } from '@trpc/server';
+import { type z } from 'zod';
+
+import { type updateContactsSchema, type updateProfileSchema } from './user.schema';
 
 export const getDashboardStats = async () => {
   const now = new Date();
@@ -86,6 +89,96 @@ export const getDashboardStats = async () => {
       expired: expiredInvites,
     },
   };
+};
+
+export const getProfile = async ({ userId }: { userId: string }) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      nickName: true,
+      avatarUrl: true,
+      telegramChatId: true,
+      slackWebhookUrl: true,
+      discordWebhookUrl: true,
+    },
+  });
+
+  if (!user) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'userNotFound' });
+  }
+
+  return user;
+};
+
+export const updateProfile = async ({
+  userId,
+  data,
+}: {
+  userId: string;
+  data: z.infer<typeof updateProfileSchema>;
+}) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'userNotFound' });
+  }
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(data.firstName !== undefined && { firstName: data.firstName }),
+      ...(data.lastName !== undefined && { lastName: data.lastName }),
+      ...(data.nickName !== undefined && { nickName: data.nickName }),
+      ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl || null }),
+    },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      nickName: true,
+      avatarUrl: true,
+      telegramChatId: true,
+      slackWebhookUrl: true,
+      discordWebhookUrl: true,
+    },
+  });
+};
+
+export const updateContacts = async ({
+  userId,
+  data,
+}: {
+  userId: string;
+  data: z.infer<typeof updateContactsSchema>;
+}) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'userNotFound' });
+  }
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(data.telegramChatId !== undefined && { telegramChatId: data.telegramChatId }),
+      ...(data.slackWebhookUrl !== undefined && { slackWebhookUrl: data.slackWebhookUrl }),
+      ...(data.discordWebhookUrl !== undefined && { discordWebhookUrl: data.discordWebhookUrl }),
+    },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      nickName: true,
+      avatarUrl: true,
+      telegramChatId: true,
+      slackWebhookUrl: true,
+      discordWebhookUrl: true,
+    },
+  });
 };
 
 export const findUser = async ({ email }: { email: string }) => {

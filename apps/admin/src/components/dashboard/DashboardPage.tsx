@@ -6,39 +6,8 @@ import { ReactNode, useMemo } from 'react';
 import { HiMiniComputerDesktop, HiMiniEnvelope, HiMiniSignal, HiMiniUsers } from 'react-icons/hi2';
 import { UAParser } from 'ua-parser-js';
 
-function relativeTime(date: Date | string): string {
-  const diff = Date.now() - new Date(date).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-}
-
-function buildDistribution(userAgents: string[]) {
-  const browsers: Record<string, number> = {};
-  const oss: Record<string, number> = {};
-  const devices: Record<string, number> = {};
-
-  for (const ua of userAgents) {
-    const r = new UAParser(ua);
-    const b = r.getBrowser().name ?? 'Other';
-    const o = r.getOS().name ?? 'Other';
-    const d = r.getDevice().type ?? 'Desktop';
-    browsers[b] = (browsers[b] ?? 0) + 1;
-    oss[o] = (oss[o] ?? 0) + 1;
-    devices[d] = (devices[d] ?? 0) + 1;
-  }
-
-  const sort = (obj: Record<string, number>) =>
-    Object.entries(obj)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 6)
-      .map(([name, count]) => ({ name, count }));
-
-  return { browsers: sort(browsers), oss: sort(oss), devices: sort(devices) };
-}
+import { relativeTime } from '@/helpers/date';
+import { buildDistribution } from '@/helpers/ua';
 
 function StatCard({
   label,
@@ -88,6 +57,7 @@ function DistributionList({
                 {name}
               </span>
               <Progress
+                aria-label={name}
                 value={total > 0 ? (count / total) * 100 : 0}
                 size="sm"
                 className="flex-1"
