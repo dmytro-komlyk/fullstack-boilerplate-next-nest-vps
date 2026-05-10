@@ -48,8 +48,8 @@ curl -s "https://api.todoist.com/api/v1/projects" \
 ```text
 Multiple Todoist projects found:
 1. Omni
-2. EazyScrape
-3. CryptoBot
+2. Personal
+3. Work
 
 Which project should this task be added to?
 ```
