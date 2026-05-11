@@ -60,10 +60,10 @@ services:
       args:
         BUILD_MODE: local
         APP_PORT: 3001
-        APP_HOSTNAME: boilerplate.localhost
-        NEXT_PUBLIC_APP_DOMAIN: boilerplate.localhost:3001
-        NEXT_PUBLIC_ADMIN_DOMAIN: admin.boilerplate.localhost:3002
-        NEXT_PUBLIC_SERVER_DOMAIN: server.boilerplate.localhost:3000
+        APP_HOSTNAME: omni.localhost
+        NEXT_PUBLIC_APP_DOMAIN: omni.localhost:3001
+        NEXT_PUBLIC_ADMIN_DOMAIN: admin.omni.localhost:3002
+        NEXT_PUBLIC_SERVER_DOMAIN: server.omni.localhost:3000
     container_name: website
     restart: unless-stopped
     env_file:
@@ -88,10 +88,10 @@ services:
       args:
         BUILD_MODE: local
         APP_PORT: 3002
-        APP_HOSTNAME: admin.boilerplate.localhost
-        NEXT_PUBLIC_APP_DOMAIN: admin.boilerplate.localhost:3002
-        NEXT_PUBLIC_WEBSITE_DOMAIN: boilerplate.localhost:3001
-        NEXT_PUBLIC_SERVER_DOMAIN: server.boilerplate.localhost:3000
+        APP_HOSTNAME: admin.omni.localhost
+        NEXT_PUBLIC_APP_DOMAIN: admin.omni.localhost:3002
+        NEXT_PUBLIC_WEBSITE_DOMAIN: omni.localhost:3001
+        NEXT_PUBLIC_SERVER_DOMAIN: server.omni.localhost:3000
     container_name: admin
     restart: unless-stopped
     env_file:
