@@ -38,10 +38,11 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Setup Expo
+      - name: Setup Expo & EAS
         uses: expo/expo-github-action@v8
         with:
           expo-version: latest
+          eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
