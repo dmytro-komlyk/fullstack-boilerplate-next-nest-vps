@@ -89,6 +89,29 @@ else
   exit 0
 fi
 
+# --- Detect changed paths and add labels ---
+CHANGED=$(git diff --name-only "origin/${DEFAULT_BRANCH}...HEAD" 2>/dev/null)
+LABELS=()
+
+echo "$CHANGED" | grep -q "^apps/server/"  && LABELS+=("backend")
+echo "$CHANGED" | grep -q "^apps/website/" && LABELS+=("website")
+echo "$CHANGED" | grep -q "^apps/admin/"   && LABELS+=("admin")
+if echo "$CHANGED" | grep -q "^packages/"; then
+  [[ " ${LABELS[*]} " != *" backend "* ]] && LABELS+=("backend")
+  [[ " ${LABELS[*]} " != *" worker "* ]]  && LABELS+=("worker")
+fi
+
+if [ ${#LABELS[@]} -gt 0 ]; then
+  for label in "${LABELS[@]}"; do
+    gh label create "$label" --color "#0075ca" --force 2>/dev/null || true
+  done
+  LABEL_FLAGS=$(printf -- "--add-label %s " "${LABELS[@]}")
+  # shellcheck disable=SC2086
+  gh pr edit "$PR_URL" $LABEL_FLAGS 2>/dev/null \
+    && echo "🏷️  Labels added: ${LABELS[*]}" \
+    || echo "⚠️  Could not add labels (they may need to be created in GitHub first)"
+fi
+
 # --- Add comment to Todoist task with PR link ---
 COMMENT_BODY="✅ Implemented in branch \`$BRANCH\`\n🔗 PR: $PR_URL"
 
