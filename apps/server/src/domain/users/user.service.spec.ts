@@ -18,7 +18,7 @@ vi.mock('@package/prisma', () => ({
 
 import { prisma } from '@package/prisma';
 
-import { getDashboardStats } from './user.service';
+import { getDashboardStats } from './user.queries';
 
 const mockPrisma = prisma as unknown as {
   user: { count: ReturnType<typeof vi.fn>; groupBy: ReturnType<typeof vi.fn> };
