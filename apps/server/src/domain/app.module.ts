@@ -1,4 +1,3 @@
-/* Modules */
 import KeyvRedis from '@keyv/redis';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
@@ -8,7 +7,6 @@ import { LoggerModule } from 'nestjs-pino';
 
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisProvider } from './redis/redis.provider';
-import { TrpcModule } from './trpc/trpc.module';
 
 @Module({
   imports: [
@@ -19,37 +17,32 @@ import { TrpcModule } from './trpc/trpc.module';
     CacheModule.registerAsync({
       isGlobal: true,
       inject: [ConfigService],
-      useFactory: async (config: ConfigService) => {
+      useFactory: (config: ConfigService) => {
         const redis = new KeyvRedis(
-          `redis://${config.get('REDIS_HOST', 'localhost')}:${config.get('REDIS_PORT', 6379)}`
+          `redis://${config.get<string>('REDIS_HOST', 'localhost')}:${config.get<number>('REDIS_PORT', 6379)}`
         );
         return {
-          stores: [
-            new Keyv({
-              store: redis,
-              ttl: 60_000, // ms
-            }),
-          ],
+          stores: [new Keyv({ store: redis, ttl: 60_000 })],
         };
       },
     }),
     LoggerModule.forRoot({
       pinoHttp: {
-        level: 'debug',
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'HH:MM:ss Z',
-            ignore: 'pid,hostname',
-            singleLine: false,
-            sync: true,
+        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+        ...(process.env.NODE_ENV !== 'production' && {
+          transport: {
+            target: 'pino-pretty',
+            options: {
+              colorize: true,
+              translateTime: 'HH:MM:ss Z',
+              ignore: 'pid,hostname',
+              singleLine: false,
+            },
           },
-        },
+        }),
       },
     }),
     PrismaModule,
-    TrpcModule,
     // other modules
   ],
   providers: [RedisProvider],
