@@ -1,6 +1,6 @@
 import { procedure, protectedProcedure, router } from '../trpc/trpc.server';
 import {
-  activeTwoFatorSchema,
+  activeTwoFactorSchema,
   changeForcedPasswordSchema,
   checkTokenSchema,
   ForgotPasswordOutputData,
@@ -10,8 +10,8 @@ import {
   inviteUserSchema,
   OutputAccessToken,
   outputAccessTokenSchema,
-  OutputActiveTwoFatorData,
-  outputActiveTwoFatorSchema,
+  OutputActiveTwoFactorData,
+  outputActiveTwoFactorSchema,
   OutputAuthData,
   outputAuthProviderSchema,
   outputAuthSchema,
@@ -20,11 +20,11 @@ import {
   OutputCheckTokenData,
   outputCheckTokenSchema,
   outputInviteSchema,
-  OutputSetupTwoFatorData,
-  outputSetupTwoFatorSchema,
+  OutputSetupTwoFactorData,
+  outputSetupTwoFactorSchema,
   OutputSignOutData,
   outputSignOutSchema,
-  OutputVerifyOuthTokenData,
+  OutputVerifyOAuthTokenData,
   resendVerificationEmailSchema,
   ResetPasswordOutputData,
   resetPasswordOutputSchema,
@@ -38,26 +38,19 @@ import {
   VerifyEmailOutputData,
   verifyEmailOutputSchema,
   verifyEmailSchema,
-  verifyTwoFatorSchema,
+  verifyTwoFactorSchema,
 } from './auth.schema';
+import { verifyFacebookMobileToken, verifyGoogleMobileToken } from './oauth.service';
+import { changeForcedPassword, receivePasswordResetLink, resetPassword } from './password.service';
+import { signIn, signInProvider, signOut, updateAccessBackendToken } from './sign-in.service';
 import {
-  activate2FA,
-  changeForcedPassword,
   createInvite,
-  receivePasswordResetLink,
   resendVerification,
-  resetPassword,
-  setup2FALogin,
-  signIn,
-  signInProvider,
-  signOut,
   signUp,
-  updateAccessBackendToken,
-  verify2FALogin,
   verifyEmail,
   verifyToken,
-} from './auth.service';
-import { verifyFacebookMobileToken, verifyGoogleMobileToken } from './oauth.service';
+} from './sign-up.service';
+import { activate2FA, setup2FALogin, verify2FALogin } from './two-factor.service';
 
 export const authRouter = router({
   login: procedure
@@ -93,7 +86,7 @@ export const authRouter = router({
     .input(signInMobileProviderSchema)
     .output(outputAuthProviderSchema)
     .mutation(async ({ input, ctx }) => {
-      let oauthData: OutputVerifyOuthTokenData;
+      let oauthData: OutputVerifyOAuthTokenData;
 
       if (input.provider === 'google') {
         oauthData = await verifyGoogleMobileToken(input.token);
@@ -341,9 +334,9 @@ export const authRouter = router({
         protect: true,
       },
     })
-    .output(outputSetupTwoFatorSchema)
+    .output(outputSetupTwoFactorSchema)
     .query(async ({ ctx }) => {
-      const response: OutputSetupTwoFatorData = await setup2FALogin({
+      const response: OutputSetupTwoFactorData = await setup2FALogin({
         user: {
           id: ctx.user.id,
           email: ctx.user.email as string,
@@ -367,7 +360,7 @@ export const authRouter = router({
         protect: false,
       },
     })
-    .input(verifyTwoFatorSchema)
+    .input(verifyTwoFactorSchema)
     .output(outputAuthSchema)
     .mutation(async ({ input, ctx }) => {
       const response: OutputAuthData = await verify2FALogin({
@@ -400,10 +393,10 @@ export const authRouter = router({
         protect: true,
       },
     })
-    .input(activeTwoFatorSchema)
-    .output(outputActiveTwoFatorSchema)
+    .input(activeTwoFactorSchema)
+    .output(outputActiveTwoFactorSchema)
     .mutation(async ({ input, ctx }) => {
-      const response: OutputActiveTwoFatorData = await activate2FA({
+      const response: OutputActiveTwoFactorData = await activate2FA({
         data: {
           userId: ctx.user.id,
           code: input.code,

@@ -1,0 +1,10 @@
+export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+export const EMAIL_TOKEN_TTL_MS = 48 * 60 * 60 * 1000;
+export const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
+export const MFA_TOKEN_TTL_MINUTES = 10;
+export const ACCESS_TOKEN_TTL_HOURS = 1;
+export const REFRESH_TOKEN_TTL_DAYS = 30;
+export const RATE_LIMIT_COOLDOWN_MINUTES = 2;
+export const MAX_FAILED_LOGIN_ATTEMPTS = 5;
+export const LOCK_BASE_MINUTES = 15;
+export const MAX_LOCK_MINUTES = 1440;

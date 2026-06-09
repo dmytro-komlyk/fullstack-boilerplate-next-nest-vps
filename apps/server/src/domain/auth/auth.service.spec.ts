@@ -42,8 +42,8 @@ vi.mock('../../utils/nodemailer/sendEmail', () => ({
 import { prisma } from '@package/prisma';
 import { compare } from 'bcryptjs';
 
-import { signIn, updateAccessBackendToken } from './auth.service';
 import { generateBackendTokens } from './jwt.service';
+import { signIn, updateAccessBackendToken } from './sign-in.service';
 
 const mockPrisma = prisma as unknown as {
   user: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> };
@@ -137,6 +137,7 @@ describe('auth.service', () => {
       });
 
       expect(result.status).toBe('SUCCESS');
+      if (result.status !== 'SUCCESS') throw new Error('Expected SUCCESS');
       expect(result.accessToken).toBe('access-token');
       expect(result.user.id).toBe('user-1');
     });

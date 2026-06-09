@@ -34,7 +34,7 @@ export const signInFormSchema = z.object({
   password: z.string().min(1, 'required'),
 });
 
-export type SignInFormData = z.infer<typeof signInSchema>;
+export type SignInFormData = z.infer<typeof signInFormSchema>;
 
 export const signInProviderSchema = z.object({
   email: z.string().email().min(1).nullable(),
@@ -56,7 +56,7 @@ export const signInMobileProviderSchema = z.object({
 
 export type SignInMobileProviderData = z.infer<typeof signInMobileProviderSchema>;
 
-export const outputVerifyOuthToken = z.object({
+export const outputVerifyOAuthTokenSchema = z.object({
   email: z.string().email().min(1).nullable(),
   providerAccountId: z.string().min(1),
   firstName: z.string().min(1).nullable(),
@@ -65,7 +65,7 @@ export const outputVerifyOuthToken = z.object({
   avatarUrl: z.string().url().nullable(),
 });
 
-export type OutputVerifyOuthTokenData = z.infer<typeof outputVerifyOuthToken>;
+export type OutputVerifyOAuthTokenData = z.infer<typeof outputVerifyOAuthTokenSchema>;
 
 export const signUpSchema = z.object({
   email: z.string().email().min(1),
@@ -85,7 +85,7 @@ export const signUpFormSchema = z
     twoFactorSetupPending: z.boolean(),
   })
   .refine((data) => data.password === data.passwordConfirmation, {
-    message: 'passwordsDontMatch', // Ключ!
+    message: 'passwordsDontMatch',
     path: ['passwordConfirmation'],
   });
 
@@ -275,28 +275,28 @@ export const twoFactorSetupSchema = z.object({
 
 export type TwoFactorData = z.infer<typeof twoFactorSetupSchema>;
 
-export const outputSetupTwoFatorSchema = z.object({
+export const outputSetupTwoFactorSchema = z.object({
   secret: z.string(),
   qrCodeUrl: z.string(),
 });
 
-export type OutputSetupTwoFatorData = z.infer<typeof outputSetupTwoFatorSchema>;
+export type OutputSetupTwoFactorData = z.infer<typeof outputSetupTwoFactorSchema>;
 
-export const activeTwoFatorSchema = z.object({
+export const activeTwoFactorSchema = z.object({
   code: z.string().length(6),
 });
 
-export type ActiveTwoFatorData = z.infer<typeof activeTwoFatorSchema>;
+export type ActiveTwoFactorData = z.infer<typeof activeTwoFactorSchema>;
 
-export const verifyTwoFatorSchema = activeTwoFatorSchema.extend({
+export const verifyTwoFactorSchema = activeTwoFactorSchema.extend({
   mfaToken: z.string(),
 });
 
-export type VerifyTwoFatorData = z.infer<typeof verifyTwoFatorSchema>;
+export type VerifyTwoFactorData = z.infer<typeof verifyTwoFactorSchema>;
 
-export const outputActiveTwoFatorSchema = z.object({
+export const outputActiveTwoFactorSchema = z.object({
   success: z.boolean(),
   backupCodes: z.array(z.string()),
 });
 
-export type OutputActiveTwoFatorData = z.infer<typeof outputActiveTwoFatorSchema>;
+export type OutputActiveTwoFactorData = z.infer<typeof outputActiveTwoFactorSchema>;
