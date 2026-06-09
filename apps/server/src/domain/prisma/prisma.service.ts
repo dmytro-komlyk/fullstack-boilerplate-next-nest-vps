@@ -2,6 +2,18 @@ import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { connectPrisma, disconnectPrisma, PrismaClient } from '@package/prisma';
 import { PinoLogger } from 'nestjs-pino';
 
+type QueryEvent = {
+  timestamp: Date;
+  query: string;
+  params: string;
+  duration: number;
+  target: string;
+};
+
+type PrismaWithQueryEvents = PrismaClient & {
+  $on(event: 'query', callback: (event: QueryEvent) => void): void;
+};
+
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
   constructor(
@@ -14,13 +26,9 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     await connectPrisma();
 
-    (this.prisma as any).$on('query', (e: any) => {
+    (this.prisma as PrismaWithQueryEvents).$on('query', (e: QueryEvent) => {
       this.logger.info(
-        {
-          sql: e.query,
-          params: e.params,
-          duration: `${e.duration}ms`,
-        },
+        { sql: e.query, params: e.params, duration: `${e.duration}ms` },
         'Database Query'
       );
     });

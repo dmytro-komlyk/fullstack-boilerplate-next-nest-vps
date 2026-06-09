@@ -7,20 +7,15 @@ import ws from '@fastify/websocket';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { fastifyTRPCPlugin, FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify';
-import * as dotenv from 'dotenv';
-import { expand } from 'dotenv-expand';
 import { Logger, PinoLogger } from 'nestjs-pino';
 
+import { env } from './config/env';
 import { AppModule } from './domain/app.module';
 import { openApiDocument } from './domain/trpc/openapi.plugin';
-import { createContext } from './domain/trpc/trpc.context';
+import { createContext, FastifyContextOptions } from './domain/trpc/trpc.context';
 import { appRouter } from './domain/trpc/trpc.router';
 
-expand(dotenv.config());
-
 async function bootstrap() {
-  const port = process.env.APP_PORT as string;
-
   const bootstrapLogger = new PinoLogger({
     pinoHttp: {
       level: 'debug',
@@ -28,9 +23,7 @@ async function bootstrap() {
     },
   });
 
-  const adapter = new FastifyAdapter({
-    trustProxy: true,
-  });
+  const adapter = new FastifyAdapter({ trustProxy: true });
 
   try {
     const app = await NestFactory.create<NestFastifyApplication>(AppModule, adapter, {
@@ -40,17 +33,11 @@ async function bootstrap() {
     const logger = app.get(Logger);
     app.useLogger(logger);
 
-    await app.register(fastifyRateLimit, {
-      max: 1000,
-      timeWindow: '15 minutes',
-    });
-
+    await app.register(fastifyRateLimit, { max: 1000, timeWindow: '15 minutes' });
     logger.log('Rate limit middleware registered');
 
     await app.register<FastifyCorsOptions>(fastifyCors, {
-      origin: [process.env.APP_WEBSITE_URL as string, process.env.APP_ADMIN_URL as string].filter(
-        Boolean
-      ),
+      origin: [env.APP_WEBSITE_URL, env.APP_ADMIN_URL],
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
       allowedHeaders: [
         'Content-Type',
@@ -62,7 +49,6 @@ async function bootstrap() {
       ],
       credentials: true,
     });
-
     logger.log('CORS middleware registered');
 
     await app.register(fastifyHelmet, {
@@ -73,10 +59,10 @@ async function bootstrap() {
             "'self'",
             'ws:',
             'wss:',
-            process.env.APP_WEBSITE_URL as string,
-            process.env.APP_ADMIN_URL as string,
-            process.env.APP_HTTP_URL as string,
-            process.env.APP_SOCKET_URL as string,
+            env.APP_WEBSITE_URL,
+            env.APP_ADMIN_URL,
+            env.APP_HTTP_URL ?? '',
+            env.APP_SOCKET_URL ?? '',
           ].filter(Boolean),
         },
       },
@@ -84,25 +70,8 @@ async function bootstrap() {
     logger.log('Helmet middleware registered with CSP');
 
     await app.register(ws, {
-      options: {
-        maxPayload: 1048576,
-        clientTracking: true,
-        perMessageDeflate: false,
-        // verifyClient: (info, cb) => {
-        //   const allowedOrigins = [
-        //     process.env.APP_WEBSITE_URL as string,
-        //     process.env.APP_ADMIN_URL as string,
-        //   ].filter(Boolean);
-
-        //   if (allowedOrigins.some((origin) => info.origin.startsWith(origin as string))) {
-        //     cb(true);
-        //   } else {
-        //     cb(false, 401, 'Unauthorized origin');
-        //   }
-        // },
-      },
+      options: { maxPayload: 1048576, clientTracking: true, perMessageDeflate: false },
     });
-
     logger.log('WebSocket middleware registered');
 
     await app.register(fastifyTRPCPlugin, {
@@ -110,18 +79,10 @@ async function bootstrap() {
       useWSS: true,
       trpcOptions: {
         router: appRouter,
-        createContext: (opts: any) => {
-          return createContext({
-            req: opts.req,
-            res: opts.res,
-            connection: opts.connection,
-            app,
-            logger,
-          });
-        },
+        createContext: (opts: Omit<FastifyContextOptions, 'app' | 'logger'>) =>
+          createContext({ ...opts, app, logger }),
       },
     } satisfies FastifyTRPCPluginOptions<typeof appRouter>);
-
     logger.log('tRPC middleware registered');
 
     await app.register(fastifySwagger, {
@@ -131,32 +92,28 @@ async function bootstrap() {
           description: 'tRPC + OpenAPI documentation',
           version: '1.0.0',
         },
-        servers: [{ url: process.env.APP_HTTP_URL as string }],
+        servers: [{ url: env.APP_HTTP_URL ?? '' }],
       },
       hideUntagged: true,
     });
 
     await app.register(fastifySwaggerUi, {
-      routePrefix: `/${process.env.APP_SWAGGER}`,
-      transformSpecification: () => {
-        return openApiDocument;
-      },
+      routePrefix: `/${env.APP_SWAGGER}`,
+      transformSpecification: () => openApiDocument,
       uiConfig: {
         docExpansion: 'list',
         deepLinking: true,
         tryItOutEnabled: true,
-        url: `/${process.env.APP_SWAGGER}/json`,
+        url: `/${env.APP_SWAGGER}/json`,
       },
       staticCSP: true,
     });
 
-    logger.log(`Swagger UI available at ${process.env.APP_BASE_URL}/${process.env.APP_SWAGGER}`);
-    logger.log(
-      `OpenAPI JSON available at ${process.env.APP_BASE_URL}/${process.env.APP_SWAGGER}/json`
-    );
+    logger.log(`Swagger UI available at ${env.APP_BASE_URL ?? ''}/${env.APP_SWAGGER}`);
+    logger.log(`OpenAPI JSON available at ${env.APP_BASE_URL ?? ''}/${env.APP_SWAGGER}/json`);
 
-    const staticPath = `${process.cwd()}/${process.env.APP_STATIC_ASSETS as string}`;
-    const staticPrefix = `/${process.env.APP_STATIC_ASSETS as string}`;
+    const staticPath = `${process.cwd()}/${env.APP_STATIC_ASSETS}`;
+    const staticPrefix = `/${env.APP_STATIC_ASSETS}`;
 
     app.useStaticAssets({
       root: staticPath,
@@ -167,7 +124,6 @@ async function bootstrap() {
       },
       decorateReply: false,
     });
-
     logger.log(`Static assets served from "${staticPath}" at prefix "${staticPrefix}"`);
 
     app.useStaticAssets({
@@ -183,10 +139,10 @@ async function bootstrap() {
         }
       },
     });
-    logger.log(`Deep Linking verification files served at "/.well-known/"`);
+    logger.log('Deep Linking verification files served at "/.well-known/"');
 
-    await app.listen(port, '0.0.0.0');
-    logger.log(`Fastify Server is running on port ${port}`);
+    await app.listen(env.APP_PORT, '0.0.0.0');
+    logger.log(`Fastify Server is running on port ${env.APP_PORT}`);
 
     const shutdown = async (signal: string) => {
       logger.log(`Received ${signal}. Closing server...`);
@@ -195,18 +151,22 @@ async function bootstrap() {
       process.exit(0);
     };
 
-    process.on('SIGTERM', () => shutdown('SIGTERM'));
-    process.on('SIGINT', () => shutdown('SIGINT'));
-  } catch (error: any) {
-    bootstrapLogger.error(`Failed to start server on port ${port}: ${error.message}`, error.stack);
+    process.on('SIGTERM', () => void shutdown('SIGTERM'));
+    process.on('SIGINT', () => void shutdown('SIGINT'));
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    bootstrapLogger.error(`Failed to start server on port ${env.APP_PORT}: ${message}`, stack);
     process.exit(1);
   }
 }
 
-bootstrap().catch((err) => {
+bootstrap().catch((err: unknown) => {
   const finalLogger = new PinoLogger({
     pinoHttp: { transport: { target: 'pino-pretty', options: { colorize: true } } },
   });
-  finalLogger.error(`Bootstrap error: ${err.message}`, err.stack);
+  const message = err instanceof Error ? err.message : String(err);
+  const stack = err instanceof Error ? err.stack : undefined;
+  finalLogger.error(`Bootstrap error: ${message}`, stack);
   process.exit(1);
 });

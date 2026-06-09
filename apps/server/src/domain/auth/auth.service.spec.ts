@@ -1,6 +1,18 @@
 import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('../../config/env', () => ({
+  env: {
+    APP_PORT: '3000',
+    APP_NAME: 'TestApp',
+    APP_WEBSITE_URL: 'http://localhost:3001',
+    APP_ADMIN_URL: 'http://localhost:3002',
+    JWT_ACCESS_TOKEN: 'test-access-secret',
+    JWT_REFRESH_TOKEN: 'test-refresh-secret',
+    JWT_RESET_TOKEN: 'test-reset-secret',
+  },
+}));
+
 vi.mock('@package/prisma', () => ({
   prisma: {
     user: {
@@ -18,6 +30,12 @@ vi.mock('@package/prisma', () => ({
       findFirst: vi.fn(),
       upsert: vi.fn(),
     },
+    $transaction: vi
+      .fn()
+      .mockImplementation(
+        async (fn: (tx: { user: { update: ReturnType<typeof vi.fn> } }) => Promise<unknown>) =>
+          fn({ user: { update: vi.fn().mockResolvedValue({ failedLoginAttempts: 1 }) } })
+      ),
   },
 }));
 
@@ -42,8 +60,8 @@ vi.mock('../../utils/nodemailer/sendEmail', () => ({
 import { prisma } from '@package/prisma';
 import { compare } from 'bcryptjs';
 
-import { signIn, updateAccessBackendToken } from './auth.service';
 import { generateBackendTokens } from './jwt.service';
+import { signIn, updateAccessBackendToken } from './sign-in.service';
 
 const mockPrisma = prisma as unknown as {
   user: { findUnique: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> };
@@ -137,6 +155,7 @@ describe('auth.service', () => {
       });
 
       expect(result.status).toBe('SUCCESS');
+      if (result.status !== 'SUCCESS') throw new Error('Expected SUCCESS');
       expect(result.accessToken).toBe('access-token');
       expect(result.user.id).toBe('user-1');
     });

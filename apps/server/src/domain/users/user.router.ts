@@ -1,11 +1,12 @@
 import { protectedProcedure, router } from '../trpc/trpc.server';
+import { updateContacts, updateProfile } from './user.commands';
+import { getDashboardStats, getProfile } from './user.queries';
 import {
   outputDashboardStatsSchema,
   outputUserProfileSchema,
   updateContactsSchema,
   updateProfileSchema,
 } from './user.schema';
-import { getDashboardStats, getProfile, updateContacts, updateProfile } from './user.service';
 
 export const userRouter = router({
   getStats: protectedProcedure

@@ -3,16 +3,16 @@ import { OpenApiMeta } from 'trpc-to-openapi';
 
 import type { Context } from './trpc.context';
 
-function maskSensitiveData(input: any) {
-  if (typeof input !== 'object' || input === null) return input;
-  const clean = JSON.parse(JSON.stringify(input));
-  const sensitiveFields = ['password', 'token', 'secret', 'oldPassword', 'newPassword'];
+const SENSITIVE_FIELDS = new Set(['password', 'token', 'secret', 'oldPassword', 'newPassword']);
 
-  sensitiveFields.forEach((field) => {
+const maskSensitiveData = (input: unknown): unknown => {
+  if (typeof input !== 'object' || input === null) return input;
+  const clean = structuredClone(input) as Record<string, unknown>;
+  for (const field of SENSITIVE_FIELDS) {
     if (field in clean) clean[field] = '***';
-  });
+  }
   return clean;
-}
+};
 
 const trpc = initTRPC
   .meta<OpenApiMeta>()
