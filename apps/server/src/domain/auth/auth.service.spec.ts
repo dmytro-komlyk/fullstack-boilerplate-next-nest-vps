@@ -1,6 +1,18 @@
 import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('../../config/env', () => ({
+  env: {
+    APP_PORT: '3000',
+    APP_NAME: 'TestApp',
+    APP_WEBSITE_URL: 'http://localhost:3001',
+    APP_ADMIN_URL: 'http://localhost:3002',
+    JWT_ACCESS_TOKEN: 'test-access-secret',
+    JWT_REFRESH_TOKEN: 'test-refresh-secret',
+    JWT_RESET_TOKEN: 'test-reset-secret',
+  },
+}));
+
 vi.mock('@package/prisma', () => ({
   prisma: {
     user: {
@@ -18,6 +30,12 @@ vi.mock('@package/prisma', () => ({
       findFirst: vi.fn(),
       upsert: vi.fn(),
     },
+    $transaction: vi
+      .fn()
+      .mockImplementation(
+        async (fn: (tx: { user: { update: ReturnType<typeof vi.fn> } }) => Promise<unknown>) =>
+          fn({ user: { update: vi.fn().mockResolvedValue({ failedLoginAttempts: 1 }) } })
+      ),
   },
 }));
 

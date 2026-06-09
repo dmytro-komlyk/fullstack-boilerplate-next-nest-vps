@@ -9,6 +9,7 @@ vi.mock('@package/prisma', () => ({
     session: {
       count: vi.fn(),
       findMany: vi.fn(),
+      groupBy: vi.fn(),
     },
     invite: {
       count: vi.fn(),
@@ -22,7 +23,11 @@ import { getDashboardStats } from './user.queries';
 
 const mockPrisma = prisma as unknown as {
   user: { count: ReturnType<typeof vi.fn>; groupBy: ReturnType<typeof vi.fn> };
-  session: { count: ReturnType<typeof vi.fn>; findMany: ReturnType<typeof vi.fn> };
+  session: {
+    count: ReturnType<typeof vi.fn>;
+    findMany: ReturnType<typeof vi.fn>;
+    groupBy: ReturnType<typeof vi.fn>;
+  };
   invite: { count: ReturnType<typeof vi.fn> };
 };
 
@@ -53,9 +58,8 @@ describe('user.service', () => {
         .mockResolvedValueOnce([{ role: 'USER', _count: { _all: 80 } }]) // byRole
         .mockResolvedValueOnce([{ status: 'ACTIVE', _count: { _all: 90 } }]); // byStatus
 
-      mockPrisma.session.findMany
-        .mockResolvedValueOnce([]) // recentSessions
-        .mockResolvedValueOnce([]); // allUserAgents
+      mockPrisma.session.findMany.mockResolvedValueOnce([]); // recentSessions
+      mockPrisma.session.groupBy.mockResolvedValueOnce([]); // userAgentGroups
 
       const result = await getDashboardStats();
 
